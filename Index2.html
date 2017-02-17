@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TestW3</title>
+    <!--<link href="w3.css" rel="stylesheet" />-->
+  <link href="Style1.css" rel="stylesheet" />
+  <!--<link rel="import" href="help1.html" />-->
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <script src="https://www.w3schools.com/lib/w3data.js"></script>
+
+  <script src="App.js"></script>
+</head>
+<body>
+    <!--<div id="left_buttons" class="column_buttons">
+
+      <button class="buttonMovement">Reset</button>
+      <button class="buttonMovement">Scramble</button>
+      <button class="buttonMovement" onclick="parent.open('help.html')" >Help</button>
+    </div>-->
+  <!--<div id="gamediv" style="background-color: magenta; width:500px; height:500px">-->
+  <!--<textarea id="text1" style="width:100%"></textarea>-->
+    <div id="gamediv" style="background-color: magenta; width:300px; height:811px">
+      <canvas id="renderCanvas" style="background-color:lightblue" touch-action="none"></canvas>
+
+    </div>
+  <!--<div style="border:1px solid red; position:fixed; bottom:0; right:0; width:250px; height:150px;">FIXED CONTENT</div>-->
+  <!--<div id="TextBox2">T9-2</div>-->
+
+<!--<div id="TextBox" > </div>-->
+  <nav id="navbar1" style="background-color:#262626; width:100%; height:auto; position:fixed; bottom:0px;    ">
+    <!--https://www.w3schools.com/howto/howto_js_accordion.asp-->
+    <div id="panel1" class="panel" >
+    </div>
+    <div id="panel2" class="panelB">
+      <ul style="float:left">
+        <li >Slow</li>
+        <li>Help</li>
+      </ul>
+    </div>
+    <div style="display:inline-block">
+      <i class="fa fa-home"> </i>
+      <p class="label" >Reset</p>
+    </div>
+    <div style="display:inline-block">
+      <i class="fa fa-random"></i>
+      <p class="label" >Scramble</p>
+    </div>
+    <div style="display:inline-block">
+      <i class="fa fa-arrow-left"></i>
+      <p class="label">Undo</p>
+    </div>
+    <div style="display:inline-block">
+      <i class="fa fa-question"></i>
+      <p class="label">Help</p>
+    </div>
+    <div style="display:inline-block">
+      <i class="fa fa-cog"></i>
+      <p class="label">Settings</p>
+    </div>
+    <div style="display:inline-block">
+      <i class="fa fa-ellipsis-h"></i>
+      <p class="label">More</p>
+    </div>
+
+    <!--<i style=" padding:16px; font-size:20px; color:white;" class="fa fa-home"> </i>
+    <i style=" padding:16px; font-size:20px; color:white;" class="fa fa-random"></i>
+    <i style=" padding:16px; font-size:20px; color:white;" class="fa fa-arrow-left"></i>
+    <i style=" padding:16px; font-size:20px; color:white;" class="fa fa-question"></i>
+    <i style=" padding:16px; font-size:20px; color:white;" class="fa fa-cog"></i>
+    <i style=" padding:16px; font-size:20px; color:white;" class="fa fa-ellipsis-h"></i>-->
+
+    <!--<i style=" padding:20px; font-size:48px; color:white;" class="fa fa-question-circle"></i>
+    <i style=" padding:20px; font-size:48px; color:white;" class="fa fa-question-circle-o"></i>
+    <i style=" padding:20px; font-size:48px; color:white;" class="fa fa-remove"></i>
+    <i style=" padding:20px; font-size:48px; color:white;" class="fa fa-cog"></i>
+    <i style=" padding:20px; font-size:48px; color:white;" class="fa fa-undo"></i>
+    <i style=" padding:20px; font-size:48px; color:white;" class="fa fa-arrow-circle-left"></i>-->
+    <!--<button class="navButton">Reset</button>
+    <button class="navButton">Scramble</button>
+    <button class="navButton">Settings</button>
+    <button class="navButton" onclick="parent.open('help.html')">Help</button>-->
+
+
+    <span style="padding:10px; font-size: 20px; float: right; color:white;" id="ScoreBox">0 0:00</span>
+
+  </nav>
+</body>
+</html>
