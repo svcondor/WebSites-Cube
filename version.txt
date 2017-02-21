@@ -1,0 +1,8 @@
+7de7bf8
+## master...origin/master [ahead 8]
+ M ../../../Bab2.csproj
+ M ../../../wwwroot/Cube/version.txt
+ M ../../../wwwroot/Cube2/App.ts
+ M ../../../wwwroot/Cube2/Cube.ts
+ M ../../../wwwroot/Cube2/Index.html
+ M ../../../wwwroot/Cube2/Solver.ts
