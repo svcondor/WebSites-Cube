@@ -1,0 +1,11 @@
+44ca087
+## master...origin/master [ahead 7]
+ M ../../../Bab2.csproj
+ M ../../../wwwroot/Cube/version.txt
+ D ../../../wwwroot/Cube/w3.css
+ M ../../../wwwroot/Cube2/App.ts
+ D ../../../wwwroot/Cube2/App2.ts
+ M ../../../wwwroot/Cube2/Index.html
+ D ../../../wwwroot/Cube2/Index2.html
+ M ../../../wwwroot/Cube2/Style1.css
+ D ../../../wwwroot/Cube2/Style2.css

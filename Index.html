@@ -133,54 +133,60 @@
   <script src="App.js"></script>
   <script src="Cube.js"></script>
   <script src="Tile.js"></script>
+  <script src="Solver.js"></script>
+
 </head>
 
 <body>
   <div id="gamediv" style="background-color: magenta; width:300px; height:300px">
-    <canvas id="renderCanvas" touch-action="none"></canvas>
-    <div style="top:0; left:0; z-index:10; ">
-      <i class="fa fa-circle-arrow-left"> </i>
-      <button>Button1</button>
-    </div>
-
+    <canvas id="renderCanvas" touch-action="none">    </canvas>
   </div>
 
-  <nav id="navbar1" style="background-color:#262626; width:100%; height:auto; position:fixed; bottom:0px;    ">
-    <!--https://www.w3schools.com/howto/howto_js_accordion.asp-->
-    <div id="panel1" class="panel1">
-    </div>
-    <div id="panel2" class="panel1">
-      <ul style="float:left">
-        <li>Slow</li>
-        <li>Help</li>
-      </ul>
-    </div>
-    <div style="display:inline-block">
-      <i class="fa fa-home fa-2x"> </i>
-      <p class="label">Reset</p>
-    </div>
-    <div style="display:inline-block">
-      <i class="fa fa-random  fa-2x"></i>
-      <p class="label">Scramble</p>
-    </div>
-    <div style="display:inline-block">
-      <i class="fa fa-arrow-left fa-2x" ></i>
-      <p class="label">Undo</p>
-    </div>
-    <!--<div style="display:inline-block">
-      <i class="fa fa-question"></i>
-      <p class="label">Help</p>
-    </div>
-    <div style="display:inline-block">
-      <i class="fa fa-cog"></i>
-      <p class="label">Settings</p>
-    </div>-->
-    <div style="display:inline-block">
-      <i class="fa fa-ellipsis-h fa-2x "></i>
-      <p class="label">More</p>
-    </div>
-    <span style="padding:10px; font-size: 20px; float: right; color:white;" id="ScoreBox">0 0:00</span>
-  </nav>
+  <div id="buttons" style=" width:100%; height:auto; position:fixed; bottom:0px;">
+    <i class="fa fa-arrow-circle-o-left fa-4x" style="color:black; float:left"> </i>
+    <span id="solvermessage" style="width:100%; text-align: center; font-size:36px;"></span>
+    <!--<i class="fa fa-arrow-circle-o-right fa-4x disabled" style="color:black; float:right"></i>-->
+    <i class="fa fa-arrow-circle-o-right fa-4x" style="color:black; float:right"></i>
+  </div>
+
+    <nav id="navbar1" style="background-color:#262626; width:100%; height:auto; position:fixed; bottom:0px;    ">
+      <!--https://www.w3schools.com/howto/howto_js_accordion.asp-->
+      <div id="panel1" class="panel1">
+      </div>
+      <div id="panel2" class="panel1">
+        <ul style="float:left">
+          <!--<li><input type="checkbox" style="width:30px; height:30px;"/><span>Learn</span></li>-->
+          <li>Tutor Step 0</li>
+          <li>Fast</li>
+          <li>Help</li>
+        </ul>
+      </div>
+      <div style="display:inline-block">
+        <i class="fa fa-home fa-2x"> </i>
+        <p class="label">Reset</p>
+      </div>
+      <div style="display:inline-block">
+        <i class="fa fa-random  fa-2x"></i>
+        <p class="label">Scramble</p>
+      </div>
+      <!--<div style="display:inline-block">
+        <i class="fa fa-arrow-left fa-2x"></i>
+        <p class="label">Undo</p>
+      </div>-->
+      <!--<div style="display:inline-block">
+        <i class="fa fa-question"></i>
+        <p class="label">Help</p>
+      </div>
+      <div style="display:inline-block">
+        <i class="fa fa-cog"></i>
+        <p class="label">Settings</p>
+      </div>-->
+      <div style="display:inline-block">
+        <i class="fa fa-ellipsis-h fa-2x "></i>
+        <p class="label">More</p>
+      </div>
+      <span style="padding:10px; font-size: 20px; float: right; color:white;" id="ScoreBox">0 0:00</span>
+    </nav>
 
 </body>
 </html>

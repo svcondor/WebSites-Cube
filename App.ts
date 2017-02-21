@@ -1,11 +1,9 @@
 ﻿/// <reference path="../typings/index.d.ts" />
 
 module App2 {
-  //import { Cube } from "Cube";
-
   //TODO: make CubeFace.U Enum 2
   //TODO: Swap some antiClockmoves with clockMoves
-
+  export var this2: any;
   //https://github.com/icflorescu/iisexpress-proxy
   // npm install -g iisexpress-proxy
   //iisexpress-proxy 55537 to 6000
@@ -18,9 +16,14 @@ module App2 {
     precise?: boolean;
   }
 
+  interface Point {
+    X: number;
+    Y: number;
+  }
+
   interface HitEntry {
-    x?: number;
-    y?: number;
+    X?: number;
+    Y?: number;
     tileIx: number;
     targets?: HitTarget[];
   }
@@ -31,20 +34,30 @@ module App2 {
   }
 
   class MainApp {
-    public signature = "MainApp";
+
+    public aaSignature = "MainApp";
+    private solverPointerTimer: number = 0;
+    private startStep: number = 0;
+    private stepDirection: number = -1;
+    private iconUndo: HTMLElement;
+    private iconRedo: HTMLElement;
     private scene: BABYLON.Scene;
-    public cube1: Cube;
+    private cube: Cube;
+    private solver: Solver;
+
     private mouseStatus: number = 0;
-    private mouseX1: number = 0;
-    private mouseY1: number = 0;
+    private mousePos1: Point = { X: 0, Y: 0 };   // Mouse position on canvas 
+    //private mouseX1: number = 0;
+    //private mouseY1: number = 0;
     private mouseDistance = 0;
     private minimumDistance: number;
     private mouseMove: string = "";
     private hitMaximum: number;
-    private mouseX2: number = 0;
-    private mouseY2: number = 0;
+    private mousePos2: Point = { X: 0, Y: 0 };
+    //private mouseX2: number = 0;
+    //private mouseY2: number = 0;
     private mouseMesh1: BABYLON.AbstractMesh;
-    private mouseMesh2: BABYLON.AbstractMesh;
+    //private mouseMesh2: BABYLON.AbstractMesh;
     private mouseTile1Ix: number;
     private mouseTargetIx: number;
     private panel1: HTMLElement;
@@ -55,17 +68,24 @@ module App2 {
     private engine: BABYLON.Engine;
     private camera: BABYLON.FreeCamera;
     private hitTable: HitEntry[];
+    private fastSpeed: boolean = false;   // Rotation speed in ms
+    private solverMoves: string = "";
 
     constructor() {
-      //let url = 'cube/version.txt';
-      //let xhr = new XMLHttpRequest();
-      //xhr.onreadystatechange = () => {
-      //  if (xhr.readyState == 4) {
-      //    console.log(xhr.responseText);
-      //  }
-      //};
-      //xhr.open("GET", url, true);
-      //xhr.send();
+      this2 = this;
+      this.resizeCanvas();
+
+      //http://stackoverflow.com/questions/16152609/importing-external-html-inner-content-with-javascript-ajax-without-jquery
+      let url = "help1.html";
+      let xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+          document.getElementById("panel1").innerHTML = xmlhttp.responseText;
+          let v4 = 34;
+        }
+      }
+      xmlhttp.open("GET", url, true);
+      xmlhttp.send();
 
       let v2 = 2; //dummy
       BABYLON.Engine.CodeRepository = "/Babylon/src/";
@@ -76,11 +96,13 @@ module App2 {
       this.engine = engine;
 
       window.addEventListener('resize', () => {
-        resizeCanvas();
+        //TODO add timer to reduce flashing
+        this.resizeCanvas();
         engine.resize();
-        this.scene.render();
+        this.cube.renderScene();
         this.buildHitTester();
       });
+
       this.scene = new BABYLON.Scene(engine);
       this.scene.clearColor = new BABYLON.Color4(.5, 0.5, 0.5, 1);
       let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(7, 7, -15), this.scene);
@@ -90,8 +112,10 @@ module App2 {
       camera.fov = 0.40; //0.35; //0.5 //0.27;
       //let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, -1), this.scene);
 
-      this.cube1 = new Cube(this.scene, engine);
+      this.cube = new Cube(this.scene, engine);
 
+      this.solver = new Solver(this.cube);
+      //this.solver.cube = this.cube;
       //let buttons = document.getElementsByTagName("button");
       //for (let i = 0; i < buttons.length; ++i) {
       //  let button = buttons[i];
@@ -108,16 +132,33 @@ module App2 {
 
       for (let i = 0; i < icons.length; ++i) {
         let icon = icons[i];
-        icon.addEventListener("click", this.handleIconClick);
-      }
+        if (icon.classList.contains("fa-arrow-circle-o-left")) {
+          this.iconUndo = <HTMLElement>icon;
+          //this.iconUndo.className += " disabled";
+        }
+        else if (icon.classList.contains("fa-arrow-circle-o-right")) {
+          this.iconRedo = <HTMLElement>icon;
+          //let s1 = this.iconRedo.className;
+          //let s2 = s1.replace(" disabled", "");
+          //this.iconRedo.className = s2;
+          //let v2 = 34;
+        }
+        icon.addEventListener("pointerdown", this.handleIconPointerDown);
+        icon.addEventListener("pointerup", this.handleIconPointerUp);
+     }
 
       let settings = document.getElementsByTagName("li");
       for (let i = 0; i < settings.length; ++i) {
+
         let setting = settings[i];
-        setting.addEventListener("click", this.handleSettingsClick);
+        if (setting.innerText === "Fast") {
+          this.fastSpeed = true;
+        }
+        //setting.addEventListener("click", this.handleSettingsClick);
+        setting.addEventListener("pointerdown", this.handleSettingsPointerDown);
       }
 
-      this.scene.render();
+      this.cube.renderScene();
       this.loadRawHitData();
       this.buildHitTester();
 
@@ -132,8 +173,20 @@ module App2 {
 
       //this.animate(engine, this.scene);
       engine.runRenderLoop(() => {
-        this.scene.render();
+        //TODO stop render when not moving
+        this.cube.renderScene();
       });
+    }
+
+    private showIcon(icon: HTMLElement, show: boolean): void {
+      let className = icon.className;
+      let pos1 = className.indexOf(" disabled");
+      if (show && pos1 !== -1) {
+        icon.className = className.replace(" disabled", "");
+      }
+      else if (!show &&pos1 === -1) {
+        icon.className += " disabled";
+      }
     }
 
     private loadRawHitData(): void {
@@ -198,7 +251,6 @@ module App2 {
           //console.log("");
           //console.log(`${CubeFace[face]}`);
           for (let i = 0; i < 9; ++i) {
-            let v1 = new BABYLON.Vector2(2, 1);
             let tile1: Tile = Cube.tile(face, i);
             let mesh1: BABYLON.Mesh = tile1.mesh;
             let vector3: BABYLON.Vector3 = tile1.mesh.absolutePosition;
@@ -207,8 +259,8 @@ module App2 {
             let tileIx = face * 9 + i;
             let hit1 = this.hitTable[tileIx];
             console.assert(tileIx === hit1.tileIx, `buildHitTester tileIx ${tileIx} ${hit1.tileIx}`);
-            hit1.x = Math.round(p.x);
-            hit1.y = Math.round(p.y);
+            hit1.X = Math.round(p.x);
+            hit1.Y = Math.round(p.y);
             //this.hitTable.push({ x: Math.floor(p.x), y: Math.floor(p.y), tileIx: face * 9 + i });
             //console.log(`${i} ${TileColor[tile1.color]} X ${Math.floor(p.x)} Y ${Math.floor(p.y)}`);
           }
@@ -219,8 +271,8 @@ module App2 {
         if (!hit1) continue;
         for (let target of hit1.targets) {
           let targetHit: HitEntry = this.hitTable[Math.abs(target.targetIx)];
-          let dX = targetHit.x - hit1.x;
-          let dY = targetHit.y - hit1.y;
+          let dX = targetHit.X - hit1.X;
+          let dY = targetHit.Y - hit1.Y;
           let distance = Math.sqrt(dX ** 2 + dY ** 2);
           let aCos = Math.acos(dX / distance);
           target.angle = Math.round(aCos * 180 / Math.PI);
@@ -232,12 +284,12 @@ module App2 {
           totalDistance += distance;
         }
       }
-      this.hitMaximum = this.hitTable[1].x - this.hitTable[0].x;
+      this.hitMaximum = this.hitTable[1].X - this.hitTable[0].X;
       this.minimumDistance = totalDistance / 27 / 4 / 6;   // was / 27 / 4 / 4
     }
 
     private getPolar(dX: number, dY: number): Polar {
-      let polar: Polar = {distance:0, angle:0 };
+      let polar: Polar = { distance: 0, angle: 0 };
       polar.distance = Math.sqrt(dX ** 2 + dY ** 2);
       let aCos = Math.acos(dX / polar.distance);
       if (polar.distance !== 0) {
@@ -280,23 +332,25 @@ module App2 {
     private handlePointerDown = (event: PointerEvent) => {
       let this1 = this;
       this.showOverlay(0);
-      if (this.cube1.targetAngle !== 0) {
-        if (this.cube1.fastSpeed !== true)
+      if (this.cube.targetAngle !== 0) {
+        if (this.fastSpeed !== true)
           return;
-        this.cube1.startTime = 0;
-        this.scene.render();
-        console.assert(this.cube1.targetAngle === 0, "handlePointerDown error 1");
+        this.cube.startTime = 0;
+        this.cube.renderScene();
+        console.assert(this.cube.targetAngle === 0, "handlePointerDown error 1");
       }
-      if (this.cube1.targetAngle === 0) {
+      if (this.cube.targetAngle === 0) {
         this.mouseStatus = 1;
         //delay3(this);
-        let tileIx = this.cube1.mouseGetTile1(event);
-        if ((tileIx >= 0 && tileIx < 18) || (tileIx >= 36 && tileIx < 45)) {
+        let tileIx = this.cube.mouseGetTile(event);
+        if (tileIx !== -1) {
           console.log(`PointerDown ${tileIx}`);
           this.mouseTile1Ix = tileIx;
           this.mouseStatus = 2;
-          this.mouseX1 = event.clientX;
-          this.mouseY1 = event.clientY;
+
+          this.mousePos1.X = event.clientX;
+          this.mousePos1.Y = event.clientY;
+          return false;
         }
         else {
           console.log(`PointerDown error 2 ${tileIx}`);
@@ -309,100 +363,106 @@ module App2 {
       if (this.mouseStatus !== 0) {
       }
 
-      if (this.cube1.fastSpeed && this.mouseStatus === 3) {
-        let dX2 = event.x - this.mouseX2;
-        let dY2 = event.y - this.mouseY2;
-        let polar = this.getPolar(dX2, dY2);
-        if (polar.distance < this.minimumDistance) {
-          return;
-        }
-        let hitTarget = this.findMouseTarget(this.mouseTargetIx, polar.angle);
-        if (hitTarget.move.charAt(0) === this.mouseMove.charAt(0)) {
-          // move double or back
-          let dX = event.x - this.mouseX1;
-          let dY = event.y - this.mouseY1;
-          let distance = Math.sqrt(dX ** 2 + dY ** 2);
-          if (distance < this.mouseDistance - this.minimumDistance) {
-            this.mouseMove = hitTarget.move;
-            if (this.cube1.targetAngle != 0) {
-              this.cube1.rotateTable(this.mouseMove, false, 0);
-              this.cube1.targetAngle *= -1;
-              this.cube1.currentAngle += this.cube1.targetAngle;
-            }
-            else {
-              this.cube1.rotateTable(this.mouseMove, true, this.cube1.moveSpeed);
-              this.mouseDistance = 0;
-              this.mouseX2 = 0;
-              this.mouseY2 = 0;
-            }
-            this.mouseStatus = 0;
-            return;
-          }
-          else if (distance > this.mouseDistance) {
-            if (distance < this.minimumDistance * 12) {  //was 4 then 9
-              this.mouseDistance = distance;
-              this.mouseX2 = event.x;
-              this.mouseY2 = event.y;
-            }
-            else {
-              if (this.cube1.targetAngle !== 0) {
-                this.mouseStatus = 0;
-                console.log(`PointerMove - Double`);
-                let fastStartTime = new Date().valueOf() - 0.90 * this.cube1.moveSpeed;
-                if (fastStartTime < this.cube1.startTime) this.cube1.startTime = fastStartTime
-                setTimeout(() => {
-                  if (this.cube1.targetAngle !== 0) {
-                    this.cube1.startTime = 0;
-                    this.scene.render();
-                  }
-                  console.assert(this.cube1.targetAngle === 0, "handlePointermMove Double move error 1");
-                  this.cube1.rotateTable(this.mouseMove, true, this.cube1.moveSpeed);
-                }, this.cube1.moveSpeed * 0.1);
-              }
-            }
-            return;
-          }
-        }
-        else if (hitTarget.precise === true && polar.distance > this.minimumDistance) {
-         
-          //// right angle move
-          //let tileIx = this.mouseTargetIx;
-          //let move = hitTarget.move;
-          //let tile = tileIx % 9;
-          //if (tile % 2 === 1) {
-          //  tileIx = this.mouseTile1Ix;
-          //  tile = tileIx % 9;
-          //  if (tile % 2 === 1)
-          //    return;
-          //  let targets: HitTarget[] = this.hitTable[this.mouseTargetIx].targets;
-          //  for (let i = 0; i < 4; ++i) {
-          //    if (hitTarget === targets[i]) {
-          //      targets = this.hitTable[this.mouseTile1Ix].targets;
-          //      move = targets[i].move;
-          //    }
-          //  }
-          //}
-          //if (this.cube1.targetAngle !== 0) {
-          //  this.mouseStatus = 0;
-          //  console.log(`PointerMove - L move`);
-          //  let fastStartTime = new Date().valueOf() - 0.90 * this.cube1.moveSpeed;
-          //  if (fastStartTime < this.cube1.startTime) this.cube1.startTime = fastStartTime
-          //  setTimeout(() => {
-          //    if (this.cube1.targetAngle !== 0) {
-          //      this.cube1.startTime = 0;
-          //      this.scene.render();
-          //    }
-          //    console.assert(this.cube1.targetAngle === 0, "handlePointermMove L move error 1");
-          //    this.cube1.rotateTable(move, true, this.cube1.moveSpeed);
-          //  }, this.cube1.moveSpeed * 0.1);
-          //}
+      if (this.fastSpeed && this.mouseStatus === 3) {
+        //let dX2 = event.x - this.mousePos2.X;
+        //let dY2 = event.y - this.mousePos2.Y;
+        //let polar = this.getPolar(dX2, dY2);
+        //if (polar.distance < this.minimumDistance) {
+        //  return;
+        //}
+        //let hitTarget = this.findMouseTarget(this.mouseTargetIx, polar.angle);
+        //if (hitTarget.move.charAt(0) === this.mouseMove.charAt(0)) {
+        //  // move double or back
+        //  let dX = event.x - this.mousePos1.X;
+        //  let dY = event.y - this.mousePos1.Y;
+        //  let distance = Math.sqrt(dX ** 2 + dY ** 2);
+        //  if (distance < this.mouseDistance - this.minimumDistance) {
+        //    this.mouseMove = hitTarget.move;
+        //    if (this.cube.targetAngle !== 0) {
+        //      console.log(`handlePointerMove fastback ${this.mouseMove} ${this.cube.targetAngle}`);
+        //      this.cube.rotateTable(this.mouseMove, false, 0);
+        //      this.cube.targetAngle *= -1;
+        //      this.cube.currentAngle += this.cube.targetAngle;
+        //      //this.scene.render();
 
-        }
+        //    }
+        //    else {
+        //      console.log(`handlePointerMove slowback ${this.mouseMove}`);
+        //     this.cube.rotateTable(this.mouseMove, true, this.cube.moveSpeed);
+        //      this.mouseDistance = 0;
+        //      this.mousePos2.X = 0;
+        //      this.mousePos2.Y = 0;
+        //    }
+        //    this.mouseStatus = 0;
+        //    return;
+        //  }
+        //  else if (distance > this.mouseDistance) {
+        //    if (distance < this.minimumDistance * 12) {  //was 4 then 9
+        //      this.mouseDistance = distance;
+        //      this.mousePos2.X = event.x;
+        //      this.mousePos2.Y = event.y;
+        //    }
+        //    else {
+        //      // Double rotate logic removed for now
+        //      //if (this.cube1.targetAngle !== 0) {
+        //      //  this.mouseStatus = 0;
+        //      //  console.log(`PointerMove - Double`);
+        //      //  let fastStartTime = new Date().valueOf() - 0.90 * this.cube1.moveSpeed;
+        //      //  if (fastStartTime < this.cube1.startTime) this.cube1.startTime = fastStartTime
+        //      //  setTimeout(() => {
+        //      //    if (this.cube1.targetAngle !== 0) {
+        //      //      this.cube1.startTime = 0;
+        //      //      this.scene.render();
+        //      //    }
+        //      //    console.assert(this.cube1.targetAngle === 0, "handlePointermMove Double move error 1");
+        //      //    this.cube1.rotateTable(this.mouseMove, true, this.cube1.moveSpeed);
+        //      //  }, this.cube1.moveSpeed * 0.1);
+        //      //}
+        //    }
+        //    return;
+        //  }
+        //}
+        //else if (hitTarget.precise === true && polar.distance > this.minimumDistance) {
+
+        //  //// right angle move logic removed for now
+        //  //let tileIx = this.mouseTargetIx;
+        //  //let move = hitTarget.move;
+        //  //let tile = tileIx % 9;
+        //  //if (tile % 2 === 1) {
+        //  //  tileIx = this.mouseTile1Ix;
+        //  //  tile = tileIx % 9;
+        //  //  if (tile % 2 === 1)
+        //  //    return;
+        //  //  let targets: HitTarget[] = this.hitTable[this.mouseTargetIx].targets;
+        //  //  for (let i = 0; i < 4; ++i) {
+        //  //    if (hitTarget === targets[i]) {
+        //  //      targets = this.hitTable[this.mouseTile1Ix].targets;
+        //  //      move = targets[i].move;
+        //  //    }
+        //  //  }
+        //  //}
+        //  //if (this.cube1.targetAngle !== 0) {
+        //  //  this.mouseStatus = 0;
+        //  //  console.log(`PointerMove - L move`);
+        //  //  let fastStartTime = new Date().valueOf() - 0.90 * this.cube1.moveSpeed;
+        //  //  if (fastStartTime < this.cube1.startTime) this.cube1.startTime = fastStartTime
+        //  //  setTimeout(() => {
+        //  //    if (this.cube1.targetAngle !== 0) {
+        //  //      this.cube1.startTime = 0;
+        //  //      this.scene.render();
+        //  //    }
+        //  //    console.assert(this.cube1.targetAngle === 0, "handlePointermMove L move error 1");
+        //  //    this.cube1.rotateTable(move, true, this.cube1.moveSpeed);
+        //  //  }, this.cube1.moveSpeed * 0.1);
+        //  //}
+
+        //}
       }
 
       else if (this.mouseStatus === 2) {
-        let dX = event.x - this.mouseX1;
-        let dY = event.y - this.mouseY1;
+        console.assert(this.cube.targetAngle === 0, "mousestatus 2 target != 0");
+        let dX = event.x - this.mousePos1.X;
+        let dY = event.y - this.mousePos1.Y;
         let distance = Math.sqrt(dX ** 2 + dY ** 2);
         console.log(`move mouseStatus 2 ${distance} ${this.minimumDistance}`);
 
@@ -415,17 +475,19 @@ module App2 {
           let hitTarget = this.findMouseTarget(this.mouseTile1Ix, angle);
 
           if (hitTarget.precise === true) {
-            console.log(`PointerMove - single`);
+            console.log(`PointerMove - single3`);
+            console.log(`PointerMove - single2`);
             //if (distance > foundTarget.distance / 4) {
-            if (this.cube1.targetAngle != 0) {
+            if (this.cube.targetAngle != 0) {
             }
             this.mouseMove = hitTarget.move;
+            console.log(`move ${this.mouseMove}`);
 
-            this.cube1.rotateTable(this.mouseMove, true, this.cube1.moveSpeed);
+            this.cube.rotateTable(this.mouseMove, true, this.cube.moveSpeed);
             this.mouseDistance = distance;
             this.mouseTargetIx = Math.abs(hitTarget.targetIx);
-            this.mouseX2 = event.x;
-            this.mouseY2 = event.y;
+            this.mousePos2.X = event.x;
+            this.mousePos2.Y = event.y;
             this.mouseStatus = 3;
           }
         }
@@ -434,102 +496,55 @@ module App2 {
 
     private handlePointerUp = (event: PointerEvent) => {
       console.log(`PointerUp`);
-      if (this.cube1.targetAngle !== 0 && this.cube1.fastSpeed) {
-        let fastStartTime = new Date().valueOf() - .90 * this.cube1.moveSpeed;
-        if (fastStartTime < this.cube1.startTime) this.cube1.startTime = fastStartTime
+      if (this.cube.targetAngle !== 0 && this.fastSpeed) {
+        let fastStartTime = new Date().valueOf() - .90 * this.cube.moveSpeed;
+        if (fastStartTime < this.cube.startTime) this.cube.startTime = fastStartTime;
       }
       this.mouseStatus = 0;
     }
 
-    //private handleButtonClick = ((event: Event) => {
-    //  let target: HTMLElement = event.currentTarget as HTMLElement;
-    //  let buttonText = target.innerText;
-    //  switch (buttonText) {
-    //    case "TestX":
-    //      target.innerText = "TestY";
-    //      //this.buildHitTester();
-    //      this.cube1.moveSpeed = 3000;
-    //      break;
-    //    case "TestY":
-    //      target.innerText = "TestX";
-    //      //if (this.cube1.targetAngle !== 0) {
-    //      //  this.cube1.startTime = 0;
-    //      //}
-    //      //this.cube1.moveSpeed = 3000;
-    //      break;
-
-    //    case "Slow":
-    //      target.innerText = "Fast";
-    //      this.cube1.fastSpeed = true;
-    //      break;
-
-    //    case "Fast":
-    //      target.innerText = "Slow";
-    //      this.cube1.fastSpeed = false;
-    //      break;
-
-    //    case "Run": break;
-    //    case "Redo": break;
-
-    //    case "Undo":
-    //      //let textBox = document.getElementById("TextBox");
-    //      let s1: string = this.cube1.doneMoves;
-    //      let antiClock = "'";
-    //      for (let len1: number = s1.length; len1 > 0; --len1) {
-    //        let next: string = s1.substr(len1 - 1, 1);
-    //        if (next === " ") { }
-    //        else if (next === "'") {
-    //          antiClock = " ";
-    //        }
-    //        else {
-    //          if (this.cube1.moveCodes.indexOf(next) !== -1) {
-    //            let move = next + antiClock;
-    //            //TODO add move to redo table
-    //            this.cube1.rotateTable(move, true, 300);
-    //            this.cube1.doneMoves = s1.substr(0, len1 - 1);
-    //            this.cube1.movesCount -= 1;
-    //            let s2 = document.getElementById("ScoreBox");
-    //            s2.innerText = this.cube1.movesCount.toString();
-    //          }
-    //          break;
-    //        }
-    //      }
-    //      break;
-
-    //    case "Solve": break;
-
-    //    case "Scramble":
-    //      this.cube1.scramble();
-    //      break;
-
-    //    case "Reset":
-    //      this.cube1.resetTileColors();
-    //      break;
-
-    //    default:
-    //      if (buttonText.length == 1) {
-    //        buttonText += " ";
-    //      }
-    //      this.cube1.rotateTable(buttonText, true, 300);
-    //      break;
-    //  }
-
-    //});
-
-    private handleSettingsClick = ((event: Event) => {
+    private handleSettingsPointerDown = ((event: Event) => {
+      event.preventDefault();
       let target: HTMLElement = event.currentTarget as HTMLElement;
-      let buttonText = target.innerText;
-      switch (buttonText) {
 
+      let buttonText: string = target.innerText;
+      if (buttonText.substr(0, 5) === "Tutor") {
+        this.solverMoves = "";
+        if (this.startStep >= 7 || this.startStep === -1) {
+          this.stepDirection *= -1;
+        }
+        this.startStep += this.stepDirection;
+        if (this.startStep === -1) {
+          target.innerText = `Tutor OFF`;
+          this.showIcon(this.iconRedo, false);
+        }
+        else {
+          target.innerText = `Tutor Step ${this.startStep}`;
+          this.showIcon(this.iconRedo, true);
+        }
+      }
+      else switch (buttonText) {
+        //case "Learn":
+        //  let checkbox: HTMLInputElement = <HTMLInputElement>target.children[0];
+        //  if (this.learnMode) {
+        //    checkbox.checked = false;
+        //    this.learnMode = false;
+        //  }
+        //  else {
+        //    checkbox.checked = true;
+        //    this.learnMode = true;
+        //  }
+        //  break;
         case "Slow":
+          //TODO: Add checkbox
           target.innerText = "Fast";
-          this.cube1.fastSpeed = true;
+          this.fastSpeed = true;
           this.showOverlay(0);
           break;
 
         case "Fast":
           target.innerText = "Slow";
-          this.cube1.fastSpeed = false;
+          this.fastSpeed = false;
           this.showOverlay(0);
           break;
 
@@ -537,13 +552,62 @@ module App2 {
           this.showOverlay(1);
           break;
       }
+      return false;
     });
 
-    private handleIconClick = ((event: Event) => {
+
+    private handleIconPointerUp = ((event: Event) => {
+      let this1 = this;
+      let target: HTMLElement = event.currentTarget as HTMLElement;
+      let v1 = target.classList;
+      switch (target.classList[1]) {
+        case "fa-arrow-circle-o-left":
+          break;
+
+        case "fa-arrow-circle-o-right":
+          clearTimeout(this.solverPointerTimer);
+          break;
+
+      }
+
+    });
+
+
+    private handleIconPointerDown = ((event: Event) => {
+      let this1 = this;
+
       let target: HTMLElement = event.currentTarget as HTMLElement;
       let v1 = target.classList;
 
       switch (target.classList[1]) {
+        case "fa-arrow-circle-o-left":
+          //this.showIcon(this.iconRedo, true);
+          //this.showIcon(this.iconUndo, false);
+          //this.doTutorMove("ABC");
+          this.undoMove();
+          break;
+
+        case "fa-arrow-circle-o-right":
+          this.solverPointerTimer = setTimeout(() => {
+            this.solverMoves = "";
+            if (this.startStep >= 0 && this.startStep < 7)++this.startStep;
+            let msg1 = this.solver.solve(this.startStep);
+            if (msg1.length > 4 && msg1.substr(0, 3) == "msg") {
+              let msg = document.getElementById("solvermessage");
+              msg.innerText = msg1.substr(3);
+              this.solverMoves = "";
+              return;
+            }
+
+
+          }, 1000);
+          let msg = document.getElementById("solvermessage");
+          msg.innerText = "";
+
+          this.doTutorMove();
+
+          break;
+
         case "fa-question":
           this.panel2.style.display = "none";
           if (this.panel1.style.display === "block") {
@@ -570,41 +634,125 @@ module App2 {
 
         case "fa-home":
           this.showOverlay(0);
-          this.cube1.resetTileColors();
+          this.cube.resetTileColors();
+          this.solverMoves = "";
+          document.getElementById("solvermessage").innerText = "";
+          if (this.startStep !== -1) this.startStep = 0;
           break;
 
         case "fa-random":
           this.showOverlay(0);
-          this.cube1.scramble();
+          this.cube.scramble();
+          this.solverMoves = "";
+          document.getElementById("solvermessage").innerText = "";
+          if (this.startStep !== -1) this.startStep = 0;
+
           break;
 
         case "fa-arrow-left":
-          this.showOverlay(0);
-          let s1: string = this.cube1.doneMoves;
-          let antiClock = "'";
-          for (let len1: number = s1.length; len1 > 0; --len1) {
-            let next: string = s1.substr(len1 - 1, 1);
-            if (next === " ") { }
-            else if (next === "'") {
-              antiClock = " ";
-            }
-            else {
-              if (this.cube1.moveCodes.indexOf(next) !== -1) {
-                let move = next + antiClock;
-                //TODO add move to redo table
-                this.cube1.rotateTable(move, true, 300);
-                this.cube1.doneMoves = s1.substr(0, len1 - 1);
-                this.cube1.movesCount -= 1;
-                let s2 = document.getElementById("ScoreBox");
-                s2.innerText = this.cube1.movesCount.toString();
-              }
-              break;
-            }
-          }
           break;
+
         case "fa-cog": break;
       }
+      return false;
     });
+    
+    private doTutorMove = (...rest: any[]): void => {
+      if (this.cube.targetAngle !== 0) {
+        this.finishMove(this.doTutorMove, ...rest);
+        return;
+      }
+
+      while (this.solverMoves.length > 0
+        && (this.solverMoves.charAt(0) === " "
+          || this.solverMoves.charAt(0) === "'")) {
+        this.solverMoves = this.solverMoves.substr(1);
+      }
+      if (this.solverMoves.length === 0) {
+        this.solverMoves = this.solver.solve(this.startStep);
+        if (this.solverMoves.length > 4 && this.solverMoves.substr(0, 3) == "msg") {
+          let msg = document.getElementById("solvermessage");
+          msg.innerText = this.solverMoves.substr(3);
+          this.solverMoves = "";
+          return;
+        }
+
+      }
+      if (this.solverMoves.length > 0) {
+        let move: string;
+        if (this.solverMoves.length > 1
+          && this.solverMoves.charAt(1) === "'") {
+          move = this.solverMoves.charAt(0) + "'";
+        }
+        else {
+          move = this.solverMoves.charAt(0) + " ";
+        }
+        this.cube.rotateTable(move, true, this.cube.moveSpeed);
+        if (this.solverMoves.length > 0) {
+          this.solverMoves = this.solverMoves.substr(1);
+        }
+      }
+    }
+
+
+    private finishMove(function1: any, ...rest: any[]): void {
+      if (MainApp.finishMoveReEnter) {
+        console.log("finishMove reEnter");
+        return;
+      }
+      MainApp.finishMoveReEnter = true;
+      let fastStartTime = new Date().valueOf() - 0.90 * this.cube.moveSpeed;
+      if (fastStartTime < this.cube.startTime) this.cube.startTime = fastStartTime;
+      console.log("finish move 1");
+
+      setTimeout(() => {
+        if (this.cube.targetAngle !== 0) {
+          this.cube.startTime = 0;
+          this.cube.renderScene();
+        }
+        console.log("finish move 2");
+        console.assert(this.cube.targetAngle === 0, "finishMove fast click error");
+        MainApp.finishMoveReEnter = true;
+        function1(...rest);
+      }, this.cube.moveSpeed * 0.2);
+      //TODO fine tune above speed
+    }
+    private static finishMoveReEnter: boolean = false;
+
+    private undoMove = (): void => {
+
+      if (this.cube.targetAngle !== 0) {
+        this.finishMove(this.undoMove);
+        this.mouseStatus = 0;
+        console.log(`undo move call 1`);
+        return;
+      }
+      console.log(`undo move call 2`);
+      this.solverMoves = "";
+      //this.showOverlay(0);
+      let s1: string = this.cube.doneMoves;
+      let antiClock = "'";
+      for (let len1: number = s1.length; len1 > 0; --len1) {
+        let next: string = s1.substr(len1 - 1, 1);
+        if (next === " ") { }
+        else if (next === "'") {
+          antiClock = " ";
+        }
+        else {
+          if (this.cube.moveCodes.indexOf(next) !== -1) {
+            let move = next + antiClock;
+            //TODO add move to redo table
+            this.cube.rotateTable(move, true, 300);
+            this.cube.doneMoves = s1.substr(0, len1 - 1);
+            this.cube.movesCount -= 1;
+            let s2 = document.getElementById("ScoreBox");
+            s2.innerText = this.cube.movesCount.toString();
+          }
+          break;
+        }
+      }
+
+    }
 
     private hideShowLabels(show: boolean): void {
       for (let i = 0; i < this.labels.length; ++i) {
@@ -636,33 +784,53 @@ module App2 {
       }
     }
 
-    private animate(engine: BABYLON.Engine, scene: BABYLON.Scene): void {
-      // run the render loop
-      engine.runRenderLoop(() => {
-        scene.render();
-      });
+    //private animate(engine: BABYLON.Engine, scene: BABYLON.Scene): void {
+    //  // run the render loop
+    //  engine.runRenderLoop(() => {
+    //    scene.render();
+    //  });
+    //}
+
+    private resizeCanvas(): void {
+      let gameDiv1 = document.getElementById("gamediv");
+      let navbar1 = document.getElementById("navbar1");
+      gameDiv1.style.width = `${window.innerWidth}px`;
+      gameDiv1.style.height = `${document.documentElement.clientHeight - navbar1.clientHeight}px`;
+      let panel1 = document.getElementById("panel1");
+      panel1.style.height = `${(document.documentElement.clientHeight - navbar1.clientHeight) * 0.8}px`;
+      this.positionButtons();
+    }
+
+    private positionButtons(): void {
+      let navbar1 = document.getElementById("navbar1");
+      let gameDiv1 = document.getElementById("gamediv");
+      let buttons = document.getElementById("buttons");
+      buttons.style.bottom = `${navbar1.clientHeight + 50}px`;
+      let h1 = gameDiv1.clientHeight / 1.5;
+      if (navbar1.clientWidth > h1) {
+        buttons.style.width = `${h1}px`;
+        buttons.style.left = `${(navbar1.clientWidth - h1) / 2}px`;
+      }
+      else {
+        buttons.style.width = `100%`;
+        buttons.style.left = `0px`;
+      }
     }
   }
 
-  function delay3(that: MainApp, delay: number = 0) {
-    var that1: MainApp = that;
-    if (that1.cube1.targetAngle !== 0) {
-      console.log("delay3");
-      setTimeout(delay3(that1), 10);
-    }
-    else {
-      //console.log("End delay3");
-    }
-  }
+  //function delay3(that: MainApp, delay: number = 0) {
+  //  var that1: MainApp = that;
+  //  if (that1.cube1.targetAngle !== 0) {
+  //    console.log("delay3");
+  //    setTimeout(delay3(that1), 10);
+  //  }
+  //  else {
+  //    //console.log("End delay3");
+  //  }
+  //}
 
-  function resizeCanvas() {
-    let gameDiv1 = document.getElementById("gamediv");
-    let navbar1 = document.getElementById("navbar1");
-    gameDiv1.style.width = `${window.innerWidth}px`;
-    gameDiv1.style.height = `${document.documentElement.clientHeight - navbar1.clientHeight}px`;
-    let panel1 = document.getElementById("panel1");
-    panel1.style.height = `${(document.documentElement.clientHeight - navbar1.clientHeight) * 0.8}px`;
-  }
+  //function resizeCanvas() {
+  //}
 
 
 
@@ -670,18 +838,6 @@ module App2 {
   // Instantiate the main App class once everything is loaded
   window.addEventListener('DOMContentLoaded', () => {
     //TODO: Splash Screen
-    resizeCanvas();
-    //http://stackoverflow.com/questions/16152609/importing-external-html-inner-content-with-javascript-ajax-without-jquery
-    let url = "help1.html";
-    let xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-      if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-        document.getElementById("panel1").innerHTML = xmlhttp.responseText;
-        let v4 = 34;
-      }
-    }
-    xmlhttp.open("GET", url, true);
-    xmlhttp.send();
     let mainApp = new MainApp();
   });
 

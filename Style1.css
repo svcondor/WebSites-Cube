@@ -49,6 +49,7 @@ li {
   font-size: 40px;
   list-style-type: none;
   color: white;
+  cursor: pointer;
 }
 
 
@@ -56,6 +57,10 @@ li {
   padding: 16px 16px 0px 16px;
   font-size: 40px;
   color: white;
+  cursor:pointer;
+}
+.fa.disabled {
+  display: none !important;
 }
 
   .fa:hover {

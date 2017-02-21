@@ -33,7 +33,6 @@
         color2 = TileColor.none;
       if (color3 === null)
         color3 = TileColor.none;
-
     }
   }
 
@@ -43,7 +42,6 @@
     public movesCount: number = 0;
     public doneMoves: string = "";
     public redoMoves: string = "";
-    public fastSpeed: boolean = false;   // Rotation speed in ms
     private static tiles: Tile[];
     private clockMoves: number[][];
     private antiMoves: number[][];
@@ -89,40 +87,54 @@
       this.drawFace(CubeFace.D);
       this.rotateImage("X'");
       this.resetTileColors();
-      //this.reparent();
 
-      this.scene.beforeRender = () => {
-        if (this.targetAngle !== 0) {
-          let t1 = new Date().valueOf() - this.startTime;
-          let t2 = this.moveSpeed;
-          let newAngle = 90 * t1 / t2;
-          let increment: number;
-          if (this.targetAngle > 0) {
-            increment = newAngle - this.currentAngle;
-            //console.log(`Pos ${t2} ${t1} ${newAngle} ${increment}`);
-            if (this.currentAngle + increment >= this.targetAngle) {
-              increment = this.targetAngle - this.currentAngle
-              this.targetAngle = 0;
-            }
-          }
-          else {
-            increment = - newAngle - this.currentAngle;
-            //console.log(`Neg ${t2} ${t1} ${newAngle} ${this.currentAngle} ${increment}`);
-            //increment *= -1;
-            if (this.currentAngle + increment <= this.targetAngle) {
-              increment = this.targetAngle - this.currentAngle
-              this.targetAngle = 0;
-            }
-          }
-          this.currentAngle += increment;
-          let rads = increment * Math.PI / 180;
-          for (let i = 0; i < this.pivotList.length; ++i) {
-            //this.pivotList[i].rotate(this.axis, rads);
-            this.pivotList[i].rotate(this.axis, rads, BABYLON.Space.WORLD);
+      //this.scene.beforeRender = () => {
+      //  this.beforeRender();
+      //};
+    }
+
+    public renderScene(): void {
+      let zeroTargetAngle = false;
+      if (this.targetAngle !== 0) {
+        let t1 = new Date().valueOf() - this.startTime;
+        let t2 = this.moveSpeed;
+        let newAngle = 90 * t1 / t2;
+        let increment: number;
+        if (this.targetAngle > 0) {
+          increment = newAngle - this.currentAngle;
+          console.log(`Pos ${t2} ${t1} ${newAngle} ${increment}`);
+          if (this.currentAngle + increment >= this.targetAngle) {
+            increment = this.targetAngle - this.currentAngle
+            zeroTargetAngle = true;
+            //this.targetAngle = 0;
           }
         }
-      };
+        else {
+          increment = - newAngle - this.currentAngle;
+          //console.log(`Neg ${t2} ${t1} ${newAngle} ${this.currentAngle} ${increment}`);
+          //increment *= -1;
+          if (this.currentAngle + increment <= this.targetAngle) {
+            increment = this.targetAngle - this.currentAngle;
+            zeroTargetAngle = true;
+            //this.targetAngle = 0;
+          }
+        }
+        //console.log(`Rotate C ${this.currentAngle} I ${increment} P ${this.pivotList.length}`);
+        this.currentAngle += increment;
+        let rads = increment * Math.PI / 180;
+        for (let i = 0; i < this.pivotList.length; ++i) {
+          //this.pivotList[i].rotate(this.axis, rads);
+          this.pivotList[i].rotate(this.axis, rads, BABYLON.Space.WORLD);
+        }
+      }
+      this.scene.render();
+      if (zeroTargetAngle) {
+        this.targetAngle = 0;
+      }
+      return;
     }
+
+
 
     // get Tile by index (0-53) or by face (0-5) and tile (0-8)
     public static tile(face: number | CubeFace, ix?: number): Tile {
@@ -141,8 +153,8 @@
       return Cube.tiles[ix1];
     }
 
-    public static findColors(color: TileColor, color2: TileColor, color3: TileColor): number {
-      if (color3) {
+    public static findColors(color: TileColor, color2: TileColor, color3: TileColor = null): number {
+      if (color3 !== null) {
         for (let i: number = 0; i < Cube.tiles.length; i++) {
           let tile1: Tile = Cube.tile(i);
           if (tile1.color == color && tile1.color3 == color3) {
@@ -161,7 +173,7 @@
       }
       return -1;
     }
-    public mouseGetTile1(event: PointerEvent): number {
+    public mouseGetTile(event: PointerEvent): number {
       let pickResult = this.scene.pick(event.clientX, event.clientY);
       if (pickResult.pickedMesh != null) {
         let mesh1 = pickResult.pickedMesh;
@@ -170,10 +182,9 @@
           let tile1Ix = -1;
           for (let i = 0; i < Cube.tiles.length; ++i) {
             if (Cube.tiles[i].mesh === mesh1) {
-              if ((i >= 18 && i < 36) || i >= 45) {
-                let v3 = i;
+              if (i<0 || (i >= 18 && i < 36) || i >= 45) {
+                return -1;
               }
-
               return i;
             }
           }
@@ -182,100 +193,100 @@
       return -1;
     }
 
-    public mouseGetTile(mouseMesh1: BABYLON.AbstractMesh): number {
-      let tile1Ix = -1;
-      for (let i = 0; i < Cube.tiles.length; ++i) {
-        if (Cube.tiles[i].mesh === mouseMesh1) tile1Ix = i;
-      }
-      return tile1Ix;
-    }
+    //public mouseGetTile(mouseMesh1: BABYLON.AbstractMesh): number {
+    //  let tile1Ix = -1;
+    //  for (let i = 0; i < Cube.tiles.length; ++i) {
+    //    if (Cube.tiles[i].mesh === mouseMesh1) tile1Ix = i;
+    //  }
+    //  return tile1Ix;
+    //}
 
-    public mouseMove(moveType: string, mouseMesh1: BABYLON.AbstractMesh, mouseMesh2: BABYLON.AbstractMesh): number {
-      if (moveType !== "start" || this.targetAngle != 0) return 0;
-      let tile1Ix = -1;
-      let tile2Ix = -1;
-      for (let i = 0; i < Cube.tiles.length; ++i) {
-        if (Cube.tiles[i].mesh === mouseMesh1) tile1Ix = i;
-        if (Cube.tiles[i].mesh === mouseMesh2) tile2Ix = i;
-      }
-      return this.mouseMove1(tile1Ix, tile2Ix)
-    }
-    public mouseMove1(tile1Ix:number, tile2Ix:number) { 
-      let face1 = Math.floor(tile1Ix / 9);
-      let face2 = Math.floor(tile2Ix / 9);
-      let rel1 = tile1Ix % 9;
-      let rel2 = tile2Ix % 9;
-      if (face1 !== face2) {
-        let move2 = "";
-        switch (tile1Ix * 100 + tile2Ix) {
-          case 42:   move2 = "L'"; break;
-          case 143:  move2 = "X "; break;
-          case 244:  move2 = "R "; break;
-          case 209:  move2 = "U'"; break;
-          case 512:  move2 = "Y'"; break;
-          case 815:  move2 = "D "; break;
-          case 902:  move2 = "U "; break;
-          case 1205: move2 = "Y "; break;
-          case 1508: move2 = "D'"; break;
-          case 944:  move2 = "F'"; break;
-          case 1041: move2 = "Z'"; break;
-          case 1138: move2 = "B "; break;
-          case 4200: move2 = "L "; break;
-          case 4301: move2 = "X'"; break;
-          case 4402: move2 = "R'"; break;
-          case 4409: move2 = "F "; break;
-          case 4110: move2 = "Z "; break;
-          case 3811: move2 = "B'"; break;
-          default: move2 = ""; break;
-        }
-        if (move2 === "") return -1;
-        else {
-          this.rotateTable(move2, true, this.moveSpeed);
-          //console.log(`mouseMove - ${moveType} ${face1}-${rel1} ${face2}-${rel2}`);
-          return 0;
-        }
-      }
-      let mouseIx1: number;
-      let mouseIx2: number;
-      switch (face1) {
-        case CubeFace.F: mouseIx1 = 0; break;
-        case CubeFace.R: mouseIx1 = 1; break;
-        case CubeFace.U: mouseIx1 = 2; break;
-        default: return -1;
-      }
-      let relIx = rel1 * 10 + rel2;
-      switch (relIx) {
-        case 14: mouseIx2 = 9; break;    // was 15
-        case 34: mouseIx2 = 11; break;   // was 14
-        case 54: mouseIx2 = 10; break;   // was 13
-        case 74: mouseIx2 = 8; break;   // was 12
-        case 1: mouseIx2 = 1; break;
-        case 3: mouseIx2 = 2; break;
-        case 10: mouseIx2 = 0; break;
-        case 12: mouseIx2 = 1; break;
-        case 21: mouseIx2 = 0; break;
-        case 25: mouseIx2 = 5; break;
-        case 30: mouseIx2 = 3; break;
-        case 36: mouseIx2 = 2; break;
-        case 41: mouseIx2 = 8; break;
-        case 43: mouseIx2 = 10; break;
-        case 45: mouseIx2 = 11; break;
-        case 47: mouseIx2 = 9; break;
-        case 52: mouseIx2 = 4; break;
-        case 58: mouseIx2 = 5; break;
-        case 63: mouseIx2 = 3; break;
-        case 67: mouseIx2 = 6; break;
-        case 76: mouseIx2 = 7; break;
-        case 78: mouseIx2 = 6; break;
-        case 85: mouseIx2 = 4; break;
-        case 87: mouseIx2 = 7; break;
-        default: return -1;
-      }
-      let move1 = this.mouseMoves[mouseIx1][mouseIx2];
-      this.rotateTable(move1, true, this.moveSpeed);
-      //console.log(`mouseMove - ${moveType} ${face1}-${rel1} ${face2}-${rel2}`);
-      return 0;
-    }
+    //public mouseMove(moveType: string, mouseMesh1: BABYLON.AbstractMesh, mouseMesh2: BABYLON.AbstractMesh): number {
+    //  if (moveType !== "start" || this.targetAngle != 0) return 0;
+    //  let tile1Ix = -1;
+    //  let tile2Ix = -1;
+    //  for (let i = 0; i < Cube.tiles.length; ++i) {
+    //    if (Cube.tiles[i].mesh === mouseMesh1) tile1Ix = i;
+    //    if (Cube.tiles[i].mesh === mouseMesh2) tile2Ix = i;
+    //  }
+    //  return this.mouseMove1(tile1Ix, tile2Ix)
+    //}
+    //public mouseMove1(tile1Ix:number, tile2Ix:number) { 
+    //  let face1 = Math.floor(tile1Ix / 9);
+    //  let face2 = Math.floor(tile2Ix / 9);
+    //  let rel1 = tile1Ix % 9;
+    //  let rel2 = tile2Ix % 9;
+    //  if (face1 !== face2) {
+    //    let move2 = "";
+    //    switch (tile1Ix * 100 + tile2Ix) {
+    //      case 42:   move2 = "L'"; break;
+    //      case 143:  move2 = "X "; break;
+    //      case 244:  move2 = "R "; break;
+    //      case 209:  move2 = "U'"; break;
+    //      case 512:  move2 = "Y'"; break;
+    //      case 815:  move2 = "D "; break;
+    //      case 902:  move2 = "U "; break;
+    //      case 1205: move2 = "Y "; break;
+    //      case 1508: move2 = "D'"; break;
+    //      case 944:  move2 = "F'"; break;
+    //      case 1041: move2 = "Z'"; break;
+    //      case 1138: move2 = "B "; break;
+    //      case 4200: move2 = "L "; break;
+    //      case 4301: move2 = "X'"; break;
+    //      case 4402: move2 = "R'"; break;
+    //      case 4409: move2 = "F "; break;
+    //      case 4110: move2 = "Z "; break;
+    //      case 3811: move2 = "B'"; break;
+    //      default: move2 = ""; break;
+    //    }
+    //    if (move2 === "") return -1;
+    //    else {
+    //      this.rotateTable(move2, true, this.moveSpeed);
+    //      //console.log(`mouseMove - ${moveType} ${face1}-${rel1} ${face2}-${rel2}`);
+    //      return 0;
+    //    }
+    //  }
+    //  let mouseIx1: number;
+    //  let mouseIx2: number;
+    //  switch (face1) {
+    //    case CubeFace.F: mouseIx1 = 0; break;
+    //    case CubeFace.R: mouseIx1 = 1; break;
+    //    case CubeFace.U: mouseIx1 = 2; break;
+    //    default: return -1;
+    //  }
+    //  let relIx = rel1 * 10 + rel2;
+    //  switch (relIx) {
+    //    case 14: mouseIx2 = 9; break;    // was 15
+    //    case 34: mouseIx2 = 11; break;   // was 14
+    //    case 54: mouseIx2 = 10; break;   // was 13
+    //    case 74: mouseIx2 = 8; break;   // was 12
+    //    case 1: mouseIx2 = 1; break;
+    //    case 3: mouseIx2 = 2; break;
+    //    case 10: mouseIx2 = 0; break;
+    //    case 12: mouseIx2 = 1; break;
+    //    case 21: mouseIx2 = 0; break;
+    //    case 25: mouseIx2 = 5; break;
+    //    case 30: mouseIx2 = 3; break;
+    //    case 36: mouseIx2 = 2; break;
+    //    case 41: mouseIx2 = 8; break;
+    //    case 43: mouseIx2 = 10; break;
+    //    case 45: mouseIx2 = 11; break;
+    //    case 47: mouseIx2 = 9; break;
+    //    case 52: mouseIx2 = 4; break;
+    //    case 58: mouseIx2 = 5; break;
+    //    case 63: mouseIx2 = 3; break;
+    //    case 67: mouseIx2 = 6; break;
+    //    case 76: mouseIx2 = 7; break;
+    //    case 78: mouseIx2 = 6; break;
+    //    case 85: mouseIx2 = 4; break;
+    //    case 87: mouseIx2 = 7; break;
+    //    default: return -1;
+    //  }
+    //  let move1 = this.mouseMoves[mouseIx1][mouseIx2];
+    //  this.rotateTable(move1, true, this.moveSpeed);
+    //  //console.log(`mouseMove - ${moveType} ${face1}-${rel1} ${face2}-${rel2}`);
+    //  return 0;
+    //}
 
     private buildTileColorTable(): void {
       let sm1 = new BABYLON.StandardMaterial("BlueMat", this.scene);
@@ -306,36 +317,27 @@
 
     private buildTables(): void {
       this.clockMoves = [
-        [27, 27, 27, 0, 0, 0, 0, 0, 0,
-          -9, -9, -9, 0, 0, 0, 0, 0, 0,
-          -9, -9, -9, 0, 0, 0, 0, 0, 0,
-          -9, -9, -9, 0, 0, 0, 0, 0, 0,
-          2, 4, 6, -2, 200, 2, -6, -4, -2,
-          0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [27, 27, 27, 0, 0, 0, 0, 0, 0, -9, -9, -9, 0, 0, 0, 0, 0, 0, -9, -9, -9, 0, 0, 0, 0, 0, 0, -9, -9, -9, 0, 0, 0, 0, 0, 0, 2, 4, 6, -2, 200, 2, -6, -4, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [45, 0, 0, 45, 0, 0, 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 16, 0, 0, 10, 2, 4, 6, -2, 0, 2, -6, -4, -2, -36, 0, 0, -36, 0, 0, -36, 0, 0, -19, 0, 0, -25, 0, 0, -31, 0, 0],
         [2, 4, 6, -2, 200, 2, -6, -4, -2, 38, 0, 0, 34, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 11, 0, 0, 7, 0, 0, 0, 0, 0, 0, -33, -31, -29, -16, -14, -12, 0, 0, 0, 0, 0, 0],
         [0, 0, 36, 0, 0, 36, 0, 0, 36, 2, 4, 6, -2, 200, 2, -6, -4, -2, 35, 0, 0, 29, 0, 0, 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -14, 0, 0, -20, 0, 0, -26, 0, 0, -45, 0, 0, -45, 0, 0, -45],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 0, 23, 0, 0, 21, 2, 4, 6, -2, 0, 2, -6, -4, -2, 24, 0, 0, 22, 0, 0, 20, 0, 0, -3, -7, -11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -34, -38, -42],
         [0, 0, 0, 0, 0, 0, 9, 9, 9, 0, 0, 0, 0, 0, 0, 9, 9, 9, 0, 0, 0, 0, 0, 0, 9, 9, 9, 0, 0, 0, 0, 0, 0, -27, -27, -27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 6, -2, 200, 2, -6, -4, -2],
         [27, 27, 27, 27, 27, 27, 27, 27, 27, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, 2, 4, 6, -2, 200, 2, -6, -4, -2, 6, 2, -2, 4, 200, -4, 2, -2, -6],
-        [36, 36, 36, 36, 36, 36, 36, 36, 36,
-          2, 4, 6, -2, 200, 2, -6, -4, -2,
-          35, 33, 31, 29, 27, 25, 23, 21, 19,
-          6, 2, -2, 4, 200, -4, 2, -2, -6,
-          -10, -12, -14, -16, -18, -20, -22, -24, -26,
-          -45, -45, -45, -45, -45, -45, -45, -45, -45],
+        [36, 36, 36, 36, 36, 36, 36, 36, 36, 2, 4, 6, -2, 200, 2, -6, -4, -2, 35, 33, 31, 29, 27, 25, 23, 21, 19, 6, 2, -2, 4, 200, -4, 2, -2, -6, -10, -12, -14, -16, -18, -20, -22, -24, -26, -45, -45, -45, -45, -45, -45, -45, -45, -45],
         [2, 4, 6, -2, 200, 2, -6, -4, -2, 38, 40, 42, 34, 36, 38, 30, 32, 34, 6, 2, -2, 4, 0, -4, 2, -2, -6, 11, 13, 15, 7, 9, 11, 3, 5, 7, -25, -23, -21, -29, -27, -25, -33, -31, -29, -16, -14, -12, -20, -18, -16, -24, -22, -20],
         [0, 36, 0, 0, 36, 0, 0, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 0, 0, 27, 0, 0, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -12, 0, 0, -18, 0, 0, -24, 0, 0, -45, 0, 0, -45, 0, 0, -45, 0],
         [0, 0, 0, 27, 27, 27, 0, 0, 0, 0, 0, 0, -9, -9, -9, 0, 0, 0, 0, 0, 0, -9, -9, -9, 0, 0, 0, 0, 0, 0, -9, -9, -9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 36, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 0, 0, 9, 0, 0, 5, 0, 0, 0, 0, -29, -27, -25, 0, 0, 0, 0, 0, 0, -20, -18, -16, 0, 0, 0]
 
       ];
-      this.mouseMoves = [
-        ["U ", "U'", "L ", "L'", "R ", "R'", "D ", "D'", "X ", "X'", "Y ", "Y'", "M ", "E ", "E'", "M'"],
-        ["U ", "U'", "F ", "F'", "B ", "B'", "D ", "D'", "Z'", "Z ", "Y ", "Y'", "S'", "E ", "E'", "S "],
-        ["B ", "B'", "L ", "L'", "R ", "R'", "F ", "F'", "X ", "X'", "Z'", "Z ", "M ", "S'", "S ", "M'"]];
+      //this.mouseMoves = [
+      //  ["U ", "U'", "L ", "L'", "R ", "R'", "D ", "D'", "X ", "X'", "Y ", "Y'", "M ", "E ", "E'", "M'"],
+      //  ["U ", "U'", "F ", "F'", "B ", "B'", "D ", "D'", "Z'", "Z ", "Y ", "Y'", "S'", "E ", "E'", "S "],
+      //  ["B ", "B'", "L ", "L'", "R ", "R'", "F ", "F'", "X ", "X'", "Z'", "Z ", "M ", "S'", "S ", "M'"]];
       this.antiMoves = new Array(12);
       for (let i = 0; i < 12; ++i) {
+        let print1 = "";
         this.antiMoves[i] = new Array(54);
         for (let j = 0; j < 54; ++j) {
           if (this.clockMoves[i][j] === 200) {
@@ -355,7 +357,9 @@
             }
             this.antiMoves[i][j] = j3 - j;
           }
+          //print1 += `${this.antiMoves[i][j]},`;
         }
+        //console.log(print1);
       }
       this.sidePieces = [
         new Piece(TileColor.Blue, TileColor.White, null, 1, 43),
@@ -433,9 +437,17 @@
 
         //let move1 = random1.nextInt32([0, 6]);
         moves += this.moveCodes.charAt(move1);
-        this.rotateTable(this.moveCodes.charAt(move1) + " ", true, 0);
+        //this.rotateTable(this.moveCodes.charAt(move1) + " ", true, 0);
       }
-      console.log(moves);
+      //moves = "UUBFUBFBDFLUFBURBRLFLDDDULRBFULBRBUUUFUD";
+      for (let i = 0; i < moves.length; ++i) {
+        let move1 = moves.charAt(i) + " ";
+        this.rotateTable(move1, true, 0);
+        //this.renderScene();
+      }
+      this.doneMoves = "";
+      
+      //console.log(moves);
     }
 
     public resetTileColors(): void {
@@ -513,7 +525,12 @@
       let moveIx = this.moveCodes.indexOf(move.substring(0, 1));
       let moveTiles: Array<Tile> = [];
       let movelist: Array<number> = [];
-      this.pivotList = [];
+      if (image) {
+        this.pivotList = [];
+        if (this.targetAngle !== 0) {
+          let v1 = 0;
+        }
+      }
       for (let i = 0; i < Cube.tiles.length; ++i) {
         let tile1 = Cube.tiles[i];
         if (moveTable[moveIx][i] !== 0) {
@@ -521,7 +538,9 @@
             moveTiles.push(tile1);
             movelist.push(i + moveTable[moveIx][i]);
           }
-          this.pivotList.push(tile1.pivot);
+          if (image) {
+            this.pivotList.push(tile1.pivot);
+          }
         }
       }
       while (movelist.length > 0) {
@@ -530,6 +549,8 @@
           Cube.tiles[ix1] = moveTiles.pop();
         }
       }
+      this.doneMoves += (move + " ");
+
       if (image) {
         let angle: number = 90;
         if (move.length > 1 && move.substring(1, 2) === "'") {
@@ -556,9 +577,9 @@
             //this.pivotList[i].rotate(this.axis, rads);
             this.pivotList[i1].rotate(this.axis, rads, BABYLON.Space.WORLD);
           }
+          this.pivotList = [];
         }
         else {
-          this.doneMoves += (move + " ");
           //let textBox = document.getElementById("TextBox");
           //textBox.innerText += (move + " ");
           this.startTime = new Date().valueOf();
