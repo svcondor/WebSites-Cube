@@ -111,8 +111,8 @@ module App2 {
       this.scene.clearColor = new BABYLON.Color4(.5, 0.5, 0.5, 1);
       let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(7, 7, -15), this.scene);
       this.camera = camera;
-      camera.setTarget(BABYLON.Vector3.Zero());
-
+      //camera.setTarget(BABYLON.Vector3.Zero());
+      camera.setTarget(new BABYLON.Vector3(0, -.7, 0)); // was 0,0,0
       camera.fov = 0.40; //0.35; //0.5 //0.27;
       //let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, -1), this.scene);
 
