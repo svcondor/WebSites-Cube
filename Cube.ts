@@ -55,7 +55,7 @@
     public currentAngle: number = 0;
     public targetAngle: number = 0;
     public startTime: number;
-    public moveSpeed: number = 400;
+    public moveSpeed: number = 400;  // was 400
     private scene: BABYLON.Scene;
     private rect4: BABYLON.Mesh;
     private axis: BABYLON.Vector3;
@@ -102,7 +102,7 @@
         let increment: number;
         if (this.targetAngle > 0) {
           increment = newAngle - this.currentAngle;
-          console.log(`Pos ${t2} ${t1} ${newAngle} ${increment}`);
+          if (increment > 10) console.log(`Pos ${t2} ${t1} ${newAngle} ${increment}`);
           if (this.currentAngle + increment >= this.targetAngle) {
             increment = this.targetAngle - this.currentAngle
             zeroTargetAngle = true;

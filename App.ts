@@ -37,8 +37,7 @@ module App2 {
 
     public aaSignature = "MainApp";
     private solverPointerTimer: number = 0;
-    private startStep: number = 0;
-    private stepDirection: number = -1;
+    //private stepDirection: number = -1;
     private iconUndo: HTMLElement;
     private iconRedo: HTMLElement;
     private scene: BABYLON.Scene;
@@ -69,7 +68,6 @@ module App2 {
     private camera: BABYLON.FreeCamera;
     private hitTable: HitEntry[];
     private fastSpeed: boolean = false;   // Rotation speed in ms
-    private solverMoves: string = "";
 
     constructor() {
       this2 = this;
@@ -464,7 +462,7 @@ module App2 {
         let dX = event.x - this.mousePos1.X;
         let dY = event.y - this.mousePos1.Y;
         let distance = Math.sqrt(dX ** 2 + dY ** 2);
-        console.log(`move mouseStatus 2 ${distance} ${this.minimumDistance}`);
+        //console.log(`move mouseStatus 2 ${distance} ${this.minimumDistance}`);
 
         if (distance > this.minimumDistance) {
 
@@ -475,7 +473,6 @@ module App2 {
           let hitTarget = this.findMouseTarget(this.mouseTile1Ix, angle);
 
           if (hitTarget.precise === true) {
-            console.log(`PointerMove - single3`);
             console.log(`PointerMove - single2`);
             //if (distance > foundTarget.distance / 4) {
             if (this.cube.targetAngle != 0) {
@@ -509,32 +506,20 @@ module App2 {
 
       let buttonText: string = target.innerText;
       if (buttonText.substr(0, 5) === "Tutor") {
-        this.solverMoves = "";
-        if (this.startStep >= 7 || this.startStep === -1) {
-          this.stepDirection *= -1;
-        }
-        this.startStep += this.stepDirection;
-        if (this.startStep === -1) {
-          target.innerText = `Tutor OFF`;
-          this.showIcon(this.iconRedo, false);
+        this.solver.reset();
+        if (buttonText === "Tutor OFF") {
+          this.solver.startStep = 0;
+          buttonText = "Tutor ON";
+          this.showIcon(this.iconRedo, true);
         }
         else {
-          target.innerText = `Tutor Step ${this.startStep}`;
-          this.showIcon(this.iconRedo, true);
+          this.solver.startStep = -1;
+          buttonText = "Tutor OFF";
+          this.showIcon(this.iconRedo, false);
         }
       }
       else switch (buttonText) {
-        //case "Learn":
-        //  let checkbox: HTMLInputElement = <HTMLInputElement>target.children[0];
-        //  if (this.learnMode) {
-        //    checkbox.checked = false;
-        //    this.learnMode = false;
-        //  }
-        //  else {
-        //    checkbox.checked = true;
-        //    this.learnMode = true;
-        //  }
-        //  break;
+        
         case "Slow":
           //TODO: Add checkbox
           target.innerText = "Fast";
@@ -581,25 +566,16 @@ module App2 {
 
       switch (target.classList[1]) {
         case "fa-arrow-circle-o-left":
-          //this.showIcon(this.iconRedo, true);
-          //this.showIcon(this.iconUndo, false);
-          //this.doTutorMove("ABC");
           this.undoMove();
           break;
 
         case "fa-arrow-circle-o-right":
           this.solverPointerTimer = setTimeout(() => {
-            this.solverMoves = "";
-            if (this.startStep >= 0 && this.startStep < 7)++this.startStep;
-            let msg1 = this.solver.solve(this.startStep);
-            if (msg1.length > 4 && msg1.substr(0, 3) == "msg") {
-              let msg = document.getElementById("solvermessage");
-              msg.innerText = msg1.substr(3);
-              this.solverMoves = "";
-              return;
-            }
-
-
+            //this.solver.reset();
+            //if (this.solver.startStep >= 0 && this.solver.startStep < 7)++this.solver.startStep;
+            this.solver.step();
+            //this.solver.solve(this.solver.startStep);
+            return;
           }, 1000);
           let msg = document.getElementById("solvermessage");
           msg.innerText = "";
@@ -635,18 +611,13 @@ module App2 {
         case "fa-home":
           this.showOverlay(0);
           this.cube.resetTileColors();
-          this.solverMoves = "";
-          document.getElementById("solvermessage").innerText = "";
-          if (this.startStep !== -1) this.startStep = 0;
+          this.solver.reset();
           break;
 
         case "fa-random":
           this.showOverlay(0);
           this.cube.scramble();
-          this.solverMoves = "";
-          document.getElementById("solvermessage").innerText = "";
-          if (this.startStep !== -1) this.startStep = 0;
-
+          this.solver.reset();
           break;
 
         case "fa-arrow-left":
@@ -663,33 +634,33 @@ module App2 {
         return;
       }
 
-      while (this.solverMoves.length > 0
-        && (this.solverMoves.charAt(0) === " "
-          || this.solverMoves.charAt(0) === "'")) {
-        this.solverMoves = this.solverMoves.substr(1);
+      while (this.solver.solverMoves.length > 0
+        && (this.solver.solverMoves.charAt(0) === " "
+          || this.solver.solverMoves.charAt(0) === "'")) {
+        this.solver.solverMoves = this.solver.solverMoves.substr(1);
       }
-      if (this.solverMoves.length === 0) {
-        this.solverMoves = this.solver.solve(this.startStep);
-        if (this.solverMoves.length > 4 && this.solverMoves.substr(0, 3) == "msg") {
+      if (this.solver.solverMoves.length === 0) {
+        this.solver.solverMoves = this.solver.solve(this.solver.startStep);
+        if (this.solver.solverMoves.length > 4 && this.solver.solverMoves.substr(0, 3) == "msg") {
           let msg = document.getElementById("solvermessage");
-          msg.innerText = this.solverMoves.substr(3);
-          this.solverMoves = "";
+          msg.innerText = this.solver.solverMoves.substr(3);
+          this.solver.solverMoves = "";
           return;
         }
 
       }
-      if (this.solverMoves.length > 0) {
+      if (this.solver.solverMoves.length > 0) {
         let move: string;
-        if (this.solverMoves.length > 1
-          && this.solverMoves.charAt(1) === "'") {
-          move = this.solverMoves.charAt(0) + "'";
+        if (this.solver.solverMoves.length > 1
+          && this.solver.solverMoves.charAt(1) === "'") {
+          move = this.solver.solverMoves.charAt(0) + "'";
         }
         else {
-          move = this.solverMoves.charAt(0) + " ";
+          move = this.solver.solverMoves.charAt(0) + " ";
         }
         this.cube.rotateTable(move, true, this.cube.moveSpeed);
-        if (this.solverMoves.length > 0) {
-          this.solverMoves = this.solverMoves.substr(1);
+        if (this.solver.solverMoves.length > 0) {
+          this.solver.solverMoves = this.solver.solverMoves.substr(1);
         }
       }
     }
@@ -698,7 +669,8 @@ module App2 {
     private finishMove(function1: any, ...rest: any[]): void {
       if (MainApp.finishMoveReEnter) {
         console.log("finishMove reEnter");
-        return;
+        
+        //return;
       }
       MainApp.finishMoveReEnter = true;
       let fastStartTime = new Date().valueOf() - 0.90 * this.cube.moveSpeed;
@@ -720,15 +692,16 @@ module App2 {
     private static finishMoveReEnter: boolean = false;
 
     private undoMove = (): void => {
-
+      this.solver.reset();
       if (this.cube.targetAngle !== 0) {
         this.finishMove(this.undoMove);
         this.mouseStatus = 0;
         console.log(`undo move call 1`);
         return;
       }
+      //let d1 = new Date().
       console.log(`undo move call 2`);
-      this.solverMoves = "";
+      this.solver.solverMoves = "";
       //this.showOverlay(0);
       let s1: string = this.cube.doneMoves;
       let antiClock = "'";
