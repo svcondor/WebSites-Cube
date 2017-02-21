@@ -101,6 +101,12 @@ module App2 {
         this.buildHitTester();
       });
 
+      window.oncontextmenu = ((event: PointerEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      });
+
       this.scene = new BABYLON.Scene(engine);
       this.scene.clearColor = new BABYLON.Color4(.5, 0.5, 0.5, 1);
       let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(7, 7, -15), this.scene);
