@@ -53,17 +53,12 @@ module App2 {
 
     private mouseStatus: number = 0;
     private mousePos1: Point = { X: 0, Y: 0 };   // Mouse position on canvas 
-    //private mouseX1: number = 0;
-    //private mouseY1: number = 0;
     private mouseDistance = 0;
     private minimumDistance: number;
     private mouseMove: string = "";
     private hitMaximum: number;
     private mousePos2: Point = { X: 0, Y: 0 };
-    //private mouseX2: number = 0;
-    //private mouseY2: number = 0;
     private mouseMesh1: BABYLON.AbstractMesh;
-    //private mouseMesh2: BABYLON.AbstractMesh;
     private mouseTile1Ix: number;
     private mouseTargetIx: number;
     private panelHelp: HTMLElement;
@@ -118,10 +113,12 @@ module App2 {
 
       this.scene = new BABYLON.Scene(engine);
       this.scene.clearColor = new BABYLON.Color4(.5, 0.5, 0.5, 1);
-      let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(7, 7, -15), this.scene);
+
+      //Was 7,7,-15
+      let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(10, 7, -15), this.scene);
       this.camera = camera;
-      camera.setTarget(new BABYLON.Vector3(-.1, -1.2, 0)); // was 0,0,0
-      camera.fov = 0.40; //0.35; //0.5 //0.27;
+      camera.setTarget(new BABYLON.Vector3(-.07, -1.2, 0)); // was 0,0,0
+      camera.fov = 0.33; //0.35; //0.5 //0.27;
       //let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, -1), this.scene);
       this.cube = new Cube(this.scene, engine);
       this.cube.renderScene();
@@ -132,13 +129,12 @@ module App2 {
       this.panelHelp = document.getElementById("panelHelp");
       this.panelMenu = document.getElementById("panelMenu");
       this.panelAbout = document.getElementById("panelAbout");
-     this.labels = <HTMLCollectionOf<HTMLElement>>document.getElementsByClassName("label");
+      this.labels = <HTMLCollectionOf<HTMLElement>>document.getElementsByClassName("label");
 
       for (let i = 0; i < icons.length; ++i) {
         let icon = icons[i];
         if (icon.classList.contains("fa-arrow-circle-o-left")) {
           this.iconUndo = <HTMLElement>icon;
-          //this.iconUndo.className += " disabled";
         }
         else if (icon.classList.contains("fa-arrow-circle-o-right")) {
           this.iconRedo = <HTMLElement>icon;
@@ -592,7 +588,7 @@ module App2 {
           break;
 
         case "fa-ellipsis-h":
-          if (this.overlay === Panel.menu) this.showOverlay(Panel.close);
+          if (this.overlay !== Panel.close) this.showOverlay(Panel.close);
           else this.showOverlay(Panel.menu);
           break;
 
@@ -796,13 +792,6 @@ module App2 {
           if (p.y < y1) y1 = p.y;
         }
       }
-      console.log();
-
-
-      buttons.style.bottom = `${navbar1.clientHeight + 5}px`;
-      buttons.style.width = `${(x2 - x1).toFixed(0)}px`;
-      buttons.style.left = `${x1.toFixed(0)}px`;
-      console.log(`gamediv W-${gameDiv1.clientWidth} H-${gameDiv1.clientHeight} Window W-${window.innerWidth} H-${window.innerHeight}`);
 
       this.panelAbout.innerHTML = `\u00A9 2017 David Lewis dlewis@svcondor.com<br>`
         + `Cube Xmin ${x1.toFixed(0)} max ${x2.toFixed(0)} Ymin ${y1.toFixed(0)} max ${y2.toFixed(0)}<br>`
@@ -866,8 +855,9 @@ module App2 {
       //if (navbar1.clientWidth > h1) {
         //buttons.style.width = `${h1}px`;
         //buttons.style.left = `${(navbar1.clientWidth - h1) / 2}px`;
-       buttons.style.width = `${(x2-x1).toFixed(0)}px`;
+       //buttons.style.width = `${(x2-x1).toFixed(0)}px`;
        buttons.style.left = `${x1.toFixed(0)}px`;
+       buttons.style.width = `${(navbar1.clientWidth - 2 * x1).toFixed(0)}px`;
 
         //buttons.style.width = `${h1}px`;
         //buttons.style.left = `${(navbar1.clientWidth - h1) / 2}px`;
