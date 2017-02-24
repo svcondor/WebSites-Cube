@@ -118,7 +118,7 @@ module App2 {
       let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(10, 7, -15), this.scene);
       this.camera = camera;
       camera.setTarget(new BABYLON.Vector3(-.07, -1.2, 0)); // was 0,0,0
-      camera.fov = 0.33; //0.35; //0.5 //0.27;
+      camera.fov = 0.35;  //0.33 for iphone 5   //0.35 Nokia 930
       //let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, -1), this.scene);
       this.cube = new Cube(this.scene, engine);
       this.cube.renderScene();
