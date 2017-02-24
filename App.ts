@@ -6,7 +6,7 @@ module App2 {
   export var this2: any;
   //https://github.com/icflorescu/iisexpress-proxy
   // npm install -g iisexpress-proxy
-  //iisexpress-proxy 55537 to 6000
+  //iisexpress-proxy 55537 to 8080
 
   interface HitTarget {
     distance?: number;
@@ -31,6 +31,13 @@ module App2 {
   interface Polar {
     distance: number;
     angle: number;
+  }
+
+  enum Panel {
+    close = 0,
+    help = 1,
+    menu = 2,
+    about = 3
   }
 
   class MainApp {
@@ -59,10 +66,11 @@ module App2 {
     //private mouseMesh2: BABYLON.AbstractMesh;
     private mouseTile1Ix: number;
     private mouseTargetIx: number;
-    private panel1: HTMLElement;
-    private panel2: HTMLElement;
+    private panelHelp: HTMLElement;
+    private panelMenu: HTMLElement;
+    private panelAbout: HTMLElement;
     private labels: HTMLCollectionOf<HTMLElement>;
-    private overlay: number = 0;
+    private overlay: Panel = Panel.close;
     private interval1: number;
     private engine: BABYLON.Engine;
     private camera: BABYLON.FreeCamera;
@@ -71,14 +79,13 @@ module App2 {
 
     constructor() {
       this2 = this;
-      this.resizeCanvas();
 
       //http://stackoverflow.com/questions/16152609/importing-external-html-inner-content-with-javascript-ajax-without-jquery
       let url = "help1.html";
       let xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-          document.getElementById("panel1").innerHTML = xmlhttp.responseText;
+          document.getElementById("panelHelp").innerHTML = xmlhttp.responseText;
           let v4 = 34;
         }
       }
@@ -88,6 +95,7 @@ module App2 {
       let v2 = 2; //dummy
       BABYLON.Engine.CodeRepository = "/Babylon/src/";
       BABYLON.Engine.ShadersRepository = "/Babylon/src/Shaders/";
+      this.resizeCanvas();
 
       let canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
       let engine = new BABYLON.Engine(canvas, true);
@@ -98,6 +106,7 @@ module App2 {
         this.resizeCanvas();
         engine.resize();
         this.cube.renderScene();
+        this.positionButtons();
         this.buildHitTester();
       });
 
@@ -111,28 +120,19 @@ module App2 {
       this.scene.clearColor = new BABYLON.Color4(.5, 0.5, 0.5, 1);
       let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(7, 7, -15), this.scene);
       this.camera = camera;
-      //camera.setTarget(BABYLON.Vector3.Zero());
-      camera.setTarget(new BABYLON.Vector3(0, -.7, 0)); // was 0,0,0
+      camera.setTarget(new BABYLON.Vector3(-.1, -1.2, 0)); // was 0,0,0
       camera.fov = 0.40; //0.35; //0.5 //0.27;
       //let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, -1), this.scene);
-
       this.cube = new Cube(this.scene, engine);
-
+      this.cube.renderScene();
+      this.positionButtons();
       this.solver = new Solver(this.cube);
-      //this.solver.cube = this.cube;
-      //let buttons = document.getElementsByTagName("button");
-      //for (let i = 0; i < buttons.length; ++i) {
-      //  let button = buttons[i];
-      //  let v2 = button.innerText;
-      //  if (v2 !== "Help") {
-      //    button.addEventListener("click", this.handleButtonClick);
-      //  }
-      //}
 
       let icons = document.getElementsByClassName("fa");
-      this.panel1 = document.getElementById("panel1");
-      this.panel2 = document.getElementById("panel2");
-      this.labels = <HTMLCollectionOf<HTMLElement>>document.getElementsByClassName("label");
+      this.panelHelp = document.getElementById("panelHelp");
+      this.panelMenu = document.getElementById("panelMenu");
+      this.panelAbout = document.getElementById("panelAbout");
+     this.labels = <HTMLCollectionOf<HTMLElement>>document.getElementsByClassName("label");
 
       for (let i = 0; i < icons.length; ++i) {
         let icon = icons[i];
@@ -149,11 +149,10 @@ module App2 {
         }
         icon.addEventListener("pointerdown", this.handleIconPointerDown);
         icon.addEventListener("pointerup", this.handleIconPointerUp);
-     }
+      }
 
       let settings = document.getElementsByTagName("li");
       for (let i = 0; i < settings.length; ++i) {
-
         let setting = settings[i];
         if (setting.innerText === "Fast") {
           this.fastSpeed = true;
@@ -175,9 +174,8 @@ module App2 {
         this.mouseStatus = 0;
       });
 
-      //this.animate(engine, this.scene);
       engine.runRenderLoop(() => {
-        //TODO stop render when not moving
+        //TODO only render when moving
         this.cube.renderScene();
       });
     }
@@ -188,7 +186,7 @@ module App2 {
       if (show && pos1 !== -1) {
         icon.className = className.replace(" disabled", "");
       }
-      else if (!show &&pos1 === -1) {
+      else if (!show && pos1 === -1) {
         icon.className += " disabled";
       }
     }
@@ -246,10 +244,11 @@ module App2 {
 
     private buildHitTester(): void {
 
-      //this.hitTable = new Array();
       let matrixIdentity: BABYLON.Matrix = BABYLON.Matrix.Identity();
       let transformMatrix: BABYLON.Matrix = this.scene.getTransformMatrix();
       let viewPort: BABYLON.Viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
+
+
       for (let face: CubeFace = 0; face < 6; ++face) {
         if (face === CubeFace.F || face === CubeFace.U || face === CubeFace.R) {
           //console.log("");
@@ -334,8 +333,11 @@ module App2 {
     }
 
     private handlePointerDown = (event: PointerEvent) => {
+      this.mousePos1.X = event.clientX;
+      this.mousePos1.Y = event.clientY;
+
       let this1 = this;
-      this.showOverlay(0);
+      this.showOverlay(Panel.close);
       if (this.cube.targetAngle !== 0) {
         if (this.fastSpeed !== true)
           return;
@@ -352,8 +354,6 @@ module App2 {
           this.mouseTile1Ix = tileIx;
           this.mouseStatus = 2;
 
-          this.mousePos1.X = event.clientX;
-          this.mousePos1.Y = event.clientY;
           return false;
         }
         else {
@@ -486,7 +486,7 @@ module App2 {
             this.mouseMove = hitTarget.move;
             console.log(`move ${this.mouseMove}`);
 
-            this.cube.rotateTable(this.mouseMove, true, this.cube.moveSpeed);
+            this.cube.rotateTable(this.mouseMove, true, this.cube.mainSpeed);
             this.mouseDistance = distance;
             this.mouseTargetIx = Math.abs(hitTarget.targetIx);
             this.mousePos2.X = event.x;
@@ -525,29 +525,33 @@ module App2 {
         }
       }
       else switch (buttonText) {
-        
+
         case "Slow":
           //TODO: Add checkbox
           target.innerText = "Fast";
           this.fastSpeed = true;
-          this.showOverlay(0);
+          this.showOverlay(Panel.close);
           break;
 
         case "Fast":
           target.innerText = "Slow";
           this.fastSpeed = false;
-          this.showOverlay(0);
+          this.showOverlay(Panel.close);
           break;
 
         case "Help":
-          this.showOverlay(1);
+          this.showOverlay(Panel.help);
+          break;
+
+        case "About":
+          this.showOverlay(Panel.about);
           break;
       }
       return false;
     });
 
-
     private handleIconPointerUp = ((event: Event) => {
+      console.log(`handleIconPointerUp`);
       let this1 = this;
       let target: HTMLElement = event.currentTarget as HTMLElement;
       let v1 = target.classList;
@@ -558,14 +562,12 @@ module App2 {
         case "fa-arrow-circle-o-right":
           clearTimeout(this.solverPointerTimer);
           break;
-
       }
-
     });
-
 
     private handleIconPointerDown = ((event: Event) => {
       let this1 = this;
+      console.log(`handleIconPointerDown`);
 
       let target: HTMLElement = event.currentTarget as HTMLElement;
       let v1 = target.classList;
@@ -577,51 +579,31 @@ module App2 {
 
         case "fa-arrow-circle-o-right":
           this.solverPointerTimer = setTimeout(() => {
-            //this.solver.reset();
-            //if (this.solver.startStep >= 0 && this.solver.startStep < 7)++this.solver.startStep;
             this.solver.step();
-            //this.solver.solve(this.solver.startStep);
             return;
           }, 1000);
-          let msg = document.getElementById("solvermessage");
-          msg.innerText = "";
-
+          this.solver.solverMsg("");
           this.doTutorMove();
-
           break;
 
         case "fa-question":
-          this.panel2.style.display = "none";
-          if (this.panel1.style.display === "block") {
-            this.panel1.style.display = "none";
-          } else {
-            this.panel1.style.display = "block";
-          }
-          //if (panel1.style.maxHeight) {
-          //  panel1.style.maxHeight = null;
-          //} else {
-          //  //panel1.style.maxHeight = panel1.scrollHeight + "px";
-          //  panel1.style.maxHeight = "400" + "px";
-          //} 
+          if (this.overlay === Panel.help) this.showOverlay(Panel.close);
+          else this.showOverlay(Panel.help);
           break;
 
         case "fa-ellipsis-h":
-          if (this.overlay !== 0) {
-            this.showOverlay(0);
-          }
-          else {
-            this.showOverlay(2);
-          }
+          if (this.overlay === Panel.menu) this.showOverlay(Panel.close);
+          else this.showOverlay(Panel.menu);
           break;
 
         case "fa-home":
-          this.showOverlay(0);
+          this.showOverlay(Panel.close);
           this.cube.resetTileColors();
           this.solver.reset();
           break;
 
         case "fa-random":
-          this.showOverlay(0);
+          this.showOverlay(Panel.close);
           this.cube.scramble();
           this.solver.reset();
           break;
@@ -633,7 +615,7 @@ module App2 {
       }
       return false;
     });
-    
+
     private doTutorMove = (...rest: any[]): void => {
       if (this.cube.targetAngle !== 0) {
         this.finishMove(this.doTutorMove, ...rest);
@@ -664,7 +646,7 @@ module App2 {
         else {
           move = this.solver.solverMoves.charAt(0) + " ";
         }
-        this.cube.rotateTable(move, true, this.cube.moveSpeed);
+        this.cube.rotateTable(move, true, this.cube.mainSpeed);
         if (this.solver.solverMoves.length > 0) {
           this.solver.solverMoves = this.solver.solverMoves.substr(1);
         }
@@ -675,7 +657,7 @@ module App2 {
     private finishMove(function1: any, ...rest: any[]): void {
       if (MainApp.finishMoveReEnter) {
         console.log("finishMove reEnter");
-        
+
         //return;
       }
       MainApp.finishMoveReEnter = true;
@@ -721,7 +703,7 @@ module App2 {
           if (this.cube.moveCodes.indexOf(next) !== -1) {
             let move = next + antiClock;
             //TODO add move to redo table
-            this.cube.rotateTable(move, true, 300);
+            this.cube.rotateTable(move, true, this.cube.mainSpeed);
             this.cube.doneMoves = s1.substr(0, len1 - 1);
             this.cube.movesCount -= 1;
             let s2 = document.getElementById("ScoreBox");
@@ -740,92 +722,176 @@ module App2 {
       }
     }
 
-    private showOverlay(overlayIx: number): void {
+    private showOverlay(newPanel: Panel): void {
       // 0 - off
       // 1 help
       // 2 settings
-      if (this.overlay === 1) {
-        this.panel1.style.display = "none";
+      // 3 About
+
+      ////TODO Add code to animate panel display
+      //if (panelHelp.style.maxHeight) {
+      //  panelHelp.style.maxHeight = null;
+      //} else {
+      //  //panelHelp.style.maxHeight = panelHelp.scrollHeight + "px";
+      //  panelHelp.style.maxHeight = "400" + "px";
+      //} 
+
+      if (this.overlay === Panel.help) {
+        this.panelHelp.style.display = "none";
       }
-      else if (this.overlay === 2) {
+      else if (this.overlay === Panel.menu) {
         this.hideShowLabels(false);
-        this.panel2.style.display = "none";
+        this.panelMenu.style.display = "none";
       }
-      if (overlayIx === 0) this.overlay = 0;
-      else if (overlayIx === 1) {
-        this.panel1.style.display = "block";
-        this.overlay = 1;
+      else if (this.overlay === Panel.about) {
+        this.panelAbout.style.display = "none";
       }
-      else if (overlayIx === 2) {
+      this.overlay = newPanel;
+      if (newPanel === Panel.close) this.overlay = Panel.close;
+      else if (newPanel === Panel.help) {
+        this.panelHelp.style.display = "block";
+      }
+      else if (newPanel === Panel.menu) {
         this.hideShowLabels(true);
-        this.panel2.style.display = "block";
-        this.overlay = 2;
+        this.panelMenu.style.display = "block";
+      }
+      else if (newPanel === Panel.about) {
+        this.panelAbout.style.display = "block";
+        this.showAboutPanel();
       }
     }
 
-    //private animate(engine: BABYLON.Engine, scene: BABYLON.Scene): void {
-    //  // run the render loop
-    //  engine.runRenderLoop(() => {
-    //    scene.render();
-    //  });
-    //}
+    private showAboutPanel(): void {
+      let navbar1 = document.getElementById("navbar1");
+      let gameDiv1 = document.getElementById("gamediv");
+      let buttons = document.getElementById("buttons");
+      let solvermessage = document.getElementById("solvermessage");
+
+      let matrixIdentity: BABYLON.Matrix = BABYLON.Matrix.Identity();
+      let transformMatrix: BABYLON.Matrix = this.scene.getTransformMatrix();
+      let viewPort: BABYLON.Viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
+
+      let x1 = 100000;
+      let x2 = -10000;
+      let y1 = 100000;
+      let y2 = -100000;
+      for (let j = 0; j < 4; ++j) {
+        let face: CubeFace;
+        let relTile: number;
+        switch (j) {
+          case 0: face = 0; relTile = 0; break;
+          case 1: face = 0; relTile = 8; break;
+          case 2: face = 4; relTile = 0; break;
+          case 3: face = 4; relTile = 2; break;
+        }
+        let tile = Cube.tile(face, relTile);
+        let mesh2 = <BABYLON.Mesh>tile.mesh.getChildren()[0];
+        let box = mesh2._boundingInfo.boundingBox.vectorsWorld;
+        for (let v3 of box) {
+          let p: BABYLON.Vector3 = BABYLON.Vector3.Project(
+            v3, matrixIdentity, transformMatrix, viewPort);
+          if (p.x > x2) x2 = p.x;
+          if (p.x < x1) x1 = p.x;
+          if (p.y > y2) y2 = p.y;
+          if (p.y < y1) y1 = p.y;
+        }
+      }
+      console.log();
+
+
+      buttons.style.bottom = `${navbar1.clientHeight + 5}px`;
+      buttons.style.width = `${(x2 - x1).toFixed(0)}px`;
+      buttons.style.left = `${x1.toFixed(0)}px`;
+      console.log(`gamediv W-${gameDiv1.clientWidth} H-${gameDiv1.clientHeight} Window W-${window.innerWidth} H-${window.innerHeight}`);
+
+      this.panelAbout.innerHTML = `\u00A9 2017 David Lewis dlewis@svcondor.com<br>`
+        + `Cube Xmin ${x1.toFixed(0)} max ${x2.toFixed(0)} Ymin ${y1.toFixed(0)} max ${y2.toFixed(0)}<br>`
+        + `gamediv W-${gameDiv1.clientWidth} H-${gameDiv1.clientHeight} Window W-${window.innerWidth} H-${window.innerHeight}<br>`
+        + `buttons W-${buttons.clientWidth} L-${buttons.clientLeft} B-${buttons.clientTop}`
+        + `Pointerdown X-${this.mousePos1.X} Y-${this.mousePos1.Y}`;
+    }
 
     private resizeCanvas(): void {
       let gameDiv1 = document.getElementById("gamediv");
       let navbar1 = document.getElementById("navbar1");
       gameDiv1.style.width = `${window.innerWidth}px`;
       gameDiv1.style.height = `${document.documentElement.clientHeight - navbar1.clientHeight}px`;
-      let panel1 = document.getElementById("panel1");
-      panel1.style.height = `${(document.documentElement.clientHeight - navbar1.clientHeight) * 0.8}px`;
-      this.positionButtons();
+      let panelHelp = document.getElementById("panelHelp");
+      panelHelp.style.height = `${(document.documentElement.clientHeight - navbar1.clientHeight) * 0.8}px`;
+      //this.positionButtons();
     }
 
     private positionButtons(): void {
       let navbar1 = document.getElementById("navbar1");
       let gameDiv1 = document.getElementById("gamediv");
       let buttons = document.getElementById("buttons");
-      buttons.style.bottom = `${navbar1.clientHeight + 50}px`;
-      let h1 = gameDiv1.clientHeight / 1.5;
-      if (navbar1.clientWidth > h1) {
-        buttons.style.width = `${h1}px`;
-        buttons.style.left = `${(navbar1.clientWidth - h1) / 2}px`;
+      let solvermessage = document.getElementById("solvermessage");
+      console.log(`gamediv W-${gameDiv1.clientWidth} H-${gameDiv1.clientHeight} Window W-${window.innerWidth} H-${window.innerHeight}`);
+
+      let matrixIdentity: BABYLON.Matrix = BABYLON.Matrix.Identity();
+      let transformMatrix: BABYLON.Matrix = this.scene.getTransformMatrix();
+      let viewPort: BABYLON.Viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
+
+      let x1 = 100000;
+      let x2 = -10000;
+      let y1 = 100000;
+      let y2 = -100000;
+      for (let j = 0; j < 4; ++j) {
+        let face: CubeFace;
+        let relTile: number;
+        switch (j) {
+          case 0: face = 0; relTile = 0; break;
+          case 1: face = 0; relTile = 8; break;
+          case 2: face = 4; relTile = 0; break;
+          case 3: face = 4; relTile = 2; break;
+        }
+        let tile = Cube.tile(face, relTile);
+        let mesh2 = <BABYLON.Mesh>tile.mesh.getChildren()[0];
+        let box = mesh2._boundingInfo.boundingBox.vectorsWorld;
+        for (let v3 of box) {
+          let p: BABYLON.Vector3 = BABYLON.Vector3.Project(
+            v3, matrixIdentity, transformMatrix, viewPort);
+          if (p.x > x2) x2 = p.x;
+          if (p.x < x1) x1 = p.x;
+          if (p.y > y2) y2 = p.y;
+          if (p.y < y1) y1 = p.y;
+        }
       }
-      else {
-        buttons.style.width = `100%`;
-        buttons.style.left = `0px`;
-      }
+      console.log(`Cube Xmin ${x1.toFixed(0)} max ${x2.toFixed(0)} Ymin ${y1.toFixed(0)} max ${y2.toFixed(0)}`);
+
+
+      //buttons.style.bottom = `${navbar1.clientHeight + 50}px`;
+      buttons.style.bottom = `${navbar1.clientHeight + 5}px`;
+      //let h1 = gameDiv1.clientHeight / 1.5;
+      //if (navbar1.clientWidth > h1) {
+        //buttons.style.width = `${h1}px`;
+        //buttons.style.left = `${(navbar1.clientWidth - h1) / 2}px`;
+       buttons.style.width = `${(x2-x1).toFixed(0)}px`;
+       buttons.style.left = `${x1.toFixed(0)}px`;
+
+        //buttons.style.width = `${h1}px`;
+        //buttons.style.left = `${(navbar1.clientWidth - h1) / 2}px`;
+      //}
+      //else {
+      //  buttons.style.width = `100%`;
+      //  buttons.style.left = `0px`;
+      //}
+    }
+
+    private getCubeWidth(): void {
+
+      //  console.log(`1-${window.innerWidth} 2-${document.documentElement.clientWidth} 3-${screen.width}`);
+      //  console.log(`1-${window.innerHeight} 2-${document.documentElement.clientHeight} 3-${screen.height}`);
+      //  //1 - 1181 2- 1181 3- 1536  zoom 125 1920 zoom 100
+      //  //1 - 665 2- 665 3- 864 zoom 125 1080 zoom 100
+      //  //Detect viewport orientation
+      //  // http://stackoverflow.com/questions/4917664/detect-viewport-orientation-if-orientation-is-portrait-display-alert-message-ad
     }
   }
-
-  //function delay3(that: MainApp, delay: number = 0) {
-  //  var that1: MainApp = that;
-  //  if (that1.cube1.targetAngle !== 0) {
-  //    console.log("delay3");
-  //    setTimeout(delay3(that1), 10);
-  //  }
-  //  else {
-  //    //console.log("End delay3");
-  //  }
-  //}
-
-  //function resizeCanvas() {
-  //}
-
-
-
 
   // Instantiate the main App class once everything is loaded
   window.addEventListener('DOMContentLoaded', () => {
     //TODO: Splash Screen
     let mainApp = new MainApp();
   });
-
-  //(function screensize(): void {
-  //  console.log(`1-${window.innerWidth} 2-${document.documentElement.clientWidth} 3-${screen.width}`);
-  //  console.log(`1-${window.innerHeight} 2-${document.documentElement.clientHeight} 3-${screen.height}`);
-  //  //1 - 1181 2- 1181 3- 1536  zoom 125 1920 zoom 100
-  //  //1 - 665 2- 665 3- 864 zoom 125 1080 zoom 100
-  //  //Detect viewport orientation
-  //  // http://stackoverflow.com/questions/4917664/detect-viewport-orientation-if-orientation-is-portrait-display-alert-message-ad
-  //}) ();
 }

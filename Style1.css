@@ -26,7 +26,7 @@ body {
   text-align: center;
 }
 
-#panel1 {
+.panelHelp {
   padding: 0 9px;
   background-color: black;
   color: white;
@@ -35,7 +35,7 @@ body {
   transition: max-height 2.0s ease-out;
 }
 
-#panel2 {
+.panelMenu {
   padding: 0 9px;
   color: white;
   background-color: black;
@@ -51,21 +51,29 @@ li {
   color: white;
   cursor: pointer;
 }
-
+i {
+  touch-action: none;
+}
 
 .fa {
   padding: 16px 16px 0px 16px;
+  /*padding: 0px;*/
   font-size: 40px;
   color: white;
-  cursor:pointer;
+  cursor: pointer;
+  touch-action: none;
 }
-.fa.disabled {
-  display: none !important;
-}
+  .fa.disabled {
+    display: none !important;
+  }
 
-  .fa:hover {
+  /*.fa:hover {
     color: aqua;
-    background-color: gray;
+    background-color: transparent;
+  }*/
+  .fa:active {
+    color: dimgray;
+    background-color: transparent;
   }
 
 #renderCanvas {
@@ -73,6 +81,15 @@ li {
   height: 100%;
   touch-action: none;
 }
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+}
+
 
 /*.navButton {
   color: white;

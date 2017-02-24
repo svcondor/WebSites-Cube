@@ -142,31 +142,41 @@
     <canvas id="renderCanvas" touch-action="none">    </canvas>
   </div>
 
-  <div id="buttons" style=" width:100%; height:auto; position:fixed; bottom:0px;">
-    <i class="fa fa-arrow-circle-o-left fa-4x" style="color:black; float:left"> </i>
-    <span id="solvermessage" style="width:100%; text-align: center; font-size:36px;"></span>
+  <div id="buttons" touch-action="none" class="noselect" style="  width:100%; height:auto; position:fixed; bottom:0px;">
+<div>
+  <i class="fa fa-arrow-circle-o-left fa-4x noselect" style="padding:0px; color:black; float:left"> </i>
+  <i class="fa fa-arrow-circle-o-right fa-4x noselect" style="padding:0px; color:black; float:right"></i>
+ 
+</div>
+    <div id="solvermessage" 
+         style=" float:left; width:100%; text-align: center; font-size:30px; 
+         min-height:35px; padding: 0px 0px 0px 0px;">solvermessage
+    </div>
     <!--<i class="fa fa-arrow-circle-o-right fa-4x disabled" style="color:black; float:right"></i>-->
-    <i class="fa fa-arrow-circle-o-right fa-4x" style="color:black; float:right"></i>
   </div>
 
     <nav id="navbar1" style="background-color:#262626; width:100%; height:auto; position:fixed; bottom:0px;    ">
       <!--https://www.w3schools.com/howto/howto_js_accordion.asp-->
-      <div id="panel1" class="panel1">
+      <div id="panelHelp" class="panelHelp">
       </div>
-      <div id="panel2" class="panel1">
+      <div id="panelAbout" class="panelHelp">
+      </div>
+      <div id="panelMenu" class="panelMenu">
         <ul style="float:left">
           <!--<li><input type="checkbox" style="width:30px; height:30px;"/><span>Learn</span></li>-->
           <li>Tutor ON</li>
+
           <li>Fast</li>
           <li>Help</li>
+          <li>About</li>
         </ul>
       </div>
       <div style="display:inline-block">
-        <i class="fa fa-home fa-2x"> </i>
+        <i class="fa fa-home fa-2x noselect"> </i>
         <p class="label">Reset</p>
       </div>
       <div style="display:inline-block">
-        <i class="fa fa-random  fa-2x"></i>
+        <i class="fa fa-random  fa-2x noselect"></i>
         <p class="label">Scramble</p>
       </div>
       <!--<div style="display:inline-block">
@@ -182,10 +192,10 @@
         <p class="label">Settings</p>
       </div>-->
       <div style="display:inline-block">
-        <i class="fa fa-ellipsis-h fa-2x "></i>
+        <i class="fa fa-ellipsis-h fa-2x  noselect"></i>
         <p class="label">More</p>
       </div>
-      <span style="padding:10px; font-size: 20px; float: right; color:white;" id="ScoreBox">0 0:00</span>
+      <span class="noselect" style="padding:10px; font-size: 20px; float: right; color:white;" id="ScoreBox">0 0:00</span>
     </nav>
 
 </body>

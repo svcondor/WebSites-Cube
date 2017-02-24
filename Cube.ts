@@ -56,6 +56,7 @@
     public targetAngle: number = 0;
     public startTime: number;
     public moveSpeed: number = 400;  // was 400
+    public mainSpeed: number = 400;
     private scene: BABYLON.Scene;
     private rect4: BABYLON.Mesh;
     private axis: BABYLON.Vector3;
@@ -550,6 +551,12 @@
         }
       }
       this.doneMoves += (move + " ");
+      if (this.targetAngle !== 0) {
+        this.startTime = 0;
+        this.renderScene();
+        console.assert(this.targetAngle === 0, "handlePointerDown error 1");
+      }
+
 
       if (image) {
         let angle: number = 90;
@@ -580,25 +587,29 @@
           this.pivotList = [];
         }
         else {
-          //let textBox = document.getElementById("TextBox");
-          //textBox.innerText += (move + " ");
-          this.startTime = new Date().valueOf();
-          this.currentAngle = 0;
-          this.targetAngle = angle;
-          if (this.gameStarted === false) {
-            if (move.charAt(0) !== "X" && move.charAt(0) !== "Y" && move.charAt(0) !== "Z") {
-              this.gameStarted = true;
-              this.gameStartTime = new Date().valueOf();
+          this.moveSpeed = speed;
+            //let textBox = document.getElementById("TextBox");
+            //textBox.innerText += (move + " ");
+            this.startTime = new Date().valueOf();
+            this.currentAngle = 0;
+            this.targetAngle = angle;
+
+          if (speed > 200) {
+            if (this.gameStarted === false) {
+              if (move.charAt(0) !== "X" && move.charAt(0) !== "Y" && move.charAt(0) !== "Z") {
+                this.gameStarted = true;
+                this.gameStartTime = new Date().valueOf();
+              }
             }
-          }
-          if (this.gameStarted) {
-            this.movesCount += 1;
-            let s2 = document.getElementById("ScoreBox");
-            let elapsed: number = (new Date().valueOf()) - this.gameStartTime;
-            var mins = Math.floor(elapsed / (1000 * 60));
-            elapsed -= mins * (1000 * 60);
-            var seconds = Math.floor(elapsed / (1000));
-            s2.innerText = `${this.movesCount.toString()} ${mins}:${seconds}`;
+            if (this.gameStarted) {
+              this.movesCount += 1;
+              let s2 = document.getElementById("ScoreBox");
+              let elapsed: number = (new Date().valueOf()) - this.gameStartTime;
+              var mins = Math.floor(elapsed / (1000 * 60));
+              elapsed -= mins * (1000 * 60);
+              var seconds = Math.floor(elapsed / (1000));
+              s2.innerText = `${this.movesCount.toString()} ${mins}:${seconds}`;
+            }
           }
         }
       }
