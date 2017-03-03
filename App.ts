@@ -95,7 +95,8 @@ module App2 {
       let canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
       let engine = new BABYLON.Engine(canvas, true);
       this.engine = engine;
-
+      // TODO Default HardwareScaling PC = 1  930 = 0.5      2=jagged fast 
+      this.engine.setHardwareScalingLevel(1.0);
       window.addEventListener('resize', () => {
         //TODO add timer to reduce flashing
         this.resizeCanvas();
@@ -699,9 +700,11 @@ module App2 {
           if (this.cube.moveCodes.indexOf(next) !== -1) {
             let move = next + antiClock;
             //TODO add move to redo table
-            this.cube.rotateTable(move, true, this.cube.mainSpeed);
-            this.cube.doneMoves = s1.substr(0, len1 - 1);
-            this.cube.movesCount -= 1;
+            let moveCount = this.cube.rotateTable(move, true, this.cube.mainSpeed);
+            if (moveCount === 1) {
+              this.cube.doneMoves = s1.substr(0, len1 - 1);
+              this.cube.movesCount -= 1;
+            }
             let s2 = document.getElementById("ScoreBox");
             s2.innerText = this.cube.movesCount.toString();
           }
@@ -820,7 +823,8 @@ module App2 {
       let matrixIdentity: BABYLON.Matrix = BABYLON.Matrix.Identity();
       let transformMatrix: BABYLON.Matrix = this.scene.getTransformMatrix();
       let viewPort: BABYLON.Viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
-
+      //var v5 = this.engine.getHardwareScalingLevel();
+      //console.log(`Camera S-${v5} W-${this.engine.getRenderWidth()} H-${this.engine.getRenderHeight()}`);
       let x1 = 100000;
       let x2 = -10000;
       let y1 = 100000;
@@ -840,6 +844,7 @@ module App2 {
         for (let v3 of box) {
           let p: BABYLON.Vector3 = BABYLON.Vector3.Project(
             v3, matrixIdentity, transformMatrix, viewPort);
+          //console.log(p.x, p.y);
           if (p.x > x2) x2 = p.x;
           if (p.x < x1) x1 = p.x;
           if (p.y > y2) y2 = p.y;
@@ -855,9 +860,9 @@ module App2 {
       //if (navbar1.clientWidth > h1) {
         //buttons.style.width = `${h1}px`;
         //buttons.style.left = `${(navbar1.clientWidth - h1) / 2}px`;
-       //buttons.style.width = `${(x2-x1).toFixed(0)}px`;
+       buttons.style.width = `${(x2-x1).toFixed(0)}px`;
        buttons.style.left = `${x1.toFixed(0)}px`;
-       buttons.style.width = `${(navbar1.clientWidth - 2 * x1).toFixed(0)}px`;
+       //buttons.style.width = `${(navbar1.clientWidth - 2 * x1).toFixed(0)}px`;
 
         //buttons.style.width = `${h1}px`;
         //buttons.style.left = `${(navbar1.clientWidth - h1) / 2}px`;
