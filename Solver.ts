@@ -91,6 +91,10 @@
       }
     }
 
+    /**
+     * Complete whole solver  step
+     * @param moves 
+     */
     private doMoves(moves: string): void {
       for (let i = 0; i < moves.length; ++i) {
         if (moves.charAt(i) !== " " && moves.charAt(i) !== "'") {

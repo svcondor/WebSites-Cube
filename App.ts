@@ -42,8 +42,8 @@ module App2 {
 
   class MainApp {
 
-    public aaSignature = "MainApp";
-    private solverPointerTimer: number = 0;
+    public aaSignature = "MainApp1";
+    private solverPointerTimer: number = null;
     //private stepDirection: number = -1;
     private iconUndo: HTMLElement;
     private iconRedo: HTMLElement;
@@ -557,7 +557,12 @@ module App2 {
           break;
 
         case "fa-arrow-circle-o-right":
-          clearTimeout(this.solverPointerTimer);
+          if (this.solverPointerTimer !== null) {
+            clearTimeout(this.solverPointerTimer);
+            this.solverPointerTimer = null;
+            this.solver.solverMsg("");
+            this.doTutorMove();
+          }
           break;
       }
     });
@@ -576,11 +581,10 @@ module App2 {
 
         case "fa-arrow-circle-o-right":
           this.solverPointerTimer = setTimeout(() => {
+            this.solverPointerTimer = null;
             this.solver.step();
             return;
           }, 1000);
-          this.solver.solverMsg("");
-          this.doTutorMove();
           break;
 
         case "fa-question":
