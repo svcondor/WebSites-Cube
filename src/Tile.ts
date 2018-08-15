@@ -1,4 +1,4 @@
-﻿module App2 {
+﻿namespace App2 {
 
   export class Tile {
     public tileIx: number;
@@ -9,7 +9,7 @@
     public pivot: BABYLON.Mesh;
 
     public toString = (): string => {
-      let s1:string  = "{0} {1} {2} {3}", tileIx,color,color2,color3;
+      let s1: string  = `${this.tileIx} ${this.color} ${this.color2} ${this.color3}`;
       return s1;
     }
 

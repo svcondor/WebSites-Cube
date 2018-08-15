@@ -1,4 +1,4 @@
-﻿module App2 {
+﻿namespace App2 {
 
   export enum TileColor {
     Blue = 0,
@@ -9,7 +9,7 @@
     Yellow = 5,
     Gray = 6,
     Black = 7,
-    none = 8
+    none = 8,
   }
 
   export enum CubeFace {
@@ -19,21 +19,6 @@
     L = 3,
     U = 4,
     D = 5
-  }
-
-  export class Piece {
-    constructor(
-      public color1: TileColor,
-      public color2: TileColor = TileColor.none,
-      public color3: TileColor = TileColor.none,
-      public ix1: number,
-      public ix2: number = 0,
-      public ix3: number = 0) {
-      if (color2 === null)
-        color2 = TileColor.none;
-      if (color3 === null)
-        color3 = TileColor.none;
-    }
   }
 
   export class Cube {
@@ -51,7 +36,7 @@
     public moveCodes: string = "ULFRBDYXZMES";
     //TODO change TS to YXZ
     private residualMoves: string = "";
-    private pivotList: Array<BABYLON.Mesh>;
+    private pivotList: BABYLON.Mesh[];  //    Array<BABYLON.Mesh>;
     public currentAngle: number = 0;
     public targetAngle: number = 0;
     public startTime: number;
@@ -109,7 +94,7 @@
           increment = newAngle - this.currentAngle;
           if (increment > 10) console.log(`Pos ${t2} ${t1} ${newAngle} ${increment}`);
           if (this.currentAngle + increment >= this.targetAngle) {
-            increment = this.targetAngle - this.currentAngle
+            increment = this.targetAngle - this.currentAngle;
             zeroTargetAngle = true;
             //this.targetAngle = 0;
           }
@@ -162,7 +147,7 @@
       if (color3 !== null) {
         for (let i: number = 0; i < Cube.tiles.length; i++) {
           let tile1: Tile = Cube.tile(i);
-          if (tile1.color == color && tile1.color3 == color3) {
+          if (tile1.color === color && tile1.color3 === color3) {
             return i;
           }
         }
@@ -171,7 +156,7 @@
         for (let i: number = 0; i < Cube.tiles.length; i++) {
 
           let tile1: Tile = Cube.tile(i);
-          if (tile1.color == color && tile1.color2 == color2 && tile1.color3 == TileColor.none) {
+          if (tile1.color === color && tile1.color2 === color2 && tile1.color3 === TileColor.none) {
             return i;
           }
         }
@@ -187,7 +172,7 @@
           let tile1Ix = -1;
           for (let i = 0; i < Cube.tiles.length; ++i) {
             if (Cube.tiles[i].mesh === mesh1) {
-              if (i<0 || (i >= 18 && i < 36) || i >= 45) {
+              if (i < 0 || (i >= 18 && i < 36) || i >= 45) {
                 return -1;
               }
               return i;
@@ -216,7 +201,7 @@
     //  }
     //  return this.mouseMove1(tile1Ix, tile2Ix)
     //}
-    //public mouseMove1(tile1Ix:number, tile2Ix:number) { 
+    //public mouseMove1(tile1Ix:number, tile2Ix:number) {
     //  let face1 = Math.floor(tile1Ix / 9);
     //  let face2 = Math.floor(tile2Ix / 9);
     //  let rel1 = tile1Ix % 9;
@@ -391,7 +376,7 @@
     }
 
     private drawFace(cubeFace: CubeFace): void {
-      let tileIx: number = cubeFace as number * 9;;
+      let tileIx: number = cubeFace as number * 9;
       for (let y = 1; y >= -1; --y) {
         for (let x = -1; x <= 1; ++x) {
           if (y === 1 && x === 5) {
@@ -448,7 +433,7 @@
       for (let i = 0; i < moves.length; ++i) {
         let move1 = moves.charAt(i) + " ";
         this.rotateTable(move1, true, 0);
-        // this.scene.render();   
+        // this.scene.render();
       }
       this.doneMoves = "";
       this.movesCount = 0;
@@ -456,7 +441,7 @@
       this.gameStarted = false;
       let s2 = document.getElementById("ScoreBox");
       s2.innerText = this.movesCount.toString();
-      
+
       // console.log(moves);
     }
 
@@ -506,21 +491,21 @@
         console.assert(tile.color === sp1.color1, "SidePiece wrong color");
         tile.color2 = sp1.color2;
         tile = Cube.tile(sp1.ix2);
-        console.assert(tile.color == sp1.color2, "SidePiece wrong color");
+        console.assert(tile.color === sp1.color2, "SidePiece wrong color");
         tile.color2 = sp1.color1;
       }
       for (let i = 0; i < this.cornerPieces.length; ++i) {
         let sp1: Piece = this.cornerPieces[i];
         let tile: Tile = Cube.tile(sp1.ix1);
-        console.assert(tile.color == sp1.color1, "CornerPiece wrong color");
+        console.assert(tile.color === sp1.color1, "CornerPiece wrong color");
         tile.color2 = sp1.color2;
         tile.color3 = sp1.color3;
         tile = Cube.tile(sp1.ix2);
-        console.assert(tile.color == sp1.color2, "CornerPiece wrong color");
+        console.assert(tile.color === sp1.color2, "CornerPiece wrong color");
         tile.color2 = sp1.color3;
         tile.color3 = sp1.color1;
         tile = Cube.tile(sp1.ix3);
-        console.assert(tile.color == sp1.color3, "CornerPiece wrong color");
+        console.assert(tile.color === sp1.color3, "CornerPiece wrong color");
         tile.color2 = sp1.color1;
         tile.color3 = sp1.color2;
       }
@@ -536,8 +521,8 @@
       }
       else moveTable = this.clockMoves;
       let moveIx = this.moveCodes.indexOf(move.substring(0, 1));
-      let moveTiles: Array<Tile> = [];
-      let movelist: Array<number> = [];
+      let moveTiles: Tile[] = [];
+      let movelist: number[] = [];
       if (image) {
         this.pivotList = [];
         if (this.targetAngle !== 0) {
@@ -621,23 +606,23 @@
           this.currentAngle = 0;
           this.targetAngle = angle;
         }
- //         if (speed > 200) {
-            if (this.gameStarted === false) {
-              if (move.charAt(0) !== "X" && move.charAt(0) !== "Y" && move.charAt(0) !== "Z") {
-                this.gameStarted = true;
-                this.gameStartTime = new Date().valueOf();
-              }
-            }
-            if (this.gameStarted) {
-              let s2 = document.getElementById("ScoreBox");
-              let elapsed: number = (new Date().valueOf()) - this.gameStartTime;
-              var mins = Math.floor(elapsed / (1000 * 60));
-              elapsed -= mins * (1000 * 60);
-              var seconds = Math.floor(elapsed / (1000));
-              s2.innerText = `${this.movesCount.toString()} ${mins}:${seconds}`;
-            }
-//          }
-//        }
+        //         if (speed > 200) {
+        if (this.gameStarted === false) {
+          if (move.charAt(0) !== "X" && move.charAt(0) !== "Y" && move.charAt(0) !== "Z") {
+            this.gameStarted = true;
+            this.gameStartTime = new Date().valueOf();
+          }
+        }
+        if (this.gameStarted) {
+          let s2 = document.getElementById("ScoreBox");
+          let elapsed: number = (new Date().valueOf()) - this.gameStartTime;
+          let mins = Math.floor(elapsed / (1000 * 60));
+          elapsed -= mins * (1000 * 60);
+          let seconds = Math.floor(elapsed / (1000));
+          s2.innerText = `${this.movesCount.toString()} ${mins}:${seconds}`;
+        }
+        //          }
+        //        }
       }
       return moveCount;
     }

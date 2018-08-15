@@ -1,9 +1,8 @@
-﻿/// <reference path="../typings/index.d.ts" />
-
-module App2 {
+﻿
+namespace App2 {
   //TODO: make CubeFace.U Enum 2
   //TODO: Swap some antiClockmoves with clockMoves
-  export var this2: any;
+  export let this2: any;
   //https://github.com/icflorescu/iisexpress-proxy
   // npm install -g iisexpress-proxy
   //iisexpress-proxy 55537 to 8080
@@ -34,17 +33,19 @@ module App2 {
   }
 
   enum Panel {
-    close = 0,
+    closeAll = 0,
     help = 1,
     menu = 2,
-    about = 3
+    about = 3,
+    crib = 4,
+    close = 5,
   }
 
   class MainApp {
 
     public aaSignature = "MainApp1";
     private solverPointerTimer: number = null;
-    //private stepDirection: number = -1;
+    // private stepDirection: number = -1;
     private iconUndo: HTMLElement;
     private iconRedo: HTMLElement;
     private scene: BABYLON.Scene;
@@ -52,7 +53,7 @@ module App2 {
     private solver: Solver;
 
     private mouseStatus: number = 0;
-    private mousePos1: Point = { X: 0, Y: 0 };   // Mouse position on canvas 
+    private mousePos1: Point = { X: 0, Y: 0 };   // Mouse position on canvas
     private mouseDistance = 0;
     private minimumDistance: number;
     private mouseMove: string = "";
@@ -64,8 +65,9 @@ module App2 {
     private panelHelp: HTMLElement;
     private panelMenu: HTMLElement;
     private panelAbout: HTMLElement;
+    private panelCrib: HTMLElement;
     private labels: HTMLCollectionOf<HTMLElement>;
-    private overlay: Panel = Panel.close;
+    private overlay: Panel = Panel.closeAll;
     private interval1: number;
     private engine: BABYLON.Engine;
     private camera: BABYLON.FreeCamera;
@@ -75,29 +77,40 @@ module App2 {
     constructor() {
       this2 = this;
 
-      //http://stackoverflow.com/questions/16152609/importing-external-html-inner-content-with-javascript-ajax-without-jquery
-      let url = "help1.html";
-      let xmlhttp = new XMLHttpRequest();
-      xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+      // http://stackoverflow.com/questions/16152609/
+      //  importing-external-html-inner-content-with-javascript-ajax-without-jquery
+      //const url = "help1.html";
+
+      const xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = (): any => {
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
           document.getElementById("panelHelp").innerHTML = xmlhttp.responseText;
-          let v4 = 34;
         }
-      }
-      xmlhttp.open("GET", url, true);
+      };
+      xmlhttp.open("GET", "help1.html", true);
       xmlhttp.send();
 
-      let v2 = 2; //dummy
+      const xmlhttp1 = new XMLHttpRequest();
+      xmlhttp1.onreadystatechange = (): any => {
+        if (xmlhttp1.readyState === 4 && xmlhttp1.status === 200) {
+          document.getElementById("panelCrib").innerHTML = xmlhttp1.responseText;
+        }
+      };
+      xmlhttp1.open("GET", "crib.html", true);
+      xmlhttp1.send();
+
+
+
       BABYLON.Engine.CodeRepository = "/Babylon/src/";
       BABYLON.Engine.ShadersRepository = "/Babylon/src/Shaders/";
       this.resizeCanvas();
 
-      let canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
-      let engine = new BABYLON.Engine(canvas, true);
+      const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
+      const engine = new BABYLON.Engine(canvas, true);
       this.engine = engine;
-      // TODO Default HardwareScaling PC = 1  930 = 0.5      2=jagged fast 
+      // TODO Default HardwareScaling PC = 1  930 = 0.5      2=jagged fast
       this.engine.setHardwareScalingLevel(1.0);
-      window.addEventListener('resize', () => {
+      window.addEventListener("resize", () => {
         //TODO add timer to reduce flashing
         this.resizeCanvas();
         engine.resize();
@@ -116,7 +129,7 @@ module App2 {
       this.scene.clearColor = new BABYLON.Color4(.5, 0.5, 0.5, 1);
 
       //Was 7,7,-15
-      let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(10, 7, -15), this.scene);
+      const camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(10, 7, -15), this.scene);
       this.camera = camera;
       camera.setTarget(new BABYLON.Vector3(-.07, -1.2, 0)); // was 0,0,0
       camera.fov = 0.35;  //0.33 for iphone 5   //0.35 Nokia 930
@@ -126,19 +139,21 @@ module App2 {
       this.positionButtons();
       this.solver = new Solver(this.cube);
 
-      let icons = document.getElementsByClassName("fa");
+      const icons = document.getElementsByClassName("fa");
       this.panelHelp = document.getElementById("panelHelp");
+      this.panelCrib = document.getElementById("panelCrib");
       this.panelMenu = document.getElementById("panelMenu");
       this.panelAbout = document.getElementById("panelAbout");
-      this.labels = <HTMLCollectionOf<HTMLElement>>document.getElementsByClassName("label");
+      this.labels = document.getElementsByClassName("label") as HTMLCollectionOf<HTMLElement>;
+      //this.labels = <HTMLCollectionOf<HTMLElement>>document.getElementsByClassName("label");
 
       for (let i = 0; i < icons.length; ++i) {
-        let icon = icons[i];
+        const icon = icons[i];
         if (icon.classList.contains("fa-arrow-circle-o-left")) {
-          this.iconUndo = <HTMLElement>icon;
+          this.iconUndo = icon as HTMLElement;
         }
         else if (icon.classList.contains("fa-arrow-circle-o-right")) {
-          this.iconRedo = <HTMLElement>icon;
+          this.iconRedo = icon as HTMLElement;
           //let s1 = this.iconRedo.className;
           //let s2 = s1.replace(" disabled", "");
           //this.iconRedo.className = s2;
@@ -148,9 +163,9 @@ module App2 {
         icon.addEventListener("pointerup", this.handleIconPointerUp);
       }
 
-      let settings = document.getElementsByTagName("li");
+      const settings = document.getElementsByTagName("li");
       for (let i = 0; i < settings.length; ++i) {
-        let setting = settings[i];
+        const setting = settings[i];
         if (setting.innerText === "Fast") {
           this.fastSpeed = true;
         }
@@ -162,7 +177,7 @@ module App2 {
       this.loadRawHitData();
       this.buildHitTester();
 
-      let canvas1 = document.getElementById("renderCanvas");
+      const canvas1 = document.getElementById("renderCanvas");
       canvas1.addEventListener("pointerdown", this.handlePointerDown);
       canvas1.addEventListener("pointermove", this.handlePointerMove);
       canvas1.addEventListener("pointerup", this.handlePointerUp);
@@ -178,8 +193,8 @@ module App2 {
     }
 
     private showIcon(icon: HTMLElement, show: boolean): void {
-      let className = icon.className;
-      let pos1 = className.indexOf(" disabled");
+      const className = icon.className;
+      const pos1 = className.indexOf(" disabled");
       if (show && pos1 !== -1) {
         icon.className = className.replace(" disabled", "");
       }
@@ -216,17 +231,18 @@ module App2 {
         [41, 38, 44, 43, 10, "R R'Z'Z "],
         [42, 39, 0, -43, 43, "L'L F'F "],
         [43, 40, 1, 42, 44, "X X'F'F "],
-        [44, 41, 2, 43, 9, "R R'F'F "]
+        [44, 41, 2, 43, 9, "R R'F'F "],
       ];
       this.hitTable = new Array(27);
-      for (let v1 of rawData) {
-        let moves: string = v1[5];
+      for (let v100 of rawData) {
+        let moves: string = v100[5];
         let hit1: HitEntry = {
-          tileIx: v1[0], targets: [
-            { targetIx: v1[1], move: moves.substr(0, 2) },
-            { targetIx: v1[2], move: moves.substr(2, 2) },
-            { targetIx: v1[3], move: moves.substr(4, 2) },
-            { targetIx: v1[4], move: moves.substr(6, 2) }]
+
+          tileIx: v100[0], targets: [
+            { targetIx: v100[1], move: moves.substr(0, 2) },
+            { targetIx: v100[2], move: moves.substr(2, 2) },
+            { targetIx: v100[3], move: moves.substr(4, 2) },
+            { targetIx: v100[4], move: moves.substr(6, 2) }],
         };
         this.hitTable[hit1.tileIx] = hit1;
         //this.hitTable.push(hit1);
@@ -241,10 +257,9 @@ module App2 {
 
     private buildHitTester(): void {
 
-      let matrixIdentity: BABYLON.Matrix = BABYLON.Matrix.Identity();
-      let transformMatrix: BABYLON.Matrix = this.scene.getTransformMatrix();
-      let viewPort: BABYLON.Viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
-
+      let matrixIdentity = BABYLON.Matrix.Identity();
+      let transformMatrix = this.scene.getTransformMatrix();
+      let viewPort = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
 
       for (let face: CubeFace = 0; face < 6; ++face) {
         if (face === CubeFace.F || face === CubeFace.U || face === CubeFace.R) {
@@ -313,7 +328,7 @@ module App2 {
         }
         if (deltaAngle < foundDelta) {
           foundDelta2 = foundDelta;
-          foundDelta = deltaAngle
+          foundDelta = deltaAngle;
           target1 = target;
         }
         else if (deltaAngle < foundDelta2) {
@@ -478,7 +493,7 @@ module App2 {
           if (hitTarget.precise === true) {
             console.log(`PointerMove - single2`);
             //if (distance > foundTarget.distance / 4) {
-            if (this.cube.targetAngle != 0) {
+            if (this.cube.targetAngle !== 0) {
             }
             this.mouseMove = hitTarget.move;
             console.log(`move ${this.mouseMove}`);
@@ -497,7 +512,7 @@ module App2 {
     private handlePointerUp = (event: PointerEvent) => {
       console.log(`PointerUp`);
       if (this.cube.targetAngle !== 0 && this.fastSpeed) {
-        let fastStartTime = new Date().valueOf() - .90 * this.cube.moveSpeed;
+        const fastStartTime = new Date().valueOf() - .90 * this.cube.moveSpeed;
         if (fastStartTime < this.cube.startTime) this.cube.startTime = fastStartTime;
       }
       this.mouseStatus = 0;
@@ -527,13 +542,13 @@ module App2 {
           //TODO: Add checkbox
           target.innerText = "Fast";
           this.fastSpeed = true;
-          this.showOverlay(Panel.close);
+          this.showOverlay(Panel.closeAll);
           break;
 
         case "Fast":
           target.innerText = "Slow";
           this.fastSpeed = false;
-          this.showOverlay(Panel.close);
+          this.showOverlay(Panel.closeAll);
           break;
 
         case "Help":
@@ -543,6 +558,8 @@ module App2 {
         case "About":
           this.showOverlay(Panel.about);
           break;
+        case "Crib":
+          this.showOverlay(Panel.crib);
       }
       return false;
     });
@@ -551,7 +568,7 @@ module App2 {
       console.log(`handleIconPointerUp`);
       let this1 = this;
       let target: HTMLElement = event.currentTarget as HTMLElement;
-      let v1 = target.classList;
+      const v1 = target.classList;
       switch (target.classList[1]) {
         case "fa-arrow-circle-o-left":
           break;
@@ -588,23 +605,23 @@ module App2 {
           break;
 
         case "fa-question":
-          if (this.overlay === Panel.help) this.showOverlay(Panel.close);
+          if (this.overlay === Panel.help) this.showOverlay(Panel.closeAll);
           else this.showOverlay(Panel.help);
           break;
 
         case "fa-ellipsis-h":
-          if (this.overlay !== Panel.close) this.showOverlay(Panel.close);
+          if (this.overlay !== Panel.closeAll) this.showOverlay(Panel.closeAll);
           else this.showOverlay(Panel.menu);
           break;
 
         case "fa-home":
-          this.showOverlay(Panel.close);
+          this.showOverlay(Panel.closeAll);
           this.cube.resetTileColors();
           this.solver.reset();
           break;
 
         case "fa-random":
-          this.showOverlay(Panel.close);
+          this.showOverlay(Panel.closeAll);
           this.cube.scramble();
           this.solver.reset();
           break;
@@ -630,7 +647,7 @@ module App2 {
       }
       if (this.solver.solverMoves.length === 0) {
         this.solver.solverMoves = this.solver.solve(this.solver.startStep);
-        if (this.solver.solverMoves.length > 4 && this.solver.solverMoves.substr(0, 3) == "msg") {
+        if (this.solver.solverMoves.length > 4 && this.solver.solverMoves.substr(0, 3) === "msg") {
           let msg = document.getElementById("solvermessage");
           msg.innerText = this.solver.solverMoves.substr(3);
           this.solver.solverMoves = "";
@@ -653,7 +670,6 @@ module App2 {
         }
       }
     }
-
 
     private finishMove(function1: any, ...rest: any[]): void {
       if (MainApp.finishMoveReEnter) {
@@ -737,10 +753,15 @@ module App2 {
       //} else {
       //  //panelHelp.style.maxHeight = panelHelp.scrollHeight + "px";
       //  panelHelp.style.maxHeight = "400" + "px";
-      //} 
+      //}
 
       if (this.overlay === Panel.help) {
         this.panelHelp.style.display = "none";
+      }
+      else if (this.overlay === Panel.crib) {
+        if (newPanel !== Panel.close) {
+        this.panelCrib.style.display = "none";
+        }
       }
       else if (this.overlay === Panel.menu) {
         this.hideShowLabels(false);
@@ -749,10 +770,15 @@ module App2 {
       else if (this.overlay === Panel.about) {
         this.panelAbout.style.display = "none";
       }
+      if (newPanel !== Panel.close || this.overlay !== Panel.crib) {
       this.overlay = newPanel;
-      if (newPanel === Panel.close) this.overlay = Panel.close;
+      }
+      if (newPanel === Panel.closeAll) this.overlay = Panel.closeAll;
       else if (newPanel === Panel.help) {
         this.panelHelp.style.display = "block";
+      }
+      else if (newPanel === Panel.crib) {
+        this.panelCrib.style.display = "block";
       }
       else if (newPanel === Panel.menu) {
         this.hideShowLabels(true);
@@ -788,7 +814,7 @@ module App2 {
           case 3: face = 4; relTile = 2; break;
         }
         let tile = Cube.tile(face, relTile);
-        let mesh2 = <BABYLON.Mesh>tile.mesh.getChildren()[0];
+        let mesh2 = tile.mesh.getChildren()[0] as BABYLON.Mesh;
         let box = mesh2._boundingInfo.boundingBox.vectorsWorld;
         for (let v3 of box) {
           let p: BABYLON.Vector3 = BABYLON.Vector3.Project(
@@ -805,6 +831,8 @@ module App2 {
         + `gamediv W-${gameDiv1.clientWidth} H-${gameDiv1.clientHeight} Window W-${window.innerWidth} H-${window.innerHeight}<br>`
         + `buttons W-${buttons.clientWidth} L-${buttons.clientLeft} B-${buttons.clientTop}`
         + `Pointerdown X-${this.mousePos1.X} Y-${this.mousePos1.Y}`;
+
+      this.panelCrib.innerHTML = "";
     }
 
     private resizeCanvas(): void {
@@ -843,7 +871,7 @@ module App2 {
           case 3: face = 4; relTile = 2; break;
         }
         let tile = Cube.tile(face, relTile);
-        let mesh2 = <BABYLON.Mesh>tile.mesh.getChildren()[0];
+        let mesh2 = tile.mesh.getChildren()[0] as BABYLON.Mesh;
         let box = mesh2._boundingInfo.boundingBox.vectorsWorld;
         for (let v3 of box) {
           let p: BABYLON.Vector3 = BABYLON.Vector3.Project(
@@ -857,15 +885,15 @@ module App2 {
       }
       console.log(`Cube Xmin ${x1.toFixed(0)} max ${x2.toFixed(0)} Ymin ${y1.toFixed(0)} max ${y2.toFixed(0)}`);
 
-
       //buttons.style.bottom = `${navbar1.clientHeight + 50}px`;
       buttons.style.bottom = `${navbar1.clientHeight + 5}px`;
       //let h1 = gameDiv1.clientHeight / 1.5;
       //if (navbar1.clientWidth > h1) {
         //buttons.style.width = `${h1}px`;
         //buttons.style.left = `${(navbar1.clientWidth - h1) / 2}px`;
-       buttons.style.width = `${(x2-x1).toFixed(0)}px`;
-       buttons.style.left = `${x1.toFixed(0)}px`;
+      buttons.style.width = `${(x2 - x1).toFixed(0)}px`;
+      buttons.style.left = `${x1.toFixed(0)}px`;
+
        //buttons.style.width = `${(navbar1.clientWidth - 2 * x1).toFixed(0)}px`;
 
         //buttons.style.width = `${h1}px`;
@@ -889,8 +917,8 @@ module App2 {
   }
 
   // Instantiate the main App class once everything is loaded
-  window.addEventListener('DOMContentLoaded', () => {
+  window.addEventListener("DOMContentLoaded", () => {
     //TODO: Splash Screen
-    let mainApp = new MainApp();
+    const mainApp = new MainApp();
   });
 }

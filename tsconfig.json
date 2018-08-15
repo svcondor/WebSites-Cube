@@ -4,7 +4,7 @@
     "alwaysStrict": true,
     "noImplicitAny": false,
     "noEmitOnError": true,
-    "removeComments": false,
+    "removeComments": true,
     "sourceMap": true,
     "experimentalDecorators": true,
     "outFile": "build/jscript.js",
@@ -12,7 +12,8 @@
     "target": "es5"
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "typings/**/*"
   ],
   "exclude": [
     "node_modules"

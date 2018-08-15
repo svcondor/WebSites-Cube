@@ -1,4 +1,4 @@
-﻿module App2 {
+﻿namespace App2 {
 
   export interface Solution {
     moves1: string;
@@ -54,25 +54,25 @@
       let moves = "";
       //if (startStep === 0) this.solveStep = 0;
       if (!this.checkWhiteLayer()) {
-        let moves = this.runStep(this.whiteCross, 1, startStep);
+        moves = this.runStep(this.whiteCross, 1, startStep);
         if (moves !== "" || startStep === 1) return moves;
         moves = this.runStep(this.whiteCorners, 2, startStep);
         if (moves !== "" || startStep === 2) return moves;
         if (startStep === 0) return "X X ";
         else this.doMoves("X X ");
       }
-        moves = this.runStep(this.middleSection, 3, startStep);
-        if (moves !== "" || startStep === 3) return moves;
-        moves = this.runStep(this.yellowCross, 4, startStep);
-        if (moves !== "" || startStep === 4) return moves;
-        moves = this.runStep(this.orientateYellowCross, 5, startStep);
-        if (moves !== "" || startStep === 5) return moves;
-        moves = this.runStep(this.yellowCorners, 6, startStep);
-        if (moves !== "" || startStep === 6) return moves;
-        moves = this.runStep(this.orientateYellowCorners, 7, startStep);
-        if (moves !== "" || startStep === 7) return moves;
+      moves = this.runStep(this.middleSection, 3, startStep);
+      if (moves !== "" || startStep === 3) return moves;
+      moves = this.runStep(this.yellowCross, 4, startStep);
+      if (moves !== "" || startStep === 4) return moves;
+      moves = this.runStep(this.orientateYellowCross, 5, startStep);
+      if (moves !== "" || startStep === 5) return moves;
+      moves = this.runStep(this.yellowCorners, 6, startStep);
+      if (moves !== "" || startStep === 6) return moves;
+      moves = this.runStep(this.orientateYellowCorners, 7, startStep);
+      if (moves !== "" || startStep === 7) return moves;
 
-        return "";
+      return "";
     }
 
     private runStep = (function1: Function, step: number, targetStep: number): string => {
@@ -93,7 +93,7 @@
 
     /**
      * Complete whole solver  step
-     * @param moves 
+     * @param moves
      */
     private doMoves(moves: string): void {
       for (let i = 0; i < moves.length; ++i) {
@@ -120,7 +120,7 @@
       }
       for (let i = 0; i < 4; ++i) {
         for (let j = 6; j < 9; ++j) {
-          if (Cube.tile(i, j).color != Cube.tile(i, 4).color) {
+          if (Cube.tile(i, j).color !== Cube.tile(i, 4).color) {
             return false;
           }
         }
@@ -130,19 +130,19 @@
 
     private whiteOnTop = (): string => {
       let moves: string = "";
-      if (Cube.tile(CubeFace.U, 4).color == TileColor.White) {
+      if (Cube.tile(CubeFace.U, 4).color === TileColor.White) {
         return "";
       }
-      else if (Cube.tile(CubeFace.D, 4).color == TileColor.White) {
+      else if (Cube.tile(CubeFace.D, 4).color === TileColor.White) {
         moves = "X X ";
       }
-      else if (Cube.tile(CubeFace.L, 4).color == TileColor.White) {
+      else if (Cube.tile(CubeFace.L, 4).color === TileColor.White) {
         moves = "Z ";
       }
-      else if (Cube.tile(CubeFace.R, 4).color == TileColor.White) {
+      else if (Cube.tile(CubeFace.R, 4).color === TileColor.White) {
         moves = "Z'";
       }
-      else if (Cube.tile(CubeFace.B, 4).color == TileColor.White) {
+      else if (Cube.tile(CubeFace.B, 4).color === TileColor.White) {
         moves = "X'";
       }
       else {
@@ -160,7 +160,7 @@
 
       let front: TileColor = Cube.tile(CubeFace.F, 4).color;
       let ixWhite = Cube.findColors(TileColor.White, front);
-      console.assert(ixWhite != -1, `whiteCross1 sidePiece White/${front} not found`);
+      console.assert(ixWhite !== -1, `whiteCross1 sidePiece White/${front} not found`);
 
       let face: CubeFace = Math.floor(ixWhite / 9);
       let relTile = ixWhite % 9;
@@ -215,12 +215,12 @@
           }
           break;
       }
-      if ((Cube.tile(CubeFace.U, 1).color == TileColor.White)
-        && (Cube.tile(CubeFace.U, 3).color == TileColor.White)
-        && (Cube.tile(CubeFace.U, 5).color == TileColor.White)
-        && (Cube.tile(CubeFace.L, 1).color == Cube.tile(CubeFace.L, 4).color)
-        && (Cube.tile(CubeFace.B, 1).color == Cube.tile(CubeFace.B, 4).color)
-        && (Cube.tile(CubeFace.R, 1).color == Cube.tile(CubeFace.R, 4).color)
+      if ((Cube.tile(CubeFace.U, 1).color === TileColor.White)
+        && (Cube.tile(CubeFace.U, 3).color === TileColor.White)
+        && (Cube.tile(CubeFace.U, 5).color === TileColor.White)
+        && (Cube.tile(CubeFace.L, 1).color === Cube.tile(CubeFace.L, 4).color)
+        && (Cube.tile(CubeFace.B, 1).color === Cube.tile(CubeFace.B, 4).color)
+        && (Cube.tile(CubeFace.R, 1).color === Cube.tile(CubeFace.R, 4).color)
       ) {
       }
       else {
@@ -234,7 +234,7 @@
       // Find tile that belongs in Front top right
       let front: TileColor = Cube.tile(CubeFace.F, 4).color;
       let ixWhite = Cube.findColors(TileColor.White, null, front);
-      console.assert(ixWhite != -1, "whiteCorner1 piece not found");
+      console.assert(ixWhite !== -1, "whiteCorner1 piece not found");
       let moves = "";
       let face: CubeFace = Math.floor(ixWhite / 9);
       let tileOnFace = ixWhite % 9;
@@ -288,14 +288,14 @@
           }
           break;
       }
-      if ((Cube.tile(CubeFace.U, 0).color == TileColor.White)
-        && (Cube.tile(CubeFace.U, 2).color == TileColor.White)
-        && (Cube.tile(CubeFace.U, 6).color == TileColor.White)
-        && (Cube.tile(CubeFace.L, 2).color == Cube.tile(CubeFace.L, 4).color)
-        && (Cube.tile(CubeFace.B, 2).color == Cube.tile(CubeFace.B, 4).color)
-        && (Cube.tile(CubeFace.R, 2).color == Cube.tile(CubeFace.R, 4).color)
+      if ((Cube.tile(CubeFace.U, 0).color === TileColor.White)
+        && (Cube.tile(CubeFace.U, 2).color === TileColor.White)
+        && (Cube.tile(CubeFace.U, 6).color === TileColor.White)
+        && (Cube.tile(CubeFace.L, 2).color === Cube.tile(CubeFace.L, 4).color)
+        && (Cube.tile(CubeFace.B, 2).color === Cube.tile(CubeFace.B, 4).color)
+        && (Cube.tile(CubeFace.R, 2).color === Cube.tile(CubeFace.R, 4).color)
       ) {
-        if (moves == "") {
+        if (moves === "") {
           console.log(`white Corner Done`);
         }
       }
@@ -310,34 +310,34 @@
       let moves = "";
       for (let i = 7; i > 0; i -= 2) {
         let tile1 = Cube.tile(CubeFace.U, i);
-        if (tile1.color != TileColor.Yellow && tile1.color2 != TileColor.Yellow) {
+        if (tile1.color !== TileColor.Yellow && tile1.color2 !== TileColor.Yellow) {
           let frontColor: TileColor = Cube.tile(CubeFace.F, 4).color;
           let rotates1 = frontColor - tile1.color2;
           let rotates2 = 0;
-          if (i == 1) rotates2 = 2;
-          if (i == 3) rotates2 = 3;
-          if (i == 5) rotates2 = 1;
+          if (i === 1) rotates2 = 2;
+          if (i === 3) rotates2 = 3;
+          if (i === 5) rotates2 = 1;
           rotates2 -= rotates1;
           rotates1 = ((rotates1 + 4) % 4);
           rotates2 = ((rotates2 + 4) % 4);
-          if (rotates1 == 1) moves = "Y";
-          else if (rotates1 == 2) moves = "YY";
-          else if (rotates1 == 3) moves = "Y'";
-          if (rotates2 == 1) moves += "U";
-          else if (rotates2 == 2) moves += "UU";
-          else if (rotates2 == 3) moves += "U'";
+          if (rotates1 === 1) moves = "Y";
+          else if (rotates1 === 2) moves = "YY";
+          else if (rotates1 === 3) moves = "Y'";
+          if (rotates2 === 1) moves += "U";
+          else if (rotates2 === 2) moves += "UU";
+          else if (rotates2 === 3) moves += "U'";
           else {
-            if (tile1.color == Cube.tile(CubeFace.R, 4).color) {
-              if (moves.length >= 2 && moves.substr(moves.length - 2) == "U'") {
+            if (tile1.color === Cube.tile(CubeFace.R, 4).color) {
+              if (moves.length >= 2 && moves.substr(moves.length - 2) === "U'") {
                 moves = moves.substr(0, moves.length - 2) + "RU'R'U'F'UF";
               }
-              else if (moves.length >= 2 && moves.substr(moves.length - 2) == "UU") {
+              else if (moves.length >= 2 && moves.substr(moves.length - 2) === "UU") {
                 moves = moves.substr(0, moves.length - 2) + "U'RU'R'U'F'UF";
               }
               else moves += "URU'R'U'F'UF";
             }
             else {
-              if (moves.length >= 1 && moves.substr(moves.length - 1) == "U") {
+              if (moves.length >= 1 && moves.substr(moves.length - 1) === "U") {
                 moves = moves.substr(0, moves.length - 1) + "L'ULUFU'F'";
               }
               else moves += "U'L'ULUFU'F'";
@@ -350,24 +350,24 @@
 
 
       //      Front col
-      //      0  1  2  3        Blue = 0,        F = 0,   
+      //      0  1  2  3        Blue = 0,        F = 0,
       //T  0  0  1  2  1-       Orange = 1,      R = 1,
       //O  1  1- 0  1  2        Green = 2,       B = 2,
       //P  2  2  1- 0  1        Red = 3,         L = 3,
-      //   3  1  2  1- 0    
+      //   3  1  2  1- 0
 
       for (let i = 0; i < 4; ++i) {
         moves = "";
-        if (i == 1) moves = "Y";
-        else if (i == 2) moves = "YY";
-        else if (i == 3) moves = "Y'";
-        if (Cube.tile(i, 4).color != Cube.tile(i, 3).color) {
+        if (i === 1) moves = "Y";
+        else if (i === 2) moves = "YY";
+        else if (i === 3) moves = "Y'";
+        if (Cube.tile(i, 4).color !== Cube.tile(i, 3).color) {
           moves += "U'L'ULUFU'F'";
           console.log(`middle section m=${moves} `);
           return moves;
 
         }
-        else if (Cube.tile(i, 4).color != Cube.tile(i, 5).color) {
+        else if (Cube.tile(i, 4).color !== Cube.tile(i, 5).color) {
           moves += "URU'R'U'F'UF";
           console.log(`m=${moves} `);
           return moves;
@@ -382,10 +382,10 @@
     private yellowCross = (): string => {
       let moves = "";
       for (let i = 7; i > 0; i -= 2) {
-        if (Cube.tile(CubeFace.U, i).color != TileColor.Yellow) {
-          if (i == 5) moves = "U";
-          else if (i == 3) moves = "U'";
-          else if (i == 1) moves = "UU";
+        if (Cube.tile(CubeFace.U, i).color !== TileColor.Yellow) {
+          if (i === 5) moves = "U";
+          else if (i === 3) moves = "U'";
+          else if (i === 1) moves = "UU";
           moves += "R' U' F' U F R U'";
           return moves;
         }
@@ -457,27 +457,27 @@
         colors[2] = tile1.color3;
         let j = 0;
         for (; j < 3; j++) {
-          if (colors[j] != TileColor.Yellow
-            && colors[j] != Cube.tile(i, 4).color
-            && colors[j] != Cube.tile((i + 1) % 4, 4).color) {
+          if (colors[j] !== TileColor.Yellow
+            && colors[j] !== Cube.tile(i, 4).color
+            && colors[j] !== Cube.tile((i + 1) % 4, 4).color) {
             break;
           }
         }
         if (j >= 3) {
-          if (validCount == 0) validFace = i;
+          if (validCount === 0) validFace = i;
           ++validCount;
         }
       }
-      if (validCount == 4) {
+      if (validCount === 4) {
         //Debug.WriteLine($"yellowCorners steps={stepCount}");
         //stepCount = 0;
         return "";
       }
       let moves: string = "";
-      if (validCount != 0) {
-        if (validFace == 1) moves = "Y";
-        else if (validFace == 2) moves = "YY";
-        else if (validFace == 3) moves = "Y'";
+      if (validCount !== 0) {
+        if (validFace === 1) moves = "Y";
+        else if (validFace === 2) moves = "YY";
+        else if (validFace === 3) moves = "Y'";
       }
       moves += "URU'L'UR'U'L";
       //Debug.Write($"m={moves} ");
@@ -490,8 +490,8 @@
       let moves: string = "";
       let corner: number[] = [8, 2, 0, 6];
       for (let i of corner) {
-        if (Cube.tile(CubeFace.U, i).color != TileColor.Yellow) {
-          if (Cube.tile(CubeFace.U, i).color2 != TileColor.Yellow) {
+        if (Cube.tile(CubeFace.U, i).color !== TileColor.Yellow) {
+          if (Cube.tile(CubeFace.U, i).color2 !== TileColor.Yellow) {
             moves += "R'D'RDR'D'RD";
           }
           moves += "R'D'RDR'D'RD";
@@ -499,7 +499,7 @@
         moves += "U";
       }
       if (moves === "UUUU") {
-        return ""
+        return "";
       }
 
       //for (let i = 8; i >= 0; i -= 2) {
@@ -533,6 +533,5 @@
       //}
       return moves;
     }
-
   }
 }

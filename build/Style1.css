@@ -35,6 +35,16 @@ body {
   transition: max-height 2.0s ease-out;
 }
 
+.panelCrib {
+  padding: 0 9px;
+  background-color: black;
+  color: white;
+  display: none;
+  overflow-y: scroll;
+  transition: max-height 2.0s ease-out;
+  max-height: 10pc;
+}
+
 .panelMenu {
   padding: 0 9px;
   color: white;
@@ -46,7 +56,9 @@ body {
 
 li {
   padding: 10px;
-  font-size: 40px;
+  border-color: blueviolet;
+  border-width: 10px;
+  font-size: 20px;
   list-style-type: none;
   color: white;
   cursor: pointer;
@@ -58,7 +70,7 @@ i {
 .fa {
   padding: 16px 16px 0px 16px;
   /*padding: 0px;*/
-  font-size: 40px;
+  font-size: 20px;
   color: white;
   cursor: pointer;
   touch-action: none;
@@ -89,58 +101,3 @@ i {
   -ms-user-select: none; /* Internet Explorer/Edge */
   user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
 }
-
-
-/*.navButton {
-  color: white;
-  background-color: black;
-  font-size: 12px;
-  border: 0;
-  background: none;
-  box-shadow: none;
-  border-radius: 0px;
-}*/
-
-
-/*button:focus {
-  outline: none;
-}
-
-#left_buttons {
-  left: 5px;
-}
-
-#col2_buttons {
-  left:70px;
-}
-
-.column_buttons {
-  position:absolute;
-  top: 5px;
-  text-align: center;
-}
-
-  .column_buttons button {
-    font-size: 30px;
-    display: block;
-    cursor: pointer;
-    height: 80px;
-    width:180px;
-    padding: 2px;
-    margin: 3px;
-    margin-top: 5px;
-  }
-#TextBox {
-  border:1px solid red; 
-  position:fixed; 
-  bottom:0;  
-  width:100%; 
-  vertical-align:bottom;
-}
-#TextBox2 {
-  border: 1px solid blue;
-  position: fixed;
-  bottom: 20px;
-  width: 100%;
-  vertical-align: bottom;
-}*/
