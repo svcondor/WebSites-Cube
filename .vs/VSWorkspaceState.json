@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\build",
+    "\\src"
   ],
-  "SelectedNode": "\\App.ts",
+  "SelectedNode": "\\build\\help1.html",
   "PreviewInSolutionExplorer": false
 }

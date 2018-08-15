@@ -1,0 +1,12 @@
+{
+ // "extends": ["tslint-react-recommended"],
+  // "rules": {
+  //   "linebreak-style":false,
+  //   "jsx-curly-spacing":false,
+  //   "member-ordering":false,
+  //   "quotemark":false
+
+  //     // if you want to make some adjustments
+  //     // you can override preset rules here
+ //  }
+}

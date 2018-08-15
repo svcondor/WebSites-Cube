@@ -7,7 +7,7 @@ module App2 {
   //https://github.com/icflorescu/iisexpress-proxy
   // npm install -g iisexpress-proxy
   //iisexpress-proxy 55537 to 8080
-
+//
   interface HitTarget {
     distance?: number;
     angle?: number;

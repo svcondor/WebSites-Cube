@@ -116,7 +116,7 @@
         }
         else {
           increment = - newAngle - this.currentAngle;
-          //console.log(`Neg ${t2} ${t1} ${newAngle} ${this.currentAngle} ${increment}`);
+          // console.log(`Neg ${t2} ${t1} ${newAngle} ${this.currentAngle} ${increment}`); //
           //increment *= -1;
           if (this.currentAngle + increment <= this.targetAngle) {
             increment = this.targetAngle - this.currentAngle;
@@ -442,13 +442,13 @@
 
         //let move1 = random1.nextInt32([0, 6]);
         moves += this.moveCodes.charAt(move1);
-        //this.rotateTable(this.moveCodes.charAt(move1) + " ", true, 0);
+        // this.rotateTable(this.moveCodes.charAt(move1) + " ", true, 0);
       }
-      //moves = "UUBFUBFBDFLUFBURBRLFLDDDULRBFULBRBUUUFUD";
+      // moves = "UUBFUBFBDFLUFBURBRLFLDDDULRBFULBRBUUUFUD";
       for (let i = 0; i < moves.length; ++i) {
         let move1 = moves.charAt(i) + " ";
         this.rotateTable(move1, true, 0);
-        //this.scene.render();   
+        // this.scene.render();   
       }
       this.doneMoves = "";
       this.movesCount = 0;
@@ -457,7 +457,7 @@
       let s2 = document.getElementById("ScoreBox");
       s2.innerText = this.movesCount.toString();
       
-      //console.log(moves);
+      // console.log(moves);
     }
 
 
@@ -481,7 +481,7 @@
             tile1.color2 = TileColor.none;
             tile1.color3 = TileColor.none;
             if (tile1.tileIx !== (i * 9 + j)) {
-              //console.log("tileIx error");
+              // console.log("tileIx error");
 
             }
           }
@@ -494,8 +494,8 @@
       this.gameStarted = false;
       let s2 = document.getElementById("ScoreBox");
       s2.innerText = this.movesCount.toString();
-      //let textBox = document.getElementById("TextBox");
-      //textBox.innerText = "";
+      // let textBox = document.getElementById("TextBox");
+      // textBox.innerText = "";
 
     }
 
@@ -587,13 +587,13 @@
           angle = -90;
         }
         switch (move.charAt(0)) {
-          //case "Y": this.axis = new BABYLON.Vector3(0, -1, 0); break; //Rotate like U
-          //case "X": this.axis = new BABYLON.Vector3(-1,0,0); break; //Flip Like R
-          //case "Z": this.axis = new BABYLON.Vector3(0,0,-1); angle *= -1; break; //Like F
+          // case "Y": this.axis = new BABYLON.Vector3(0, -1, 0); break; //Rotate like U
+          // case "X": this.axis = new BABYLON.Vector3(-1,0,0); break; //Flip Like R
+          // case "Z": this.axis = new BABYLON.Vector3(0,0,-1); angle *= -1; break; //Like F
 
-          case "Y": this.axis = BABYLON.Axis.Y; break; //Rotate like U
-          case "X": this.axis = BABYLON.Axis.X; break; //Flip Like R
-          case "Z": this.axis = BABYLON.Axis.Z; angle *= -1; break; //Like F
+          case "Y": this.axis = BABYLON.Axis.Y; break; //rotate like U
+          case "X": this.axis = BABYLON.Axis.X; break; //flip Like R
+          case "Z": this.axis = BABYLON.Axis.Z; angle *= -1; break; //like F
           case "U": this.axis = BABYLON.Axis.Y; break;
           case "D": this.axis = BABYLON.Axis.Y; angle *= -1; break;
           case "F": this.axis = BABYLON.Axis.Z; angle *= -1; break;
@@ -608,15 +608,15 @@
         if (speed === 0) {
           let rads = angle * Math.PI / 180;
           for (let i1 = 0; i1 < this.pivotList.length; ++i1) {
-            //this.pivotList[i].rotate(this.axis, rads);
+            // this.pivotList[i].rotate(this.axis, rads);
             this.pivotList[i1].rotate(this.axis, rads, BABYLON.Space.WORLD);
           }
           this.pivotList = [];
         }
         else {
           this.moveSpeed = speed;
-          //let textBox = document.getElementById("TextBox");
-          //textBox.innerText += (move + " ");
+          // let textBox = document.getElementById("TextBox");
+          // textBox.innerText += (move + " ");
           this.startTime = new Date().valueOf();
           this.currentAngle = 0;
           this.targetAngle = angle;
