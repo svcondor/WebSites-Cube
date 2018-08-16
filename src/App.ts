@@ -46,29 +46,30 @@ namespace App2 {
     public aaSignature = "MainApp1";
     private solverPointerTimer: number = null;
     // private stepDirection: number = -1;
-    private iconUndo: HTMLElement;
+    //private iconUndo: HTMLElement;
     private iconRedo: HTMLElement;
     private scene: BABYLON.Scene;
     private cube: Cube;
     private solver: Solver;
 
     private mouseStatus: number = 0;
+    private mouseStatusSave: number = 0;
     private mousePos1: Point = { X: 0, Y: 0 };   // Mouse position on canvas
-    private mouseDistance = 0;
+    //private mouseDistance = 0;
     private minimumDistance: number;
     private mouseMove: string = "";
-    private hitMaximum: number;
+    //private hitMaximum: number;
     private mousePos2: Point = { X: 0, Y: 0 };
-    private mouseMesh1: BABYLON.AbstractMesh;
+    //private mouseMesh1: BABYLON.AbstractMesh;
     private mouseTile1Ix: number;
-    private mouseTargetIx: number;
+    //private mouseTargetIx: number;
     private panelHelp: HTMLElement;
     private panelMenu: HTMLElement;
     private panelAbout: HTMLElement;
     private panelCrib: HTMLElement;
     private labels: HTMLCollectionOf<HTMLElement>;
     private overlay: Panel = Panel.closeAll;
-    private interval1: number;
+    //private interval1: number;
     private engine: BABYLON.Engine;
     private camera: BABYLON.FreeCamera;
     private hitTable: HitEntry[];
@@ -99,10 +100,8 @@ namespace App2 {
       xmlhttp1.open("GET", "crib.html", true);
       xmlhttp1.send();
 
-
-
-      BABYLON.Engine.CodeRepository = "/Babylon/src/";
-      BABYLON.Engine.ShadersRepository = "/Babylon/src/Shaders/";
+      //BABYLON.Engine.CodeRepository = "/Babylon/src/";
+      //BABYLON.Engine.ShadersRepository = "/Babylon/src/Shaders/";
       this.resizeCanvas();
 
       const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
@@ -150,7 +149,7 @@ namespace App2 {
       for (let i = 0; i < icons.length; ++i) {
         const icon = icons[i];
         if (icon.classList.contains("fa-arrow-circle-o-left")) {
-          this.iconUndo = icon as HTMLElement;
+          //this.iconUndo = icon as HTMLElement;
         }
         else if (icon.classList.contains("fa-arrow-circle-o-right")) {
           this.iconRedo = icon as HTMLElement;
@@ -299,7 +298,7 @@ namespace App2 {
           totalDistance += distance;
         }
       }
-      this.hitMaximum = this.hitTable[1].X - this.hitTable[0].X;
+      //this.hitMaximum = this.hitTable[1].X - this.hitTable[0].X;
       this.minimumDistance = totalDistance / 27 / 4 / 6;   // was / 27 / 4 / 4
     }
 
@@ -376,6 +375,18 @@ namespace App2 {
 
     private handlePointerMove = (event: PointerEvent) => {
       let this1 = this;
+      let mp0 = this.mouseStatus;
+      let mp1 = this1.mouseStatus;
+      if (mp0 !== mp1) {
+        console.log(`MSError ${mp0} ${mp1}`);
+      }
+      if (mp0 !== this.mouseStatusSave) {
+        console.log(`MS ${this.mouseStatusSave}->${mp0}`);
+        this.mouseStatusSave = mp0;
+      }
+      if (this.mouseStatus == null) {
+        return;
+      }
       if (this.mouseStatus !== 0) {
       }
 
@@ -499,8 +510,8 @@ namespace App2 {
             console.log(`move ${this.mouseMove}`);
 
             this.cube.rotateTable(this.mouseMove, true, this.cube.mainSpeed);
-            this.mouseDistance = distance;
-            this.mouseTargetIx = Math.abs(hitTarget.targetIx);
+            //this.mouseDistance = distance;
+            //this.mouseTargetIx = Math.abs(hitTarget.targetIx);
             this.mousePos2.X = event.x;
             this.mousePos2.Y = event.y;
             this.mouseStatus = 3;

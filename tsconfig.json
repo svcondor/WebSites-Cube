@@ -9,7 +9,7 @@
     "experimentalDecorators": true,
     "outFile": "build/jscript.js",
     "module": "system",
-    "target": "es5"
+    "target": "es6"
   },
   "include": [
     "src/**/*",
