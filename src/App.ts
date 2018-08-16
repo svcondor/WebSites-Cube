@@ -1,4 +1,8 @@
-﻿
+﻿//import * as $ from "./Cube";
+////import * as Solver1 from "./Solver";
+//import { Solver } from "./Solver";
+//import * as BABYLON from "babylonjs";
+
 namespace App2 {
   //TODO: make CubeFace.U Enum 2
   //TODO: Swap some antiClockmoves with clockMoves

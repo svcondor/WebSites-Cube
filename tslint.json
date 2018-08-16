@@ -1,6 +1,7 @@
 {
    "extends": "tslint:recommended",
    "rules": {
+     "ordered-imports":false,
       "comment-format":false,
       "no-reference":true,
       "no-internal-module":true,

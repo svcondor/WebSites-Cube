@@ -40,8 +40,8 @@
     public currentAngle: number = 0;
     public targetAngle: number = 0;
     public startTime: number;
-    public moveSpeed: number = 400;  // was 400
-    public mainSpeed: number = 400;
+    public moveSpeed: number = 200;  // was 400
+    public mainSpeed: number = 200;
     private scene: BABYLON.Scene;
     private rect4: BABYLON.Mesh;
     private axis: BABYLON.Vector3;
