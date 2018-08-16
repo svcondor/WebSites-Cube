@@ -375,18 +375,6 @@ namespace App2 {
 
     private handlePointerMove = (event: PointerEvent) => {
       let this1 = this;
-      let mp0 = this.mouseStatus;
-      let mp1 = this1.mouseStatus;
-      if (mp0 !== mp1) {
-        console.log(`MSError ${mp0} ${mp1}`);
-      }
-      if (mp0 !== this.mouseStatusSave) {
-        console.log(`MS ${this.mouseStatusSave}->${mp0}`);
-        this.mouseStatusSave = mp0;
-      }
-      if (this.mouseStatus == null) {
-        return;
-      }
       if (this.mouseStatus !== 0) {
       }
 
