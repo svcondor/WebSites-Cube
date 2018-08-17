@@ -7,9 +7,11 @@
     "removeComments": true,
     "sourceMap": true,
     "experimentalDecorators": true,
-    "outFile": "build/jscript.js",
-    "module": "system",
-    "target": "es6"
+    // "strict": true,
+    // "outFile": "build/jscript.js",
+    "outDir": "build/",
+    "module": "es2015",
+    "target": "es2015"
   },
   "include": [
     "src/**/*",

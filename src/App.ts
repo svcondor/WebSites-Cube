@@ -48,7 +48,7 @@ namespace App2 {
   class MainApp {
 
     public aaSignature = "MainApp1";
-    private solverPointerTimer: number = null;
+    private solverPointerTimer: number| null = null;
     // private stepDirection: number = -1;
     //private iconUndo: HTMLElement;
     private iconRedo: HTMLElement;
@@ -60,12 +60,12 @@ namespace App2 {
     private mouseStatusSave: number = 0;
     private mousePos1: Point = { X: 0, Y: 0 };   // Mouse position on canvas
     //private mouseDistance = 0;
-    private minimumDistance: number;
+    private minimumDistance: number = 0;
     private mouseMove: string = "";
     //private hitMaximum: number;
     private mousePos2: Point = { X: 0, Y: 0 };
     //private mouseMesh1: BABYLON.AbstractMesh;
-    private mouseTile1Ix: number;
+    private mouseTile1Ix: number = 0;
     //private mouseTargetIx: number;
     private panelHelp: HTMLElement;
     private panelMenu: HTMLElement;

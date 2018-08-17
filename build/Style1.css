@@ -37,21 +37,21 @@ body {
 
 .panelCrib {
   padding: 0 9px;
-  background-color: black;
+  background-color: rgb(9, 0, 128);
   color: white;
   display: none;
   overflow-y: scroll;
-  transition: max-height 2.0s ease-out;
+  transition: max-height 0.1s ease-out;   /* was 2.0 */
   max-height: 10pc;
 }
 
 .panelMenu {
   padding: 0 9px;
   color: white;
-  background-color: black;
+  background-color: rgb(9, 0, 128);
   display: none;
   overflow-y: hidden;
-  transition: max-height 2.0s ease-out;
+  transition: max-height 0.1s ease-out;
 }
 
 li {
