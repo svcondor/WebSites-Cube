@@ -74,11 +74,8 @@
       this.drawFace(CubeFace.D);
       this.rotateImage("X'");
       this.resetTileColors();
-
-      //this.scene.beforeRender = () => {
-      //  this.beforeRender();
-      //};
     }
+
     public renderNew(angle: number, axis: BABYLON.Vector3, speed: number) {
       //pivot table
     }
@@ -122,13 +119,10 @@
         }
       }
       this.scene.render();
-      if (this.targetAngle !== 0 && zeroTargetAngle ) {
+      if (this.targetAngle !== 0 && zeroTargetAngle) {
         this.targetAngle = 0;
       }
-      // return;
     }
-
-
 
     // get Tile by index (0-53) or by face (0-5) and tile (0-8)
     public static tile(face: number | CubeFace, ix?: number): Tile {
@@ -167,6 +161,7 @@
       }
       return -1;
     }
+
     public mouseGetTile(event: PointerEvent): number {
       let pickResult = this.scene.pick(event.clientX, event.clientY);
       if (pickResult.pickedMesh != null) {
@@ -186,101 +181,6 @@
       }
       return -1;
     }
-
-    //public mouseGetTile(mouseMesh1: BABYLON.AbstractMesh): number {
-    //  let tile1Ix = -1;
-    //  for (let i = 0; i < Cube.tiles.length; ++i) {
-    //    if (Cube.tiles[i].mesh === mouseMesh1) tile1Ix = i;
-    //  }
-    //  return tile1Ix;
-    //}
-
-    //public mouseMove(moveType: string, mouseMesh1: BABYLON.AbstractMesh, mouseMesh2: BABYLON.AbstractMesh): number {
-    //  if (moveType !== "start" || this.targetAngle != 0) return 0;
-    //  let tile1Ix = -1;
-    //  let tile2Ix = -1;
-    //  for (let i = 0; i < Cube.tiles.length; ++i) {
-    //    if (Cube.tiles[i].mesh === mouseMesh1) tile1Ix = i;
-    //    if (Cube.tiles[i].mesh === mouseMesh2) tile2Ix = i;
-    //  }
-    //  return this.mouseMove1(tile1Ix, tile2Ix)
-    //}
-    //public mouseMove1(tile1Ix:number, tile2Ix:number) {
-    //  let face1 = Math.floor(tile1Ix / 9);
-    //  let face2 = Math.floor(tile2Ix / 9);
-    //  let rel1 = tile1Ix % 9;
-    //  let rel2 = tile2Ix % 9;
-    //  if (face1 !== face2) {
-    //    let move2 = "";
-    //    switch (tile1Ix * 100 + tile2Ix) {
-    //      case 42:   move2 = "L'"; break;
-    //      case 143:  move2 = "X "; break;
-    //      case 244:  move2 = "R "; break;
-    //      case 209:  move2 = "U'"; break;
-    //      case 512:  move2 = "Y'"; break;
-    //      case 815:  move2 = "D "; break;
-    //      case 902:  move2 = "U "; break;
-    //      case 1205: move2 = "Y "; break;
-    //      case 1508: move2 = "D'"; break;
-    //      case 944:  move2 = "F'"; break;
-    //      case 1041: move2 = "Z'"; break;
-    //      case 1138: move2 = "B "; break;
-    //      case 4200: move2 = "L "; break;
-    //      case 4301: move2 = "X'"; break;
-    //      case 4402: move2 = "R'"; break;
-    //      case 4409: move2 = "F "; break;
-    //      case 4110: move2 = "Z "; break;
-    //      case 3811: move2 = "B'"; break;
-    //      default: move2 = ""; break;
-    //    }
-    //    if (move2 === "") return -1;
-    //    else {
-    //      this.rotateTable(move2, true, this.moveSpeed);
-    //      //console.log(`mouseMove - ${moveType} ${face1}-${rel1} ${face2}-${rel2}`);
-    //      return 0;
-    //    }
-    //  }
-    //  let mouseIx1: number;
-    //  let mouseIx2: number;
-    //  switch (face1) {
-    //    case CubeFace.F: mouseIx1 = 0; break;
-    //    case CubeFace.R: mouseIx1 = 1; break;
-    //    case CubeFace.U: mouseIx1 = 2; break;
-    //    default: return -1;
-    //  }
-    //  let relIx = rel1 * 10 + rel2;
-    //  switch (relIx) {
-    //    case 14: mouseIx2 = 9; break;    // was 15
-    //    case 34: mouseIx2 = 11; break;   // was 14
-    //    case 54: mouseIx2 = 10; break;   // was 13
-    //    case 74: mouseIx2 = 8; break;   // was 12
-    //    case 1: mouseIx2 = 1; break;
-    //    case 3: mouseIx2 = 2; break;
-    //    case 10: mouseIx2 = 0; break;
-    //    case 12: mouseIx2 = 1; break;
-    //    case 21: mouseIx2 = 0; break;
-    //    case 25: mouseIx2 = 5; break;
-    //    case 30: mouseIx2 = 3; break;
-    //    case 36: mouseIx2 = 2; break;
-    //    case 41: mouseIx2 = 8; break;
-    //    case 43: mouseIx2 = 10; break;
-    //    case 45: mouseIx2 = 11; break;
-    //    case 47: mouseIx2 = 9; break;
-    //    case 52: mouseIx2 = 4; break;
-    //    case 58: mouseIx2 = 5; break;
-    //    case 63: mouseIx2 = 3; break;
-    //    case 67: mouseIx2 = 6; break;
-    //    case 76: mouseIx2 = 7; break;
-    //    case 78: mouseIx2 = 6; break;
-    //    case 85: mouseIx2 = 4; break;
-    //    case 87: mouseIx2 = 7; break;
-    //    default: return -1;
-    //  }
-    //  let move1 = this.mouseMoves[mouseIx1][mouseIx2];
-    //  this.rotateTable(move1, true, this.moveSpeed);
-    //  //console.log(`mouseMove - ${moveType} ${face1}-${rel1} ${face2}-${rel2}`);
-    //  return 0;
-    //}
 
     private buildTileColorTable(): void {
       let sm1 = new BABYLON.StandardMaterial("BlueMat", this.scene);
@@ -325,10 +225,6 @@
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 36, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 0, 0, 9, 0, 0, 5, 0, 0, 0, 0, -29, -27, -25, 0, 0, 0, 0, 0, 0, -20, -18, -16, 0, 0, 0]
 
       ];
-      //this.mouseMoves = [
-      //  ["U ", "U'", "L ", "L'", "R ", "R'", "D ", "D'", "X ", "X'", "Y ", "Y'", "M ", "E ", "E'", "M'"],
-      //  ["U ", "U'", "F ", "F'", "B ", "B'", "D ", "D'", "Z'", "Z ", "Y ", "Y'", "S'", "E ", "E'", "S "],
-      //  ["B ", "B'", "L ", "L'", "R ", "R'", "F ", "F'", "X ", "X'", "Z'", "Z ", "M ", "S'", "S ", "M'"]];
       this.antiMoves = new Array(12);
       for (let i = 0; i < 12; ++i) {
         let print1 = "";
@@ -445,10 +341,8 @@
       this.gameStarted = false;
       let s2 = document.getElementById("ScoreBox");
       s2.innerText = this.movesCount.toString();
-
       // console.log(moves);
     }
-
 
     public resetTileColors(): void {
       let color: TileColor = TileColor.Gray;
@@ -471,7 +365,6 @@
             tile1.color3 = TileColor.none;
             if (tile1.tileIx !== (i * 9 + j)) {
               // console.log("tileIx error");
-
             }
           }
         }
@@ -483,9 +376,6 @@
       this.gameStarted = false;
       let s2 = document.getElementById("ScoreBox");
       s2.innerText = this.movesCount.toString();
-      // let textBox = document.getElementById("TextBox");
-      // textBox.innerText = "";
-
     }
 
     private setAdjacentColors(): void {
@@ -513,7 +403,6 @@
         tile.color2 = sp1.color1;
         tile.color3 = sp1.color2;
       }
-
     }
 
     public rotateTable(move: string, image: boolean, speed: number): number {
@@ -625,8 +514,6 @@
           let seconds = Math.floor(elapsed / (1000));
           s2.innerText = `${this.movesCount.toString()} ${mins}:${seconds}`;
         }
-        //          }
-        //        }
       }
       return moveCount;
     }

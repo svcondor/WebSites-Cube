@@ -1,2 +1,4 @@
 build/
+build/**
 .vs/
+build/Cube.js.map
