@@ -24,6 +24,7 @@ var App2;
     })(CubeFace = App2.CubeFace || (App2.CubeFace = {}));
     class Cube {
         constructor(scene, engine) {
+            this.renderCount = 0;
             this.gameStartTime = 0;
             this.gameStarted = false;
             this.movesCount = 0;
@@ -58,7 +59,10 @@ var App2;
         }
         renderNew(angle, axis, speed) {
         }
-        renderScene() {
+        renderScene(caller) {
+            if (caller === 1 && this.targetAngle === 0) {
+                return;
+            }
             let zeroTargetAngle = false;
             if (this.targetAngle !== 0) {
                 let t1 = new Date().valueOf() - this.startTime;
@@ -88,10 +92,9 @@ var App2;
                 }
             }
             this.scene.render();
-            if (zeroTargetAngle) {
+            if (this.targetAngle !== 0 && zeroTargetAngle) {
                 this.targetAngle = 0;
             }
-            return;
         }
         static tile(face, ix) {
             let ix1;

@@ -160,6 +160,7 @@ var App2;
                         this.solverPointerTimer = setTimeout(() => {
                             this.solverPointerTimer = null;
                             this.solver.step();
+                            this.cube.renderScene();
                             return;
                         }, 1000);
                         break;
@@ -179,15 +180,18 @@ var App2;
                         this.showOverlay(Panel.closeAll);
                         this.cube.resetTileColors();
                         this.solver.reset();
+                        this.cube.renderScene();
                         break;
                     case "fa-random":
                         this.showOverlay(Panel.closeAll);
                         this.cube.scramble();
                         this.solver.reset();
+                        this.cube.renderScene();
                         break;
                     case "fa-arrow-left":
                         break;
-                    case "fa-cog": break;
+                    case "fa-cog":
+                        break;
                 }
                 return false;
             });
@@ -337,7 +341,7 @@ var App2;
                 this.mouseStatus = 0;
             });
             engine.runRenderLoop(() => {
-                this.cube.renderScene();
+                this.cube.renderScene(1);
             });
         }
         showIcon(icon, show) {

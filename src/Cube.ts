@@ -22,6 +22,7 @@
   }
 
   export class Cube {
+    private renderCount: number = 0;
     public gameStartTime: number = 0;
     public gameStarted = false;
     public movesCount: number = 0;
@@ -82,8 +83,11 @@
       //pivot table
     }
 
-
-    public renderScene(): void {
+    public renderScene(caller?: number): void {
+      if (caller === 1 && this.targetAngle === 0) {
+        return;
+      }
+      //console.log(`Render - ${caller} ${++this.renderCount}`);
       let zeroTargetAngle = false;
       if (this.targetAngle !== 0) {
         let t1 = new Date().valueOf() - this.startTime;
@@ -118,10 +122,10 @@
         }
       }
       this.scene.render();
-      if (zeroTargetAngle) {
+      if (this.targetAngle !== 0 && zeroTargetAngle ) {
         this.targetAngle = 0;
       }
-      return;
+      // return;
     }
 
 

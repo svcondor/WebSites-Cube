@@ -107,6 +107,7 @@
           }
           //console.log(`doMoves ${move}`);
           this.cube.rotateTable(move, true, 0);
+          //this.cube.rotateTable(move, true, this.cube.mainSpeed);
         }
       }
     }
