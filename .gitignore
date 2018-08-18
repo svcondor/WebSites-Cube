@@ -2,3 +2,5 @@ build/
 build/**
 .vs/
 build/Cube.js.map
+build/Solver.js.map
+build/Solver.js

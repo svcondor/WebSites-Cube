@@ -75,10 +75,10 @@
       return "";
     }
 
-    private runStep = (function1: Function, step: number, targetStep: number): string => {
+    private runStep = (stepFunction: Function, step: number, targetStep: number): string => {
       let this2 = this;
       while (true) {
-        let moves = function1();
+        let moves = stepFunction();
         if (moves === "") {
           if (step === 7) this.solverMsg(`Cube is Solved!`);
           else this.solverMsg(`Step ${step} DONE!`);
@@ -95,7 +95,7 @@
      * Complete whole solver  step
      * @param moves
      */
-    private doMoves(moves: string): void {
+    private doMoves1(moves: string): void {
       for (let i = 0; i < moves.length; ++i) {
         if (moves.charAt(i) !== " " && moves.charAt(i) !== "'") {
           let move;
@@ -105,10 +105,38 @@
           else {
             move = moves.charAt(i) + " ";
           }
-          //console.log(`doMoves ${move}`);
           this.cube.rotateTable(move, true, 0);
-          //this.cube.rotateTable(move, true, this.cube.mainSpeed);
         }
+      }
+    }
+
+    private doMoves(moves: string, movePos: number = 0): void {
+      let newPos = movePos;
+      for (let i = movePos; i < moves.length; ++i) {
+        if (moves.charAt(i) !== " " && moves.charAt(i) !== "'") {
+          if (this.cube.currentAngle === 0) {
+            let move;
+            if (i + 1 < moves.length && moves.charAt(i + 1) === "'") {
+              move = moves.charAt(i) + "'";
+            }
+            else {
+              move = moves.charAt(i) + " ";
+            }
+            this.cube.rotateTable(move, true, 0);
+            //this.cube.rotateTable(move, true, this.cube.mainSpeed);
+            console.log(`Move ${i} ${move}`);
+            newPos = i + 1;
+          }
+          else {
+            newPos = i;
+          }
+          //break;
+        }
+      }
+      return;
+      if (newPos < moves.length) {
+        console.log(`setTimeout ${newPos} ${moves.length}`);
+        setTimeout(this.doMoves(moves, newPos), 1000);
       }
     }
 

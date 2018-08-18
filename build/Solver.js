@@ -8,10 +8,10 @@ var App2;
             this.solveStep = 0;
             this.solverMoves = "";
             this.startStep = 0;
-            this.runStep = (function1, step, targetStep) => {
+            this.runStep = (stepFunction, step, targetStep) => {
                 let this2 = this;
                 while (true) {
-                    let moves = function1();
+                    let moves = stepFunction();
                     if (moves === "") {
                         if (step === 7)
                             this.solverMsg(`Cube is Solved!`);
@@ -534,7 +534,7 @@ var App2;
                 return moves;
             return "";
         }
-        doMoves(moves) {
+        doMoves1(moves) {
             for (let i = 0; i < moves.length; ++i) {
                 if (moves.charAt(i) !== " " && moves.charAt(i) !== "'") {
                     let move;
@@ -546,6 +546,33 @@ var App2;
                     }
                     this.cube.rotateTable(move, true, 0);
                 }
+            }
+        }
+        doMoves(moves, movePos = 0) {
+            let newPos = movePos;
+            for (let i = movePos; i < moves.length; ++i) {
+                if (moves.charAt(i) !== " " && moves.charAt(i) !== "'") {
+                    if (this.cube.currentAngle === 0) {
+                        let move;
+                        if (i + 1 < moves.length && moves.charAt(i + 1) === "'") {
+                            move = moves.charAt(i) + "'";
+                        }
+                        else {
+                            move = moves.charAt(i) + " ";
+                        }
+                        this.cube.rotateTable(move, true, 0);
+                        console.log(`Move ${i} ${move}`);
+                        newPos = i + 1;
+                    }
+                    else {
+                        newPos = i;
+                    }
+                }
+            }
+            return;
+            if (newPos < moves.length) {
+                console.log(`setTimeout ${newPos} ${moves.length}`);
+                setTimeout(this.doMoves(moves, newPos), 1000);
             }
         }
     }
