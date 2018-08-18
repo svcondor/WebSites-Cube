@@ -10,7 +10,7 @@ namespace App2 {
   //https://github.com/icflorescu/iisexpress-proxy
   // npm install -g iisexpress-proxy
   //iisexpress-proxy 55537 to 8080
-//
+
   interface HitTarget {
     distance?: number;
     angle?: number;
@@ -153,14 +153,9 @@ namespace App2 {
       for (let i = 0; i < icons.length; ++i) {
         const icon = icons[i];
         if (icon.classList.contains("fa-arrow-circle-o-left")) {
-          //this.iconUndo = icon as HTMLElement;
         }
         else if (icon.classList.contains("fa-arrow-circle-o-right")) {
           this.iconRedo = icon as HTMLElement;
-          //let s1 = this.iconRedo.className;
-          //let s2 = s1.replace(" disabled", "");
-          //this.iconRedo.className = s2;
-          //let v2 = 34;
         }
         icon.addEventListener("pointerdown", this.handleIconPointerDown);
         icon.addEventListener("pointerup", this.handleIconPointerUp);
@@ -172,7 +167,6 @@ namespace App2 {
         if (setting.innerText === "Fast") {
           this.fastSpeed = true;
         }
-        //setting.addEventListener("click", this.handleSettingsClick);
         setting.addEventListener("pointerdown", this.handleSettingsPointerDown);
       }
 
@@ -190,7 +184,7 @@ namespace App2 {
       });
 
       engine.runRenderLoop(() => {
-        //TODO only render when moving
+        //TODO DONE only render when moving
         this.cube.renderScene(1);
       });
     }
@@ -248,7 +242,6 @@ namespace App2 {
             { targetIx: v100[4], move: moves.substr(6, 2) }],
         };
         this.hitTable[hit1.tileIx] = hit1;
-        //this.hitTable.push(hit1);
       }
       let v1 = this.hitTable.length;
       let v3 = 0;
@@ -279,8 +272,6 @@ namespace App2 {
             console.assert(tileIx === hit1.tileIx, `buildHitTester tileIx ${tileIx} ${hit1.tileIx}`);
             hit1.X = Math.round(p.x);
             hit1.Y = Math.round(p.y);
-            //this.hitTable.push({ x: Math.floor(p.x), y: Math.floor(p.y), tileIx: face * 9 + i });
-            //console.log(`${i} ${TileColor[tile1.color]} X ${Math.floor(p.x)} Y ${Math.floor(p.y)}`);
           }
         }
       }
@@ -383,99 +374,6 @@ namespace App2 {
       }
 
       if (this.fastSpeed && this.mouseStatus === 3) {
-        //let dX2 = event.x - this.mousePos2.X;
-        //let dY2 = event.y - this.mousePos2.Y;
-        //let polar = this.getPolar(dX2, dY2);
-        //if (polar.distance < this.minimumDistance) {
-        //  return;
-        //}
-        //let hitTarget = this.findMouseTarget(this.mouseTargetIx, polar.angle);
-        //if (hitTarget.move.charAt(0) === this.mouseMove.charAt(0)) {
-        //  // move double or back
-        //  let dX = event.x - this.mousePos1.X;
-        //  let dY = event.y - this.mousePos1.Y;
-        //  let distance = Math.sqrt(dX ** 2 + dY ** 2);
-        //  if (distance < this.mouseDistance - this.minimumDistance) {
-        //    this.mouseMove = hitTarget.move;
-        //    if (this.cube.targetAngle !== 0) {
-        //      console.log(`handlePointerMove fastback ${this.mouseMove} ${this.cube.targetAngle}`);
-        //      this.cube.rotateTable(this.mouseMove, false, 0);
-        //      this.cube.targetAngle *= -1;
-        //      this.cube.currentAngle += this.cube.targetAngle;
-        //      //this.scene.render();
-
-        //    }
-        //    else {
-        //      console.log(`handlePointerMove slowback ${this.mouseMove}`);
-        //     this.cube.rotateTable(this.mouseMove, true, this.cube.moveSpeed);
-        //      this.mouseDistance = 0;
-        //      this.mousePos2.X = 0;
-        //      this.mousePos2.Y = 0;
-        //    }
-        //    this.mouseStatus = 0;
-        //    return;
-        //  }
-        //  else if (distance > this.mouseDistance) {
-        //    if (distance < this.minimumDistance * 12) {  //was 4 then 9
-        //      this.mouseDistance = distance;
-        //      this.mousePos2.X = event.x;
-        //      this.mousePos2.Y = event.y;
-        //    }
-        //    else {
-        //      // Double rotate logic removed for now
-        //      //if (this.cube1.targetAngle !== 0) {
-        //      //  this.mouseStatus = 0;
-        //      //  console.log(`PointerMove - Double`);
-        //      //  let fastStartTime = new Date().valueOf() - 0.90 * this.cube1.moveSpeed;
-        //      //  if (fastStartTime < this.cube1.startTime) this.cube1.startTime = fastStartTime
-        //      //  setTimeout(() => {
-        //      //    if (this.cube1.targetAngle !== 0) {
-        //      //      this.cube1.startTime = 0;
-        //      //      this.scene.render();
-        //      //    }
-        //      //    console.assert(this.cube1.targetAngle === 0, "handlePointermMove Double move error 1");
-        //      //    this.cube1.rotateTable(this.mouseMove, true, this.cube1.moveSpeed);
-        //      //  }, this.cube1.moveSpeed * 0.1);
-        //      //}
-        //    }
-        //    return;
-        //  }
-        //}
-        //else if (hitTarget.precise === true && polar.distance > this.minimumDistance) {
-
-        //  //// right angle move logic removed for now
-        //  //let tileIx = this.mouseTargetIx;
-        //  //let move = hitTarget.move;
-        //  //let tile = tileIx % 9;
-        //  //if (tile % 2 === 1) {
-        //  //  tileIx = this.mouseTile1Ix;
-        //  //  tile = tileIx % 9;
-        //  //  if (tile % 2 === 1)
-        //  //    return;
-        //  //  let targets: HitTarget[] = this.hitTable[this.mouseTargetIx].targets;
-        //  //  for (let i = 0; i < 4; ++i) {
-        //  //    if (hitTarget === targets[i]) {
-        //  //      targets = this.hitTable[this.mouseTile1Ix].targets;
-        //  //      move = targets[i].move;
-        //  //    }
-        //  //  }
-        //  //}
-        //  //if (this.cube1.targetAngle !== 0) {
-        //  //  this.mouseStatus = 0;
-        //  //  console.log(`PointerMove - L move`);
-        //  //  let fastStartTime = new Date().valueOf() - 0.90 * this.cube1.moveSpeed;
-        //  //  if (fastStartTime < this.cube1.startTime) this.cube1.startTime = fastStartTime
-        //  //  setTimeout(() => {
-        //  //    if (this.cube1.targetAngle !== 0) {
-        //  //      this.cube1.startTime = 0;
-        //  //      this.scene.render();
-        //  //    }
-        //  //    console.assert(this.cube1.targetAngle === 0, "handlePointermMove L move error 1");
-        //  //    this.cube1.rotateTable(move, true, this.cube1.moveSpeed);
-        //  //  }, this.cube1.moveSpeed * 0.1);
-        //  //}
-
-        //}
       }
 
       else if (this.mouseStatus === 2) {
@@ -681,8 +579,6 @@ namespace App2 {
     private finishMove(function1: any, ...rest: any[]): void {
       if (MainApp.finishMoveReEnter) {
         console.log("finishMove reEnter");
-
-        //return;
       }
       MainApp.finishMoveReEnter = true;
       let fastStartTime = new Date().valueOf() - 0.90 * this.cube.moveSpeed;
@@ -738,7 +634,6 @@ namespace App2 {
           break;
         }
       }
-
     }
 
     private hideShowLabels(show: boolean): void {
@@ -749,19 +644,6 @@ namespace App2 {
     }
 
     private showOverlay(newPanel: Panel): void {
-      // 0 - off
-      // 1 help
-      // 2 settings
-      // 3 About
-
-      ////TODO Add code to animate panel display
-      //if (panelHelp.style.maxHeight) {
-      //  panelHelp.style.maxHeight = null;
-      //} else {
-      //  //panelHelp.style.maxHeight = panelHelp.scrollHeight + "px";
-      //  panelHelp.style.maxHeight = "400" + "px";
-      //}
-
       if (this.overlay === Panel.help) {
         this.panelHelp.style.display = "none";
       }
@@ -894,32 +776,11 @@ namespace App2 {
 
       //buttons.style.bottom = `${navbar1.clientHeight + 50}px`;
       buttons.style.bottom = `${navbar1.clientHeight + 5}px`;
-      //let h1 = gameDiv1.clientHeight / 1.5;
-      //if (navbar1.clientWidth > h1) {
-        //buttons.style.width = `${h1}px`;
-        //buttons.style.left = `${(navbar1.clientWidth - h1) / 2}px`;
       buttons.style.width = `${(x2 - x1).toFixed(0)}px`;
       buttons.style.left = `${x1.toFixed(0)}px`;
-
-       //buttons.style.width = `${(navbar1.clientWidth - 2 * x1).toFixed(0)}px`;
-
-        //buttons.style.width = `${h1}px`;
-        //buttons.style.left = `${(navbar1.clientWidth - h1) / 2}px`;
-      //}
-      //else {
-      //  buttons.style.width = `100%`;
-      //  buttons.style.left = `0px`;
-      //}
     }
 
     private getCubeWidth(): void {
-
-      //  console.log(`1-${window.innerWidth} 2-${document.documentElement.clientWidth} 3-${screen.width}`);
-      //  console.log(`1-${window.innerHeight} 2-${document.documentElement.clientHeight} 3-${screen.height}`);
-      //  //1 - 1181 2- 1181 3- 1536  zoom 125 1920 zoom 100
-      //  //1 - 665 2- 665 3- 864 zoom 125 1080 zoom 100
-      //  //Detect viewport orientation
-      //  // http://stackoverflow.com/questions/4917664/detect-viewport-orientation-if-orientation-is-portrait-display-alert-message-ad
     }
   }
 
