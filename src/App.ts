@@ -203,6 +203,37 @@ namespace App2 {
     private loadRawHitData(): void {
       let rawData: any = [
         [0, 42, 3, -1, 1, "L'L U U'"],
+        [1, 43, 4, 0, 2, "X X'U U'"],    // 
+        [2, 44, 5, 1, -1, "R R'U U'"],
+        [3, 0, 6, -4, 4, "L'L Y Y'"],    // 
+        [4, 1, 7, 3, 5, "X X'Y Y'"],
+        [5, 2, 8, 4, -4, "R R'Y Y'"],    // 
+        [6, 3, -3, -7, 7, "L'L D'D "],
+        [7, 4, -4, 6, 8, "X X'D'D"],    //  
+        [8, 5, -5, 7, -7, "R R'D'D "],
+
+        [9, 44, 12, -10, 10, "F'F U U'"],
+        [10, 41, 13, 9, 11, "Z'Z U U'"],    // 
+        [11, 38, 14, 10, -10, "B B'U U'"],
+        [12, 9, 15, -13, 13, "F'F Y Y'"],   // 
+        [13, 10, 16, 12, 14, "Z'Z Y Y'"],
+        [14, 11, 17, 13, -13, "B B'Y Y'"],  // 
+        [15, 12, -12, -16, 16, "F'F D'D "],
+        [16, 13, -13, 15, 17, "Z'Z D'D "],   // 
+        [17, 14, -14, 16, -16, "B B'D'D "],
+
+        [36, -39, 39, -37, 37, "L'L B B'"],
+        [37, -40, 40, 36, 38, "X X'B B'"],   //
+        [38, -41, 41, 37, 11, "R R'B B'"],
+        [39, 36, 42, -40, 40, "L'L Z'Z "],   // 
+        [40, 37, 43, 42, 41, "X X'Z'Z "],
+        [41, 38, 44, 43, 10, "R R'Z'Z "],   //   
+        [42, 39, 0, -43, 43, "L'L F'F "],
+        [43, 40, 1, 42, 44, "X X'F'F"],    //   
+        [44, 41, 2, 43, 9, "R R'F'F "],
+      ];
+      let rawWithMiddle: any = [
+        [0, 42, 3, -1, 1, "L'L U U'"],
         [1, 43, 4, 0, 2, "M M'U U'"],    // X X'U U'
         [2, 44, 5, 1, -1, "R R'U U'"],
         [3, 0, 6, -4, 4, "L'L E E'"],    // L'L Y Y'
@@ -232,6 +263,7 @@ namespace App2 {
         [43, 40, 1, 42, 44, "M M'F'F "],    //  X X'F'F 
         [44, 41, 2, 43, 9, "R R'F'F "],
       ];
+      
       this.hitTable = new Array(27);
       for (let v100 of rawData) {
         let moves: string = v100[5];
@@ -556,7 +588,6 @@ namespace App2 {
           this.solver.solverMoves = "";
           return;
         }
-
       }
       if (this.solver.solverMoves.length > 0) {
         let move: string;
@@ -609,28 +640,20 @@ namespace App2 {
       console.log(`undo move call 2`);
       this.solver.solverMoves = "";
       //this.showOverlay(0);
-      let s1: string = this.cube.doneMoves;
-      let antiClock = "'";
-      for (let len1: number = s1.length; len1 > 0; --len1) {
-        let next: string = s1.substr(len1 - 1, 1);
-        if (next === " ") { }
-        else if (next === "'") {
-          antiClock = " ";
+      
+      if (this.cube.doneMoves.length > 0) {
+        let  doneMoves = this.cube.doneMoves;
+        let move = doneMoves[doneMoves.length - 1];
+        
+        // change for Undo
+        if (move.substr(1, 1) === "'") { 
+          move = move.substr(0, 1) + " ";
         }
         else {
-          if (this.cube.moveCodes.indexOf(next) !== -1) {
-            let move = next + antiClock;
-            //TODO add move to redo table
-            let moveCount = this.cube.rotateTable(move, this.cube.mainSpeed);
-            if (moveCount === 1) {
-              this.cube.doneMoves = s1.substr(0, len1 - 1);
-              this.cube.movesCount -= 1;
-            }
-            let s2 = document.getElementById("ScoreBox");
-            s2.innerText = this.cube.movesCount.toString();
-          }
-          break;
+          move = move.substr(0, 1) + "'";
         }
+        //TODO add move to redo table
+        this.cube.rotateTable(move, this.cube.mainSpeed);
       }
     }
 
