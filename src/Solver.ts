@@ -112,9 +112,9 @@
 
     private doMoves(moves: string, movePos: number = 0): void {
       let newPos = movePos;
-      for (let i = movePos; i < moves.length; ++i) {
+      for (let i = 0; i < moves.length; ++i) {
         if (moves.charAt(i) !== " " && moves.charAt(i) !== "'") {
-          if (this.cube.currentAngle === 0) {
+          //if (this.cube.currentAngle === 0) {
             let move;
             if (i + 1 < moves.length && moves.charAt(i + 1) === "'") {
               move = moves.charAt(i) + "'";
@@ -126,10 +126,10 @@
             //this.cube.rotateTable(move, true, this.cube.mainSpeed);
             console.log(`Move ${i} ${move}`);
             newPos = i + 1;
-          }
-          else {
-            newPos = i;
-          }
+          // }
+          // else {
+          //   newPos = i;
+          // }
           //break;
         }
       }
@@ -515,7 +515,7 @@
     }
 
     private orientateYellowCorners = (): string => {
-
+      //TODO if more than incorrect rotate top
       let moves: string = "";
       let corner: number[] = [8, 2, 0, 6];
       for (let i of corner) {

@@ -26,6 +26,7 @@
     public gameStartTime: number = 0;
     public gameStarted = false;
     public movesCount: number = 0;
+    public movesQueue: string[] = [];
     public doneMoves: string = "";
     public redoMoves: string = "";
     private static tiles: Tile[];
@@ -76,16 +77,20 @@
       this.resetTileColors();
     }
 
-    public renderNew(angle: number, axis: BABYLON.Vector3, speed: number) {
+    //public renderNew(angle: number, axis: BABYLON.Vector3, speed: number) {
       //pivot table
-    }
+    //}
 
+    /**
+     * perform any outstanding rotate then render the cube
+     * @param caller 1 if called by engine.runRenderLoop
+     */
     public renderScene(caller?: number): void {
-      if (caller === 1 && this.targetAngle === 0) {
+      if (caller === 1 && this.targetAngle === 0 && this.movesQueue.length === 0) {
         return;
       }
       //console.log(`Render - ${caller} ${++this.renderCount}`);
-      let zeroTargetAngle = false;
+      //let zeroTargetAngle = false;
       if (this.targetAngle !== 0) {
         let t1 = new Date().valueOf() - this.startTime;
         let t2 = this.moveSpeed;
@@ -96,8 +101,8 @@
           if (increment > 10) console.log(`Pos ${t2} ${t1} ${newAngle} ${increment}`);
           if (this.currentAngle + increment >= this.targetAngle) {
             increment = this.targetAngle - this.currentAngle;
-            zeroTargetAngle = true;
-            //this.targetAngle = 0;
+            //zeroTargetAngle = true;
+            this.targetAngle = 0;
           }
         }
         else {
@@ -106,8 +111,8 @@
           //increment *= -1;
           if (this.currentAngle + increment <= this.targetAngle) {
             increment = this.targetAngle - this.currentAngle;
-            zeroTargetAngle = true;
-            //this.targetAngle = 0;
+            //zeroTargetAngle = true;
+            this.targetAngle = 0;
           }
         }
         //console.log(`Rotate C ${this.currentAngle} I ${increment} P ${this.pivotList.length}`);
@@ -119,9 +124,9 @@
         }
       }
       this.scene.render();
-      if (this.targetAngle !== 0 && zeroTargetAngle) {
-        this.targetAngle = 0;
-      }
+      // if (this.targetAngle !== 0 && zeroTargetAngle) {
+      //   this.targetAngle = 0;
+      // }
     }
 
     // get Tile by index (0-53) or by face (0-5) and tile (0-8)
@@ -317,7 +322,7 @@
     }
 
     public scramble(): void {
-      this.resetTileColors();
+      //this.resetTileColors();
       //let seed1 = Math.floor(Math.random() * 6);
       //console.debug("Random Seed ", seed1);
       //var random1 = new Random(seed1);
@@ -329,6 +334,7 @@
         moves += this.moveCodes.charAt(move1);
         // this.rotateTable(this.moveCodes.charAt(move1) + " ", true, 0);
       }
+      //TODO UUUU->remove UUU->U-  Remember moves for ReDo
       // moves = "UUBFUBFBDFLUFBURBRLFLDDDULRBFULBRBUUUFUD";
       for (let i = 0; i < moves.length; ++i) {
         let move1 = moves.charAt(i) + " ";

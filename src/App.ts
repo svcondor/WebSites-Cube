@@ -61,9 +61,9 @@ namespace App2 {
     private mousePos1: Point = { X: 0, Y: 0 };   // Mouse position on canvas
     //private mouseDistance = 0;
     private minimumDistance: number = 0;
-    private mouseMove: string = "";
+    //private mouseMove: string = "";
     //private hitMaximum: number;
-    private mousePos2: Point = { X: 0, Y: 0 };
+    //private mousePos2: Point = { X: 0, Y: 0 };
     //private mouseMesh1: BABYLON.AbstractMesh;
     private mouseTile1Ix: number = 0;
     //private mouseTargetIx: number;
@@ -396,14 +396,10 @@ namespace App2 {
             //if (distance > foundTarget.distance / 4) {
             if (this.cube.targetAngle !== 0) {
             }
-            this.mouseMove = hitTarget.move;
-            console.log(`move ${this.mouseMove}`);
-
-            this.cube.rotateTable(this.mouseMove, true, this.cube.mainSpeed);
-            //this.mouseDistance = distance;
-            //this.mouseTargetIx = Math.abs(hitTarget.targetIx);
-            this.mousePos2.X = event.x;
-            this.mousePos2.Y = event.y;
+            console.log(`move ${hitTarget.move}`);
+            this.cube.rotateTable(hitTarget.move, true, this.cube.mainSpeed);
+            //this.mousePos2.X = event.x;
+            //this.mousePos2.Y = event.y;
             this.mouseStatus = 3;
           }
         }

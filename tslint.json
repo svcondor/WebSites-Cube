@@ -8,7 +8,7 @@
       "no-namespace":false,
       "interface-name":false,
       "max-line-length":false,
-      "quotemark":true,
+      "quotemark":false,
       "one-line":false,
       "prefer-const":false,
       "curly":false,
