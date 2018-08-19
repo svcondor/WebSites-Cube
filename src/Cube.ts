@@ -78,7 +78,7 @@
     }
 
     //public renderNew(angle: number, axis: BABYLON.Vector3, speed: number) {
-      //pivot table
+    //pivot table
     //}
 
     /**
@@ -338,7 +338,7 @@
       // moves = "UUBFUBFBDFLUFBURBRLFLDDDULRBFULBRBUUUFUD";
       for (let i = 0; i < moves.length; ++i) {
         let move1 = moves.charAt(i) + " ";
-        this.rotateTable(move1, true, 0);
+        this.rotateTable(move1, 0);
         // this.scene.render();
       }
       this.doneMoves = "";
@@ -411,7 +411,7 @@
       }
     }
 
-    public rotateTable(move: string, image: boolean, speed: number): number {
+    public rotateTable(move: string, speed: number): number {
       let moveCount = 1;
       console.assert(move.length === 2, `cube.rotateTable move.length != 2`);
       let moveTable;
@@ -422,12 +422,12 @@
       let moveIx = this.moveCodes.indexOf(move.substring(0, 1));
       let moveTiles: Tile[] = [];
       let movelist: number[] = [];
-      if (image) {
-        this.pivotList = [];
-        if (this.targetAngle !== 0) {
-          let v1 = 0;
-        }
+
+      this.pivotList = [];
+      if (this.targetAngle !== 0) {
+        let v1 = 0;
       }
+
       for (let i = 0; i < Cube.tiles.length; ++i) {
         let tile1 = Cube.tiles[i];
         if (moveTable[moveIx][i] !== 0) {
@@ -435,9 +435,7 @@
             moveTiles.push(tile1);
             movelist.push(i + moveTable[moveIx][i]);
           }
-          if (image) {
-            this.pivotList.push(tile1.pivot);
-          }
+          this.pivotList.push(tile1.pivot);
         }
       }
       while (movelist.length > 0) {
@@ -465,62 +463,61 @@
       }
 
 
-      if (image) {
-        let angle: number = 90;
-        if (move.length > 1 && move.substring(1, 2) === "'") {
-          angle = -90;
-        }
-        switch (move.charAt(0)) {
-          // case "Y": this.axis = new BABYLON.Vector3(0, -1, 0); break; //Rotate like U
-          // case "X": this.axis = new BABYLON.Vector3(-1,0,0); break; //Flip Like R
-          // case "Z": this.axis = new BABYLON.Vector3(0,0,-1); angle *= -1; break; //Like F
+      let angle: number = 90;
+      if (move.length > 1 && move.substring(1, 2) === "'") {
+        angle = -90;
+      }
+      switch (move.charAt(0)) {
+        // case "Y": this.axis = new BABYLON.Vector3(0, -1, 0); break; //Rotate like U
+        // case "X": this.axis = new BABYLON.Vector3(-1,0,0); break; //Flip Like R
+        // case "Z": this.axis = new BABYLON.Vector3(0,0,-1); angle *= -1; break; //Like F
 
-          case "Y": this.axis = BABYLON.Axis.Y; break; //rotate like U
-          case "X": this.axis = BABYLON.Axis.X; break; //flip Like R
-          case "Z": this.axis = BABYLON.Axis.Z; angle *= -1; break; //like F
-          case "U": this.axis = BABYLON.Axis.Y; break;
-          case "D": this.axis = BABYLON.Axis.Y; angle *= -1; break;
-          case "F": this.axis = BABYLON.Axis.Z; angle *= -1; break;
-          case "B": this.axis = BABYLON.Axis.Z; break;
-          case "R": this.axis = BABYLON.Axis.X; break;
-          case "L": this.axis = BABYLON.Axis.X; angle *= -1; break;
-          case "M": this.axis = BABYLON.Axis.X; break;
-          case "E": this.axis = BABYLON.Axis.Y; break;
-          case "S": this.axis = BABYLON.Axis.Z; angle *= -1; break;
+        case "Y": this.axis = BABYLON.Axis.Y; break; //rotate like U
+        case "X": this.axis = BABYLON.Axis.X; break; //flip Like R
+        case "Z": this.axis = BABYLON.Axis.Z; angle *= -1; break; //like F
+        case "U": this.axis = BABYLON.Axis.Y; break;
+        case "D": this.axis = BABYLON.Axis.Y; angle *= -1; break;
+        case "F": this.axis = BABYLON.Axis.Z; angle *= -1; break;
+        case "B": this.axis = BABYLON.Axis.Z; break;
+        case "R": this.axis = BABYLON.Axis.X; break;
+        case "L": this.axis = BABYLON.Axis.X; angle *= -1; break;
+        case "M": this.axis = BABYLON.Axis.X; break;
+        case "E": this.axis = BABYLON.Axis.Y; break;
+        case "S": this.axis = BABYLON.Axis.Z; angle *= -1; break;
 
+      }
+      if (speed === 0) {
+        let rads = angle * Math.PI / 180;
+        for (let i1 = 0; i1 < this.pivotList.length; ++i1) {
+          // this.pivotList[i].rotate(this.axis, rads);
+          this.pivotList[i1].rotate(this.axis, rads, BABYLON.Space.WORLD);
         }
-        if (speed === 0) {
-          let rads = angle * Math.PI / 180;
-          for (let i1 = 0; i1 < this.pivotList.length; ++i1) {
-            // this.pivotList[i].rotate(this.axis, rads);
-            this.pivotList[i1].rotate(this.axis, rads, BABYLON.Space.WORLD);
-          }
-          this.pivotList = [];
-        }
-        else {
-          this.moveSpeed = speed;
-          // let textBox = document.getElementById("TextBox");
-          // textBox.innerText += (move + " ");
-          this.startTime = new Date().valueOf();
-          this.currentAngle = 0;
-          this.targetAngle = angle;
-        }
-        //         if (speed > 200) {
-        if (this.gameStarted === false) {
-          if (move.charAt(0) !== "X" && move.charAt(0) !== "Y" && move.charAt(0) !== "Z") {
-            this.gameStarted = true;
-            this.gameStartTime = new Date().valueOf();
-          }
-        }
-        if (this.gameStarted) {
-          let s2 = document.getElementById("ScoreBox");
-          let elapsed: number = (new Date().valueOf()) - this.gameStartTime;
-          let mins = Math.floor(elapsed / (1000 * 60));
-          elapsed -= mins * (1000 * 60);
-          let seconds = Math.floor(elapsed / (1000));
-          s2.innerText = `${this.movesCount.toString()} ${mins}:${seconds}`;
+        this.pivotList = [];
+      }
+      else {
+        this.moveSpeed = speed;
+        // let textBox = document.getElementById("TextBox");
+        // textBox.innerText += (move + " ");
+        this.startTime = new Date().valueOf();
+        this.currentAngle = 0;
+        this.targetAngle = angle;
+      }
+      //         if (speed > 200) {
+      if (this.gameStarted === false) {
+        if (move.charAt(0) !== "X" && move.charAt(0) !== "Y" && move.charAt(0) !== "Z") {
+          this.gameStarted = true;
+          this.gameStartTime = new Date().valueOf();
         }
       }
+      if (this.gameStarted) {
+        let s2 = document.getElementById("ScoreBox");
+        let elapsed: number = (new Date().valueOf()) - this.gameStartTime;
+        let mins = Math.floor(elapsed / (1000 * 60));
+        elapsed -= mins * (1000 * 60);
+        let seconds = Math.floor(elapsed / (1000));
+        s2.innerText = `${this.movesCount.toString()} ${mins}:${seconds}`;
+      }
+
       return moveCount;
     }
   }

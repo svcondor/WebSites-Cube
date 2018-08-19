@@ -203,31 +203,33 @@ namespace App2 {
     private loadRawHitData(): void {
       let rawData: any = [
         [0, 42, 3, -1, 1, "L'L U U'"],
-        [1, 43, 4, 0, 2, "X X'U U'"],
+        [1, 43, 4, 0, 2, "M M'U U'"],    // X X'U U'
         [2, 44, 5, 1, -1, "R R'U U'"],
-        [3, 0, 6, -4, 4, "L'L Y Y'"],
+        [3, 0, 6, -4, 4, "L'L E E'"],    // L'L Y Y'
         [4, 1, 7, 3, 5, "X X'Y Y'"],
-        [5, 2, 8, 4, -4, "R R'Y Y'"],
+        [5, 2, 8, 4, -4, "R R'E E'"],    // R R'Y Y'
         [6, 3, -3, -7, 7, "L'L D'D "],
-        [7, 4, -4, 6, 8, "X X'D'D "],
+        [7, 4, -4, 6, 8, "M M'D'D "],    // X X'D'D 
         [8, 5, -5, 7, -7, "R R'D'D "],
+
         [9, 44, 12, -10, 10, "F'F U U'"],
-        [10, 41, 13, 9, 11, "Z'Z U U'"],
+        [10, 41, 13, 9, 11, "S'S U U'"],    // Z'Z U U'
         [11, 38, 14, 10, -10, "B B'U U'"],
-        [12, 9, 15, -13, 13, "F'F Y Y'"],
+        [12, 9, 15, -13, 13, "F'F E E'"],   // F'F Y Y'
         [13, 10, 16, 12, 14, "Z'Z Y Y'"],
-        [14, 11, 17, 13, -13, "B B'Y Y'"],
+        [14, 11, 17, 13, -13, "B B'E E'"],  // B B'Y Y'
         [15, 12, -12, -16, 16, "F'F D'D "],
-        [16, 13, -13, 15, 17, "Z'Z D'D "],
+        [16, 13, -13, 15, 17, "S'S D'D "],   // Z'Z D'D 
         [17, 14, -14, 16, -16, "B B'D'D "],
+
         [36, -39, 39, -37, 37, "L'L B B'"],
-        [37, -40, 40, 36, 38, "X X'B B'"],
+        [37, -40, 40, 36, 38, "M M'B B'"],   // X X'B B
         [38, -41, 41, 37, 11, "R R'B B'"],
-        [39, 36, 42, -40, 40, "L'L Z'Z "],
+        [39, 36, 42, -40, 40, "L'L S'S "],   // L'L Z'Z
         [40, 37, 43, 42, 41, "X X'Z'Z "],
-        [41, 38, 44, 43, 10, "R R'Z'Z "],
+        [41, 38, 44, 43, 10, "R R'S'S "],   //  R R'Z'Z 
         [42, 39, 0, -43, 43, "L'L F'F "],
-        [43, 40, 1, 42, 44, "X X'F'F "],
+        [43, 40, 1, 42, 44, "M M'F'F "],    //  X X'F'F 
         [44, 41, 2, 43, 9, "R R'F'F "],
       ];
       this.hitTable = new Array(27);
@@ -392,12 +394,12 @@ namespace App2 {
           let hitTarget = this.findMouseTarget(this.mouseTile1Ix, angle);
 
           if (hitTarget.precise === true) {
-            console.log(`PointerMove - single2`);
+            //console.log(`PointerMove - single2`);
             //if (distance > foundTarget.distance / 4) {
             if (this.cube.targetAngle !== 0) {
             }
             console.log(`move ${hitTarget.move}`);
-            this.cube.rotateTable(hitTarget.move, true, this.cube.mainSpeed);
+            this.cube.rotateTable(hitTarget.move, this.cube.mainSpeed);
             //this.mousePos2.X = event.x;
             //this.mousePos2.Y = event.y;
             this.mouseStatus = 3;
@@ -565,7 +567,7 @@ namespace App2 {
         else {
           move = this.solver.solverMoves.charAt(0) + " ";
         }
-        this.cube.rotateTable(move, true, this.cube.mainSpeed);
+        this.cube.rotateTable(move, this.cube.mainSpeed);
         if (this.solver.solverMoves.length > 0) {
           this.solver.solverMoves = this.solver.solverMoves.substr(1);
         }
@@ -619,7 +621,7 @@ namespace App2 {
           if (this.cube.moveCodes.indexOf(next) !== -1) {
             let move = next + antiClock;
             //TODO add move to redo table
-            let moveCount = this.cube.rotateTable(move, true, this.cube.mainSpeed);
+            let moveCount = this.cube.rotateTable(move, this.cube.mainSpeed);
             if (moveCount === 1) {
               this.cube.doneMoves = s1.substr(0, len1 - 1);
               this.cube.movesCount -= 1;

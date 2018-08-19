@@ -105,7 +105,7 @@
           else {
             move = moves.charAt(i) + " ";
           }
-          this.cube.rotateTable(move, true, 0);
+          this.cube.rotateTable(move, 0);
         }
       }
     }
@@ -122,7 +122,7 @@
             else {
               move = moves.charAt(i) + " ";
             }
-            this.cube.rotateTable(move, true, 0);
+            this.cube.rotateTable(move, 0);
             //this.cube.rotateTable(move, true, this.cube.mainSpeed);
             console.log(`Move ${i} ${move}`);
             newPos = i + 1;
