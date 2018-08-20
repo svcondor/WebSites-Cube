@@ -28,9 +28,10 @@
     //public movesCount: number = 0;
     public movesQueue: string[] = [];
     public sendQueue: string[] = [];
+    private sendSpeed: number = 200;
     public doneMoves: string[] = [];
     public redoMoves: string[] = [];
-    private static tiles: Tile[];
+    public static tiles: Tile[];
     private clockMoves: number[][];
     private antiMoves: number[][];
     private mouseMoves: string[][];
@@ -86,15 +87,21 @@
      * perform any outstanding rotate then render the cube
      * @param caller 1 if called by engine.runRenderLoop
      */
-    public renderScene(caller?: number): void {
-      if (caller === 1 && this.targetAngle === 0 && this.movesQueue.length === 0) {
+    public renderScene(caller = 0): void {
+
+      if (caller === 0) {
+        console.assert(this.targetAngle === 0
+          && this.sendQueue.length === 0, "Bad call to renderScene");
+        this.scene.render();
         return;
       }
-      if (this.targetAngle === 0 && this.movesQueue.length > 0) {
-
+      if (this.targetAngle === 0) {
+        if (this.sendQueue.length > 0) {
+          let move = this.sendQueue[0];
+          this.rotateTable(move, this.sendSpeed);
+          // get processing from rotate table
+        }
       }
-      //console.log(`Render - ${caller} ${++this.renderCount}`);
-      //let zeroTargetAngle = false;
       if (this.targetAngle !== 0) {
         let t1 = new Date().valueOf() - this.startTime;
         let t2 = this.moveSpeed;
@@ -105,7 +112,6 @@
           if (increment > 10) console.log(`Pos ${t2} ${t1} ${newAngle} ${increment}`);
           if (this.currentAngle + increment >= this.targetAngle) {
             increment = this.targetAngle - this.currentAngle;
-            //zeroTargetAngle = true;
             this.targetAngle = 0;
           }
         }
@@ -115,26 +121,23 @@
           //increment *= -1;
           if (this.currentAngle + increment <= this.targetAngle) {
             increment = this.targetAngle - this.currentAngle;
-            //zeroTargetAngle = true;
             this.targetAngle = 0;
           }
         }
-        //console.log(`Rotate C ${this.currentAngle} I ${increment} P ${this.pivotList.length}`);
         this.currentAngle += increment;
         let rads = increment * Math.PI / 180;
         for (let i = 0; i < this.pivotList.length; ++i) {
-          //this.pivotList[i].rotate(this.axis, rads);
           this.pivotList[i].rotate(this.axis, rads, BABYLON.Space.WORLD);
         }
+        if (this.targetAngle === 0) {
+          let v1 = this.sendQueue.shift();
+        }
+        this.scene.render();
       }
-      this.scene.render();
-      // if (this.targetAngle !== 0 && zeroTargetAngle) {
-      //   this.targetAngle = 0;
-      // }
     }
 
     // get Tile by index (0-53) or by face (0-5) and tile (0-8)
-    public static tile(face: number | CubeFace, ix?: number): Tile {
+    public static getTile(face: number | CubeFace, ix?: number): Tile {
       let ix1: number;
       if (ix || ix === 0) {
         //if (typeof face === 'Cubeface') {
@@ -153,7 +156,7 @@
     public static findColors(color: TileColor, color2: TileColor, color3: TileColor = null): number {
       if (color3 !== null) {
         for (let i: number = 0; i < Cube.tiles.length; i++) {
-          let tile1: Tile = Cube.tile(i);
+          let tile1: Tile = Cube.getTile(i);
           if (tile1.color === color && tile1.color3 === color3) {
             return i;
           }
@@ -162,7 +165,7 @@
       else {
         for (let i: number = 0; i < Cube.tiles.length; i++) {
 
-          let tile1: Tile = Cube.tile(i);
+          let tile1: Tile = Cube.getTile(i);
           if (tile1.color === color && tile1.color2 === color2 && tile1.color3 === TileColor.none) {
             return i;
           }
@@ -331,20 +334,21 @@
       //console.debug("Random Seed ", seed1);
       //var random1 = new Random(seed1);
       let moves = "";
-      for (let i = 0; i < 200; ++i) {
+      for (let i = 0; i < 20; ++i) {
         let move1 = Math.floor(Math.random() * 6);
 
         //let move1 = random1.nextInt32([0, 6]);
-        moves += this.moveCodes.charAt(move1);
+        moves += this.moveCodes.charAt(move1) + " ";
         // this.rotateTable(this.moveCodes.charAt(move1) + " ", true, 0);
       }
-      //TODO UUUU->remove UUU->U-  Remember moves for ReDo
       // moves = "UUBFUBFBDFLUFBURBRLFLDDDULRBFULBRBUUUFUD";
-      for (let i = 0; i < moves.length; ++i) {
-        let move1 = moves.charAt(i) + " ";
-        this.rotateTable(move1, 0);
-        // this.scene.render();
-      }
+      this.sendMoves(moves, true, 100);
+      // for (let i = 0; i < moves.length; ++i) {
+      //   let move1 = moves.charAt(i) + " ";
+      //   this.sendMoves(move1);
+      //   this.rotateTable(move1, 0);
+      //   // this.scene.render();
+      // }
       this.doneMoves.length = 0;
       //this.movesCount = 0;
       this.redoMoves.length = 0;
@@ -393,97 +397,104 @@
     private setAdjacentColors(): void {
       for (let i = 0; i < this.sidePieces.length; ++i) {
         let sp1: Piece = this.sidePieces[i];
-        let tile: Tile = Cube.tile(sp1.ix1);
+        let tile: Tile = Cube.getTile(sp1.ix1);
         console.assert(tile.color === sp1.color1, "SidePiece wrong color");
         tile.color2 = sp1.color2;
-        tile = Cube.tile(sp1.ix2);
+        tile = Cube.getTile(sp1.ix2);
         console.assert(tile.color === sp1.color2, "SidePiece wrong color");
         tile.color2 = sp1.color1;
       }
       for (let i = 0; i < this.cornerPieces.length; ++i) {
         let sp1: Piece = this.cornerPieces[i];
-        let tile: Tile = Cube.tile(sp1.ix1);
+        let tile: Tile = Cube.getTile(sp1.ix1);
         console.assert(tile.color === sp1.color1, "CornerPiece wrong color");
         tile.color2 = sp1.color2;
         tile.color3 = sp1.color3;
-        tile = Cube.tile(sp1.ix2);
+        tile = Cube.getTile(sp1.ix2);
         console.assert(tile.color === sp1.color2, "CornerPiece wrong color");
         tile.color2 = sp1.color3;
         tile.color3 = sp1.color1;
-        tile = Cube.tile(sp1.ix3);
+        tile = Cube.getTile(sp1.ix3);
         console.assert(tile.color === sp1.color3, "CornerPiece wrong color");
         tile.color2 = sp1.color1;
         tile.color3 = sp1.color2;
       }
     }
 
-    
-    
+
+
     /**
      * enque moves and optionally execute them
      * @param moves Even string of 0 or more moves eg F U' L R'
      * @param execute 
-     * true (default) start move now  
-     * false wait for more moves 
+     * true start move now  
+     * false(default)  wait for more moves
+     * @param speed rotation speed 
      */
-    public sendMoves(moves: string, execute: boolean = true) {
-      let v1 = this.movesQueue;
+    public sendMoves(moves: string, execute = false, speed = 200) {
+      if (moves.length % 2 === 1) {
+        console.assert(moves.length % 2 !== 1, "Bad input to sendMoves");
+      }
+      let queue = this.movesQueue;
       for (let i = 0; i < moves.length; i += 2) {
-        this.movesQueue.push(moves.substr(i, 2));
+        queue.push(moves.substr(i, 2));
       }
       if (execute) {
-        //TODO process queue to remove redundant moves 
-        while (this.movesQueue.length > 0) {
-          this.sendQueue.push(this.movesQueue.shift());
+        //TODO DONE UUUU->remove UUU->U-  Remember moves for ReDo
+        for (let i = 0; i < queue.length; ++i) {
+          let move = queue[i];
+          if (queue.length > i + 2
+            && queue[i + 1] === move
+            && queue[i + 2] === move) {
+            if (queue.length > i + 3
+              && queue[i + 3] === move) {
+                i += 3;
+            }
+            else {
+              if (move.substr(1, 1) === "'") {
+                this.sendQueue.push(move.substr(0, 1) + " ");
+              }
+              else {
+                this.sendQueue.push(move.substr(0, 1) + "'");
+              }
+              i += 2;
+            }
+          }
+          else if (queue.length > i + 1
+            && move.substr(0, 1) === queue[i + 1].substr(0, 1)
+            && move.substr(1, 1) !== queue[i + 1].substr(1, 1)) {
+              i += 1;
+            }
+          else {  
+            this.sendQueue.push(move);
+          }
         }
+        queue.length = 0;
+        this.sendSpeed = speed;
       }
     }
 
 
     public rotateTable(move: string, speed: number): void {
       //let moveCount = 1;
-      console.assert(move.length === 2, `cube.rotateTable move.length != 2`);
-      let moveTable: number[][];
-      if (move.charAt(1) === "'") {
-        moveTable = this.antiMoves;
+      if (move.length !== 2) {
+        console.assert(move.length === 2, `cube.rotateTable move.length != 2`);
       }
-      else {
-        moveTable = this.clockMoves;
-      }
-      let moveIx = this.moveCodes.indexOf(move.substr(0, 1));
-      let moveTiles: Tile[] = [];
-      let movelist: number[] = [];
 
-      this.pivotList = [];
       if (this.targetAngle !== 0) {
         let v1 = 0;
       }
 
-      for (let i = 0; i < Cube.tiles.length; ++i) {
-        let tile1 = Cube.tiles[i];
-        if (moveTable[moveIx][i] !== 0) {
-          if (moveTable[moveIx][i] !== 200 && moveTable[moveIx][i] !== -1) {
-            moveTiles.push(tile1);
-            movelist.push(i + moveTable[moveIx][i]);
-          }
-          this.pivotList.push(tile1.pivot);
-        }
-      }
-      while (movelist.length > 0) {
-        let ix1 = movelist.pop();
-        if (ix1 < 100 && ix1 !== -1) {
-          Cube.tiles[ix1] = moveTiles.pop();
-        }
-      }
-      
+      this.pivotList = this.rotateTable1(move, Cube.tiles);
+      let v4 = 4;
       let lastMove = "  ";
       if (this.doneMoves.length > 0) {
         lastMove = this.doneMoves[this.doneMoves.length - 1];
       }
       if (lastMove.charAt(0) === move.charAt(0)
         && lastMove.charAt(1) !== move.charAt(1)) {
-          this.doneMoves.pop();
-        }
+        this.doneMoves.pop();
+      }
       else {
         this.doneMoves.push(move);
       }
@@ -544,6 +555,43 @@
       else {
         s2.innerText = `${this.doneMoves.length.toString()}`;
       }
+    }
+
+    /**
+     * 
+     * @param move the single move to be made "F " "U'" etc 
+     * @param tiles the tiles table to me moved normally Cube.tiles but solver uses a copy
+     * @return a table of meshes for all the tiles that need to be moved
+     */
+    private rotateTable1(move: string, tiles: Tile[]): BABYLON.Mesh[] {
+      let pivotList: BABYLON.Mesh[] = [];
+      let moveTable: number[][];
+      if (move.charAt(1) === "'") {
+        moveTable = this.antiMoves;
+      }
+      else {
+        moveTable = this.clockMoves;
+      }
+      let moveIx = this.moveCodes.indexOf(move.substr(0, 1));
+      let moveTiles: Tile[] = [];
+      let movelist: number[] = [];
+      for (let i = 0; i < tiles.length; ++i) {
+        let tile1 = tiles[i];
+        if (moveTable[moveIx][i] !== 0) {
+          if (moveTable[moveIx][i] !== 200 && moveTable[moveIx][i] !== -1) {
+            moveTiles.push(tile1);
+            movelist.push(i + moveTable[moveIx][i]);
+          }
+          pivotList.push(tile1.pivot);
+        }
+      }
+      while (movelist.length > 0) {
+        let ix1 = movelist.pop();
+        if (ix1 < 100 && ix1 !== -1) {
+          tiles[ix1] = moveTiles.pop();
+        }
+      }
+      return pivotList;
     }
   }
 }

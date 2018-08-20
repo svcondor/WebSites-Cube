@@ -296,7 +296,7 @@ namespace App2 {
           //console.log("");
           //console.log(`${CubeFace[face]}`);
           for (let i = 0; i < 9; ++i) {
-            let tile1: Tile = Cube.tile(face, i);
+            let tile1: Tile = Cube.getTile(face, i);
             let mesh1: BABYLON.Mesh = tile1.mesh;
             let vector3: BABYLON.Vector3 = tile1.mesh.absolutePosition;
             let p: BABYLON.Vector3 = BABYLON.Vector3.Project(
@@ -431,7 +431,8 @@ namespace App2 {
             if (this.cube.targetAngle !== 0) {
             }
             console.log(`move ${hitTarget.move}`);
-            this.cube.rotateTable(hitTarget.move, this.cube.mainSpeed);
+            //this.cube.rotateTable(hitTarget.move, this.cube.mainSpeed);
+            this.cube.sendMoves(hitTarget.move, true, this.cube.mainSpeed);
             //this.mousePos2.X = event.x;
             //this.mousePos2.Y = event.y;
             this.mouseStatus = 3;
@@ -509,7 +510,9 @@ namespace App2 {
             clearTimeout(this.solverPointerTimer);
             this.solverPointerTimer = null;
             this.solver.solverMsg("");
-            this.doTutorMove();
+            // if (this.cube.sendQueue.length === 0) {
+            //   this.doTutorMove1();
+            // }
           }
           break;
       }
@@ -531,9 +534,9 @@ namespace App2 {
           this.solverPointerTimer = setTimeout(() => {
             this.solverPointerTimer = null;
             this.solver.step();
-            this.cube.renderScene();
+            //this.cube.renderScene();
             return;
-          }, 1000);
+          }, 500);
           break;
 
         case "fa-question":
@@ -569,11 +572,11 @@ namespace App2 {
       return false;
     });
 
-    private doTutorMove = (...rest: any[]): void => {
-      if (this.cube.targetAngle !== 0) {
-        this.finishMove(this.doTutorMove, ...rest);
-        return;
-      }
+    private doTutorMove1 = (...rest: any[]): void => {
+      // if (this.cube.targetAngle !== 0) {
+      //   this.finishMove(this.doTutorMove, ...rest);
+      //   return;
+      // }
 
       while (this.solver.solverMoves.length > 0
         && (this.solver.solverMoves.charAt(0) === " "
@@ -598,7 +601,8 @@ namespace App2 {
         else {
           move = this.solver.solverMoves.charAt(0) + " ";
         }
-        this.cube.rotateTable(move, this.cube.mainSpeed);
+        this.cube.sendMoves(move, true, this.cube.mainSpeed);
+        // this.cube.rotateTable(move, this.cube.mainSpeed);
         if (this.solver.solverMoves.length > 0) {
           this.solver.solverMoves = this.solver.solverMoves.substr(1);
         }
@@ -653,7 +657,8 @@ namespace App2 {
           move = move.substr(0, 1) + "'";
         }
         //TODO add move to redo table
-        this.cube.rotateTable(move, this.cube.mainSpeed);
+        this.cube.sendMoves(move, true, this.cube.mainSpeed);
+        //this.cube.rotateTable(move, this.cube.mainSpeed);
       }
     }
 
@@ -723,7 +728,7 @@ namespace App2 {
           case 2: face = 4; relTile = 0; break;
           case 3: face = 4; relTile = 2; break;
         }
-        let tile = Cube.tile(face, relTile);
+        let tile = Cube.getTile(face, relTile);
         let mesh2 = tile.mesh.getChildren()[0] as BABYLON.Mesh;
         let box = mesh2._boundingInfo.boundingBox.vectorsWorld;
         for (let v3 of box) {
@@ -780,7 +785,7 @@ namespace App2 {
           case 2: face = 4; relTile = 0; break;
           case 3: face = 4; relTile = 2; break;
         }
-        let tile = Cube.tile(face, relTile);
+        let tile = Cube.getTile(face, relTile);
         let mesh2 = tile.mesh.getChildren()[0] as BABYLON.Mesh;
         let box = mesh2._boundingInfo.boundingBox.vectorsWorld;
         for (let v3 of box) {

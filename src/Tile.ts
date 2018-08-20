@@ -13,7 +13,7 @@
       return s1;
     }
 
-    constructor(x: number, y: number, tileIx: number, scene: BABYLON.Scene) {
+    constructor(x: number, y: number, tileIx: number, scene: BABYLON.Scene | null) {
       this.tileIx = tileIx;
 
       let rect2: BABYLON.Mesh = BABYLON.MeshBuilder.CreatePlane("plane1", { size: 1 }, scene);
