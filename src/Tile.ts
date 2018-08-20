@@ -3,8 +3,8 @@
   export class Tile {
     public tileIx: number;
     public color: TileColor;
-    public color2: TileColor;
-    public color3: TileColor;
+    public color2: TileColor | null;
+    public color3: TileColor | null;
     public mesh: BABYLON.Mesh;
     public pivot: BABYLON.Mesh;
 

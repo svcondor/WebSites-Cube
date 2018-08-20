@@ -48,7 +48,7 @@ namespace App2 {
   class MainApp {
 
     public aaSignature = "MainApp1";
-    private solverPointerTimer: number| null = null;
+    private solverPointerTimer: number | null = null;
     // private stepDirection: number = -1;
     //private iconUndo: HTMLElement;
     private iconRedo: HTMLElement;
@@ -263,7 +263,7 @@ namespace App2 {
         [43, 40, 1, 42, 44, "M M'F'F "],    //  X X'F'F 
         [44, 41, 2, 43, 9, "R R'F'F "],
       ];
-      
+
       this.hitTable = new Array(27);
       for (let v100 of rawData) {
         let moves: string = v100[5];
@@ -644,13 +644,13 @@ namespace App2 {
       console.log(`undo move call 2`);
       this.solver.solverMoves = "";
       //this.showOverlay(0);
-      
+
       if (this.cube.doneMoves.length > 0) {
-        let  doneMoves = this.cube.doneMoves;
+        let doneMoves = this.cube.doneMoves;
         let move = doneMoves[doneMoves.length - 1];
-        
+
         // change for Undo
-        if (move.substr(1, 1) === "'") { 
+        if (move.substr(1, 1) === "'") {
           move = move.substr(0, 1) + " ";
         }
         else {
@@ -675,7 +675,7 @@ namespace App2 {
       }
       else if (this.overlay === Panel.crib) {
         if (newPanel !== Panel.close) {
-        this.panelCrib.style.display = "none";
+          this.panelCrib.style.display = "none";
         }
       }
       else if (this.overlay === Panel.menu) {
@@ -686,7 +686,7 @@ namespace App2 {
         this.panelAbout.style.display = "none";
       }
       if (newPanel !== Panel.close || this.overlay !== Panel.crib) {
-      this.overlay = newPanel;
+        this.overlay = newPanel;
       }
       if (newPanel === Panel.closeAll) this.overlay = Panel.closeAll;
       else if (newPanel === Panel.help) {
@@ -753,11 +753,13 @@ namespace App2 {
     private resizeCanvas(): void {
       let gameDiv1 = document.getElementById("gamediv");
       let navbar1 = document.getElementById("navbar1");
-      gameDiv1.style.width = `${window.innerWidth}px`;
-      gameDiv1.style.height = `${document.documentElement.clientHeight - navbar1.clientHeight}px`;
       let panelHelp = document.getElementById("panelHelp");
-      panelHelp.style.height = `${(document.documentElement.clientHeight - navbar1.clientHeight) * 0.8}px`;
-      //this.positionButtons();
+      if (gameDiv1 && navbar1 && panelHelp) {
+        gameDiv1.style.width = `${window.innerWidth}px`;
+        gameDiv1.style.height = `${document.documentElement.clientHeight - navbar1.clientHeight}px`;
+        panelHelp.style.height = `${(document.documentElement.clientHeight - navbar1.clientHeight) * 0.8}px`;
+        //this.positionButtons();
+      }
     }
 
     private positionButtons(): void {
@@ -784,18 +786,21 @@ namespace App2 {
           case 1: face = 0; relTile = 8; break;
           case 2: face = 4; relTile = 0; break;
           case 3: face = 4; relTile = 2; break;
+          default: face = 0; relTile = 0; break;
         }
         let tile = Cube.getTile(face, relTile);
         let mesh2 = tile.mesh.getChildren()[0] as BABYLON.Mesh;
-        let box = mesh2._boundingInfo.boundingBox.vectorsWorld;
-        for (let v3 of box) {
-          let p: BABYLON.Vector3 = BABYLON.Vector3.Project(
-            v3, matrixIdentity, transformMatrix, viewPort);
-          //console.log(p.x, p.y);
-          if (p.x > x2) x2 = p.x;
-          if (p.x < x1) x1 = p.x;
-          if (p.y > y2) y2 = p.y;
-          if (p.y < y1) y1 = p.y;
+        if (mesh2 && mesh2._boundingInfo) {
+          let box = mesh2._boundingInfo.boundingBox.vectorsWorld;
+          for (let v3 of box) {
+            let p: BABYLON.Vector3 = BABYLON.Vector3.Project(
+              v3, matrixIdentity, transformMatrix, viewPort);
+            //console.log(p.x, p.y);
+            if (p.x > x2) x2 = p.x;
+            if (p.x < x1) x1 = p.x;
+            if (p.y > y2) y2 = p.y;
+            if (p.y < y1) y1 = p.y;
+          }
         }
       }
       console.log(`Cube Xmin ${x1.toFixed(0)} max ${x2.toFixed(0)} Ymin ${y1.toFixed(0)} max ${y2.toFixed(0)}`);

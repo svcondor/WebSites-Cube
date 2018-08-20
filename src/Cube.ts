@@ -153,7 +153,7 @@
       return Cube.tiles[ix1];
     }
 
-    public static findColors(color: TileColor, color2: TileColor, color3: TileColor = null): number {
+    public static findColors(color: TileColor, color2: TileColor, color3: TileColor | null = null): number {
       if (color3 !== null) {
         for (let i: number = 0; i < Cube.tiles.length; i++) {
           let tile1: Tile = Cube.getTile(i);
@@ -176,6 +176,7 @@
 
     public mouseGetTile(event: PointerEvent): number {
       let pickResult = this.scene.pick(event.clientX, event.clientY);
+
       if (pickResult.pickedMesh != null) {
         let mesh1 = pickResult.pickedMesh;
         if (mesh1.name === "tile") {
@@ -309,7 +310,7 @@
       if (move.length > 1 && move.substr(1, 1) === "'") {
         angle = -90;
       }
-      let axis: BABYLON.Vector3;
+      let axis: BABYLON.Vector3 = BABYLON.Axis.Z;
       switch (move.substr(0, 1)) {
         case "Y":
           axis = BABYLON.Axis.Y;
@@ -317,7 +318,9 @@
         case "X":
           axis = BABYLON.Axis.X;
           break;
-
+        default:
+          throw new Error ("Move must be X or Y");
+        //TODO why not handle Z
       }
       for (let item of Cube.tiles) {
         if (item != null && item.pivot != null) {
@@ -353,7 +356,7 @@
       //this.movesCount = 0;
       this.redoMoves.length = 0;
       this.gameStarted = false;
-      let s2 = document.getElementById("ScoreBox");
+      let s2 = document.getElementById("ScoreBox"); 
       //s2.innerText = this.movesCount.toString();
       s2.innerText = this.doneMoves.length.toString();
       // console.log(moves);
