@@ -385,6 +385,8 @@ namespace App2 {
       let target1: HitTarget;
       for (let target of hit1.targets) {
         let deltaAngle = Math.abs(target.angle - angle) % 360;
+
+        
         if (deltaAngle > 180) {
           deltaAngle = 360 - deltaAngle;
         }
@@ -659,32 +661,22 @@ namespace App2 {
     private static finishMoveReEnter: boolean = false;
 
     private undoMove = (): void => {
-      this.solver.reset();
-      if (this.cube.targetAngle !== 0) {
-        this.finishMove(this.undoMove);
-        this.mouseStatus = 0;
-        console.log(`undo move call 1`);
-        return;
-      }
-      //let d1 = new Date().
-      console.log(`undo move call 2`);
+      //this.solver.reset();
+      // if (this.cube.targetAngle !== 0) {
+      //   this.finishMove(this.undoMove);
+      //   this.mouseStatus = 0;
+      //   console.log(`undo move call 1`);
+      //   return;
+      // }
       this.solver.solverMoves = "";
-      //this.showOverlay(0);
-
       if (this.cube.doneMoves.length > 0) {
-        let doneMoves = this.cube.doneMoves;
-        let move = doneMoves[doneMoves.length - 1];
+        // Get previous move and undo it
+        let move = this.cube.doneMoves[this.cube.doneMoves.length - 1];
+        move = move.substr(0, 1) 
+          + (move.substr(1, 1) === "'" ? " " : "'");
 
-        // change for Undo
-        if (move.substr(1, 1) === "'") {
-          move = move.substr(0, 1) + " ";
-        }
-        else {
-          move = move.substr(0, 1) + "'";
-        }
-        //TODO add move to redo table
+        //TODO should we add move to redo table
         this.cube.sendMoves(move, true, this.cube.mainSpeed);
-        //this.cube.rotateTable(move, this.cube.mainSpeed);
       }
     }
 
