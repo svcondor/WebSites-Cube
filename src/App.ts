@@ -117,7 +117,7 @@ namespace App2 {
         //TODO add timer to reduce flashing
         this.resizeCanvas();
         engine.resize();
-        this.cube.renderScene();
+        this.cube.sendMoves("", true, 0);
         this.positionButtons();
         this.buildHitTester();
       });
@@ -138,9 +138,9 @@ namespace App2 {
       camera.fov = 0.35;  //0.33 for iphone 5   //0.35 Nokia 930
       //let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, -1), this.scene);
       this.cube = new Cube(this.scene, engine);
-      this.cube.renderScene();
-      this.positionButtons();
+      //this.cube.sendMoves("''", true, 0);
       this.solver = new Solver(this.cube);
+      this.cube.solver = this.solver;
 
       const icons = document.getElementsByClassName("fa");
       this.panelHelp = document.getElementById("panelHelp");
@@ -170,7 +170,10 @@ namespace App2 {
         setting.addEventListener("pointerdown", this.handleSettingsPointerDown);
       }
 
-      this.cube.renderScene();
+      //this.cube.sendMoves("''", true, 0);
+      //this.cube.sendMoves("F F ", true, 30);
+      this.scene.render();
+      this.positionButtons();
       this.loadRawHitData();
       this.buildHitTester();
 
@@ -184,8 +187,7 @@ namespace App2 {
       });
 
       engine.runRenderLoop(() => {
-        //TODO DONE only render when moving
-        this.cube.renderScene(1);
+        this.cube.renderScene();
       });
     }
 
@@ -201,6 +203,37 @@ namespace App2 {
     }
 
     private loadRawHitData(): void {
+      let rawData1: any = [
+        [0, 42, 3, -1, 1, "L'L U U'"],
+        [1, 43, 4, 0, 2, "    U U'"],    // 
+        [2, 44, 5, 1, -1, "R R'U U'"],
+        [3, 0, 6, -4, 4, "L'L     "],    // 
+        [4, 1, 7, 3, 5, "X X'Y Y'"],
+        [5, 2, 8, 4, -4, "R R'    "],    // 
+        [6, 3, -3, -7, 7, "L'L D'D "],
+        [7, 4, -4, 6, 8, "    D'D"],    //  
+        [8, 5, -5, 7, -7, "R R'D'D "],
+
+        [9, 44, 12, -10, 10, "F'F U U'"],
+        [10, 41, 13, 9, 11, "    U U'"],    // 
+        [11, 38, 14, 10, -10, "B B'U U'"],
+        [12, 9, 15, -13, 13, "F'F     "],   // 
+        [13, 10, 16, 12, 14, "Z'Z Y Y'"],
+        [14, 11, 17, 13, -13, "B B'    "],  // 
+        [15, 12, -12, -16, 16, "F'F D'D "],
+        [16, 13, -13, 15, 17, "    D'D "],   // 
+        [17, 14, -14, 16, -16, "B B'D'D "],
+
+        [36, -39, 39, -37, 37, "L'L B B'"],
+        [37, -40, 40, 36, 38, "    B B'"],   //
+        [38, -41, 41, 37, 11, "R R'B B'"],
+        [39, 36, 42, -40, 40, "L'L     "],   // 
+        [40, 37, 43, 42, 41, "X X'Z'Z "],
+        [41, 38, 44, 43, 10, "R R'    "],   //   
+        [42, 39, 0, -43, 43, "L'L F'F "],
+        [43, 40, 1, 42, 44, "    F'F"],    //   
+        [44, 41, 2, 43, 9, "R R'F'F "],
+      ];
       let rawData: any = [
         [0, 42, 3, -1, 1, "L'L U U'"],
         [1, 43, 4, 0, 2, "X X'U U'"],    // 
@@ -286,7 +319,8 @@ namespace App2 {
     }
 
     private buildHitTester(): void {
-
+      //TODO change test angle and distance calculation
+      // only 2 entries in target table and hittest will check fo x + 180 and add/subtract '
       let matrixIdentity = BABYLON.Matrix.Identity();
       let transformMatrix = this.scene.getTransformMatrix();
       let viewPort = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
@@ -382,7 +416,7 @@ namespace App2 {
         if (this.fastSpeed !== true)
           return;
         this.cube.startTime = 0;
-        this.cube.renderScene();
+        //this.cube.renderScene();
         console.assert(this.cube.targetAngle === 0, "handlePointerDown error 1");
       }
       if (this.cube.targetAngle === 0) {
@@ -403,14 +437,7 @@ namespace App2 {
     }
 
     private handlePointerMove = (event: PointerEvent) => {
-      let this1 = this;
-      if (this.mouseStatus !== 0) {
-      }
-
-      if (this.fastSpeed && this.mouseStatus === 3) {
-      }
-
-      else if (this.mouseStatus === 2) {
+      if (this.mouseStatus === 2) {
         console.assert(this.cube.targetAngle === 0, "mousestatus 2 target != 0");
         let dX = event.x - this.mousePos1.X;
         let dY = event.y - this.mousePos1.Y;
@@ -432,7 +459,9 @@ namespace App2 {
             }
             console.log(`move ${hitTarget.move}`);
             //this.cube.rotateTable(hitTarget.move, this.cube.mainSpeed);
-            this.cube.sendMoves(hitTarget.move, true, this.cube.mainSpeed);
+            if (hitTarget.move !== "  ") {
+              this.cube.sendMoves(hitTarget.move, true, this.cube.mainSpeed);
+            }
             //this.mousePos2.X = event.x;
             //this.mousePos2.Y = event.y;
             this.mouseStatus = 3;
@@ -534,9 +563,7 @@ namespace App2 {
           this.solverPointerTimer = setTimeout(() => {
             this.solverPointerTimer = null;
             this.solver.step();
-            //this.cube.renderScene();
-            return;
-          }, 500);
+            }, 500);
           break;
 
         case "fa-question":
@@ -552,15 +579,14 @@ namespace App2 {
         case "fa-home":
           this.showOverlay(Panel.closeAll);
           this.cube.resetTileColors();
-          this.solver.reset();
-          this.cube.renderScene();
+          this.solver.solverMsg("");
+          this.cube.sendMoves("X Z X'Y H ", true, 100);
           break;
 
         case "fa-random":
           this.showOverlay(Panel.closeAll);
           this.cube.scramble();
-          this.solver.reset();
-          this.cube.renderScene();
+          this.solver.solverMsg("");
           break;
 
         case "fa-arrow-left":
@@ -621,7 +647,7 @@ namespace App2 {
       setTimeout(() => {
         if (this.cube.targetAngle !== 0) {
           this.cube.startTime = 0;
-          this.cube.renderScene();
+          this.scene.render();
         }
         console.log("finish move 2");
         console.assert(this.cube.targetAngle === 0, "finishMove fast click error");

@@ -24,10 +24,12 @@
   export class Cube {
     private renderCount: number = 0;
     public gameStartTime: number = 0;
-    public gameStarted = false;
+    //public gameStarted = false;
+    public gameTimer: number | null = null;
+    public gameTime: number = 0;
     //public movesCount: number = 0;
-    public movesQueue: string[] = [];
-    public sendQueue: string[] = [];
+    public movesPendingQueue: string[] = [];
+    public movesSentQueue: string[] = [];
     private sendSpeed: number = 200;
     public doneMoves: string[] = [];
     public redoMoves: string[] = [];
@@ -38,6 +40,10 @@
     private sidePieces: Piece[];
     private cornerPieces: Piece[];
     public moveCodes: string = "ULFRBDYXZMES";
+    // special moveCodes
+    // G change speed
+    // H solver message
+    // IJKL NOPQRST
     //TODO change TS to YXZ
     private residualMoves: string = "";
     private pivotList: BABYLON.Mesh[];  //    Array<BABYLON.Mesh>;
@@ -52,6 +58,7 @@
     private tile1: Tile;
     public static tileColors: { [color1: number]: BABYLON.StandardMaterial; } = {};
     private engine: BABYLON.Engine;
+    public solver: Solver;
 
     constructor(scene: BABYLON.Scene, engine: BABYLON.Engine) {
       this.scene = scene;
@@ -84,22 +91,72 @@
     //}
 
     /**
-     * perform any outstanding rotate then render the cube
-     * @param caller 1 if called by engine.runRenderLoop
+     * Repeatedly called by BABYLON to redraw cube if necessary
      */
-    public renderScene(caller = 0): void {
+    public renderScene(): void {
 
-      if (caller === 0) {
-        console.assert(this.targetAngle === 0
-          && this.sendQueue.length === 0, "Bad call to renderScene");
-        this.scene.render();
-        return;
-      }
       if (this.targetAngle === 0) {
-        if (this.sendQueue.length > 0) {
-          let move = this.sendQueue[0];
+        if ( this.movesSentQueue.length === 0) {
+          if (this.solver) {
+          let solved = this.solver.checkSolved();
+          if (solved && this.doneMoves.length > 2) {
+            this.solver.solverMsg(`Cube is Solved!`);
+            this.sendMoves("X Z X'Y H ", true, 100);
+          }
+          }
+        }
+        else if (this.movesSentQueue.length > 0) {
+          let move = this.movesSentQueue[0];
+          if (move === "''" || move === "") {
+            this.movesSentQueue.shift();
+            this.scene.render();
+            return;
+          }
+          else if (move.substr(0, 1) === "G") {
+            this.sendSpeed = parseInt(move.substr(1, 3), 10);
+            this.movesSentQueue.shift();
+            return;
+          }
+          else if (move.substr(0, 1) === "H") {
+            this.resetGame();
+            this.movesSentQueue.shift();
+            return;
+          }
+
           this.rotateTable(move, this.sendSpeed);
-          // get processing from rotate table
+
+          // if (this.sendSpeed !== 0) {
+          //   if (this.gameStarted) {
+          //     let s2 = document.getElementById("ScoreBox");
+          //     let elapsed: number = (Math.floor(new Date().valueOf())) - this.gameStartTime;
+          //     let mins = Math.floor(elapsed /  60);
+          //     let seconds = elapsed - mins * 60;
+          //     s2.innerText = `${this.doneMoves.length.toString()} ${mins}:${seconds}`;
+          //   }
+          //   else {
+          //     let s2 = document.getElementById("ScoreBox");
+          //     s2.innerText = `${this.doneMoves.length.toString()}`;
+          //   }
+          // }
+
+          // logic from rotateTable
+          if (this.gameTimer === null) {
+            if (move.charAt(0) !== "X" && move.charAt(0) !== "Y" && move.charAt(0) !== "Z") {
+              this.gameStartTime = Math.floor(new Date().valueOf() / 1000);
+              this.gameTimer = setInterval(() => {
+                let currentTime = Math.floor(new Date().valueOf() / 1000)
+                  - this.gameStartTime;
+                if (currentTime > this.gameTime) {
+                  this.gameTime = currentTime;
+                  let s2 = document.getElementById("ScoreBox");
+                  let mins = Math.floor(currentTime /  60);
+                  let seconds =  100 + currentTime - mins * 60;
+                  s2.innerText = `${this.doneMoves.length.toString()} ${mins}:${seconds.toString().substr(1)}`;
+                    }
+              }, 100);
+            }
+          }
+
         }
       }
       if (this.targetAngle !== 0) {
@@ -130,7 +187,7 @@
           this.pivotList[i].rotate(this.axis, rads, BABYLON.Space.WORLD);
         }
         if (this.targetAngle === 0) {
-          let v1 = this.sendQueue.shift();
+          let v1 = this.movesSentQueue.shift();
         }
         this.scene.render();
       }
@@ -140,38 +197,12 @@
     public static getTile(face: number | CubeFace, ix?: number): Tile {
       let ix1: number;
       if (ix || ix === 0) {
-        //if (typeof face === 'Cubeface') {
-        //  ix1 = face * 9 + ix;
-        //}
-        //else {
         ix1 = face * 9 + ix;
-        //}
       }
       else {
         ix1 = face;
       }
       return Cube.tiles[ix1];
-    }
-
-    public static findColors(color: TileColor, color2: TileColor, color3: TileColor | null = null): number {
-      if (color3 !== null) {
-        for (let i: number = 0; i < Cube.tiles.length; i++) {
-          let tile1: Tile = Cube.getTile(i);
-          if (tile1.color === color && tile1.color3 === color3) {
-            return i;
-          }
-        }
-      }
-      else {
-        for (let i: number = 0; i < Cube.tiles.length; i++) {
-
-          let tile1: Tile = Cube.getTile(i);
-          if (tile1.color === color && tile1.color2 === color2 && tile1.color3 === TileColor.none) {
-            return i;
-          }
-        }
-      }
-      return -1;
     }
 
     public mouseGetTile(event: PointerEvent): number {
@@ -319,7 +350,7 @@
           axis = BABYLON.Axis.X;
           break;
         default:
-          throw new Error ("Move must be X or Y");
+          throw new Error("Move must be X or Y");
         //TODO why not handle Z
       }
       for (let item of Cube.tiles) {
@@ -345,7 +376,10 @@
         // this.rotateTable(this.moveCodes.charAt(move1) + " ", true, 0);
       }
       // moves = "UUBFUBFBDFLUFBURBRLFLDDDULRBFULBRBUUUFUD";
-      this.sendMoves(moves, true, 100);
+      //this.sendMoves(moves, true, 100);
+      this.sendMoves(moves, true, 0);
+      this.sendMoves("X Z X'Y H ", true, 100);
+
       // for (let i = 0; i < moves.length; ++i) {
       //   let move1 = moves.charAt(i) + " ";
       //   this.sendMoves(move1);
@@ -355,8 +389,9 @@
       this.doneMoves.length = 0;
       //this.movesCount = 0;
       this.redoMoves.length = 0;
-      this.gameStarted = false;
-      let s2 = document.getElementById("ScoreBox"); 
+      clearInterval(this.gameTimer);
+      this.gameTimer = null;
+      let s2 = document.getElementById("ScoreBox");
       //s2.innerText = this.movesCount.toString();
       s2.innerText = this.doneMoves.length.toString();
       // console.log(moves);
@@ -382,19 +417,27 @@
             tile1.color2 = TileColor.none;
             tile1.color3 = TileColor.none;
             if (tile1.tileIx !== (i * 9 + j)) {
-              // console.log("tileIx error");
+              //console.log(`tileIx error Tile ${i * 9 + j} tileIx ${tile1.tileIx}`);
             }
           }
         }
       }
       this.setAdjacentColors();
+      this.resetGame();
+    }
+
+    public resetGame() {
       this.doneMoves.length = 0;
       this.redoMoves.length = 0;
       //this.movesCount = 0;
-      this.gameStarted = false;
+      clearInterval(this.gameTimer);
+      this.gameTimer = null;
       let s2 = document.getElementById("ScoreBox");
       //s2.innerText = this.movesCount.toString();
       s2.innerText = this.doneMoves.length.toString();
+      if (this.solver) {
+        this.solver.reset();
+      }
     }
 
     private setAdjacentColors(): void {
@@ -438,11 +481,13 @@
       if (moves.length % 2 === 1) {
         console.assert(moves.length % 2 !== 1, "Bad input to sendMoves");
       }
-      let queue = this.movesQueue;
+      let queue = this.movesPendingQueue;
       for (let i = 0; i < moves.length; i += 2) {
         queue.push(moves.substr(i, 2));
       }
       if (execute) {
+        let speed1 = String(speed + 1000);
+        this.movesSentQueue.push("G" + speed1.substr(1, 3));
         //TODO DONE UUUU->remove UUU->U-  Remember moves for ReDo
         for (let i = 0; i < queue.length; ++i) {
           let move = queue[i];
@@ -451,14 +496,14 @@
             && queue[i + 2] === move) {
             if (queue.length > i + 3
               && queue[i + 3] === move) {
-                i += 3;
+              i += 3;
             }
             else {
               if (move.substr(1, 1) === "'") {
-                this.sendQueue.push(move.substr(0, 1) + " ");
+                this.movesSentQueue.push(move.substr(0, 1) + " ");
               }
               else {
-                this.sendQueue.push(move.substr(0, 1) + "'");
+                this.movesSentQueue.push(move.substr(0, 1) + "'");
               }
               i += 2;
             }
@@ -466,10 +511,10 @@
           else if (queue.length > i + 1
             && move.substr(0, 1) === queue[i + 1].substr(0, 1)
             && move.substr(1, 1) !== queue[i + 1].substr(1, 1)) {
-              i += 1;
-            }
-          else {  
-            this.sendQueue.push(move);
+            i += 1;
+          }
+          else {
+            this.movesSentQueue.push(move);
           }
         }
         queue.length = 0;
@@ -478,7 +523,7 @@
     }
 
 
-    public rotateTable(move: string, speed: number): void {
+    private rotateTable(move: string, speed: number): void {
       //let moveCount = 1;
       if (move.length !== 2) {
         console.assert(move.length === 2, `cube.rotateTable move.length != 2`);
@@ -489,7 +534,7 @@
       }
 
       this.pivotList = this.rotateTable1(move, Cube.tiles);
-      let v4 = 4;
+
       let lastMove = "  ";
       if (this.doneMoves.length > 0) {
         lastMove = this.doneMoves[this.doneMoves.length - 1];
@@ -502,11 +547,11 @@
         this.doneMoves.push(move);
       }
 
-      if (this.targetAngle !== 0) {
-        this.startTime = 0;
-        this.renderScene();
-        console.assert(this.targetAngle === 0, "handlePointerDown error 1");
-      }
+      // if (this.targetAngle !== 0) {
+      //   this.startTime = 0;
+      //   this.renderScene();
+      //   console.assert(this.targetAngle === 0, "handlePointerDown error 1");
+      // }
 
       let angle: number = 90;
       if (move.substr(1, 1) === "'") {
@@ -532,31 +577,15 @@
           this.pivotList[i1].rotate(this.axis, rads, BABYLON.Space.WORLD);
         }
         this.pivotList = [];
+        if (this.movesSentQueue.length > 0) {
+          this.movesSentQueue.shift();
+        }
       }
       else {
         this.moveSpeed = speed;
         this.startTime = new Date().valueOf();
         this.currentAngle = 0;
         this.targetAngle = angle;
-      }
-      //         if (speed > 200) {
-      if (this.gameStarted === false) {
-        if (move.charAt(0) !== "X" && move.charAt(0) !== "Y" && move.charAt(0) !== "Z") {
-          this.gameStarted = true;
-          this.gameStartTime = new Date().valueOf();
-        }
-      }
-
-      let s2 = document.getElementById("ScoreBox");
-      if (this.gameStarted) {
-        let elapsed: number = (new Date().valueOf()) - this.gameStartTime;
-        let mins = Math.floor(elapsed / (1000 * 60));
-        elapsed -= mins * (1000 * 60);
-        let seconds = Math.floor(elapsed / (1000));
-        s2.innerText = `${this.doneMoves.length.toString()} ${mins}:${seconds}`;
-      }
-      else {
-        s2.innerText = `${this.doneMoves.length.toString()}`;
       }
     }
 
@@ -566,7 +595,7 @@
      * @param tiles the tiles table to me moved normally Cube.tiles but solver uses a copy
      * @return a table of meshes for all the tiles that need to be moved
      */
-    private rotateTable1(move: string, tiles: Tile[]): BABYLON.Mesh[] {
+    public rotateTable1(move: string, tiles: Tile[]): BABYLON.Mesh[] {
       let pivotList: BABYLON.Mesh[] = [];
       let moveTable: number[][];
       if (move.charAt(1) === "'") {
