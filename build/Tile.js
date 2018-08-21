@@ -8,6 +8,9 @@ var App2;
                 return s1;
             };
             this.tileIx = tileIx;
+            if (x === -100) {
+                return;
+            }
             let rect2 = BABYLON.MeshBuilder.CreatePlane("plane1", { size: 1 }, scene);
             rect2.rotation.y = Math.PI;
             rect2.position.z = +0.001;
