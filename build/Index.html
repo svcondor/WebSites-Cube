@@ -146,16 +146,17 @@
 
 <body>
   <div id="gamediv" style="background-color: magenta; width:300px; height:300px">
-    <canvas id="renderCanvas" touch-action="none">    </canvas>
+    <canvas id="renderCanvas" touch-action="none"> 
+    </canvas>
   </div>
+      
+  <div id="buttons" touch-action="none" class="noselect" style="  width:100%; height:auto;      position:fixed; bottom:0px;">
+          <div>
+            <i class="fa fa-arrow-circle-o-left fa-2x noselect" Title="Undo" style="padding: 0px 0px 0px 18px; color:black; float:left"> </i>
+            <i class="fa fa-arrow-circle-o-right fa-2x noselect" Title="Next Step" style="padding: 0px 18px 0px 0px; color:black; float:right"></i>
+          </div>
 
-  <div id="buttons" touch-action="none" class="noselect" style="  width:100%; height:auto; position:fixed; bottom:0px;">
-<div>
-  <i class="fa fa-arrow-circle-o-left fa-4x noselect" style="padding:0px; color:black; float:left"> </i>
-  <i class="fa fa-arrow-circle-o-right fa-4x noselect" style="padding:0px; color:black; float:right"></i>
- 
-</div>
-    <div id="solvermessage" 
+          <div id="solvermessage" 
          style=" float:left; width:100%; text-align: center; font-size:30px; 
          min-height:35px; padding: 0px 0px 0px 0px;">
     </div>
@@ -184,11 +185,11 @@
         </ul>
       </div>
       <div style="display:inline-block">
-        <i class="fa fa-home fa-1x noselect"> </i>
-        <p class="label">Reset</p>
+        <i class="fa fa-home fa-1x noselect" title="Reset"> </i>
+        <!-- <p class="title"=Reset</p> -->
       </div>
       <div style="display:inline-block">
-        <i class="fa fa-random   noselect"></i>
+        <i class="fa fa-random   noselect" title="Scramble"></i>
         <p class="label">Scramble</p>
       </div>
       <!--<div style="display:inline-block">
@@ -204,7 +205,7 @@
         <p class="label">Settings</p>
       </div>-->
       <div style="display:inline-block">
-        <i class="fa fa-ellipsis-h fa-x  noselect"></i>
+        <i class="fa fa-ellipsis-h fa-x  noselect" title="more"></i>
         <p class="label">More</p>
       </div>
       <span class="noselect" style="padding:10px; font-size: 20px; float: right; color:white;" id="ScoreBox">0 0:00</span>

@@ -79,10 +79,11 @@ i {
     display: none !important;
   }
 
-  /*.fa:hover {
+  .fa:hover {
     color: aqua;
     background-color: transparent;
-  }*/
+  }
+  
   .fa:active {
     color: dimgray;
     background-color: transparent;
@@ -100,4 +101,9 @@ i {
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* Internet Explorer/Edge */
   user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+}
+
+h4 {
+  padding: 0px;
+  margin: 20px 0px 5px 0px;
 }
