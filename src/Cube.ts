@@ -1,5 +1,11 @@
 ﻿namespace App2 {
 
+  export enum MoveCode {
+    SpeedChange = "G",
+    ResetGame = "H",
+    SolverMsg = "I"
+  }
+
   export enum TileColor {
     Blue = 0,
     Orange = 1,
@@ -112,32 +118,21 @@
             this.scene.render();
             return;
           }
-          else if (move.substr(0, 1) === "G") {
+          else if (move.substr(0, 1) === MoveCode.SpeedChange) {
             this.sendSpeed = parseInt(move.substr(1, 3), 10);
             this.movesSentQueue.shift();
             return;
           }
-          else if (move.substr(0, 1) === "H") {
+          else if (move.substr(0, 1) === MoveCode.ResetGame) {
             this.resetGame();
             this.movesSentQueue.shift();
             return;
           }
-
+          else if (move.substr(0, 1) === MoveCode.SolverMsg) {
+            let step = move.substr(1, 1);
+            this.solver.solverMsg(`Step ${step} DONE`);
+          }
           this.rotateTable(move, this.sendSpeed);
-
-          // if (this.sendSpeed !== 0) {
-          //   if (this.gameStarted) {
-          //     let s2 = document.getElementById("ScoreBox");
-          //     let elapsed: number = (Math.floor(new Date().valueOf())) - this.gameStartTime;
-          //     let mins = Math.floor(elapsed /  60);
-          //     let seconds = elapsed - mins * 60;
-          //     s2.innerText = `${this.doneMoves.length.toString()} ${mins}:${seconds}`;
-          //   }
-          //   else {
-          //     let s2 = document.getElementById("ScoreBox");
-          //     s2.innerText = `${this.doneMoves.length.toString()}`;
-          //   }
-          // }
 
           // logic from rotateTable
           if (this.gameTimer === null) {
