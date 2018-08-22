@@ -1,4 +1,4 @@
-build/
-build/**
+build/*.js
+build/*.js.map
 .vs/
 ~$CubeDetails.xlsx
