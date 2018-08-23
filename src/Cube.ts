@@ -39,7 +39,8 @@
     private sendSpeed: number = 200;
     public doneMoves: string[] = [];
     public redoMoves: string[] = [];
-    public static tiles: Tile[];
+
+    public static cubeTable: Tile[];
     private clockMoves: number[][];
     private antiMoves: number[][];
     private mouseMoves: string[][];
@@ -54,7 +55,7 @@
     private residualMoves: string = "";
     private pivotList: BABYLON.Mesh[];  //    Array<BABYLON.Mesh>;
     public currentAngle: number = 0;
-    public targetAngle: number = 0;
+    private targetAngle: number = 0;
     public startTime: number;
     public moveSpeed: number = 200;  // was 400
     public mainSpeed: number = 200;
@@ -71,7 +72,7 @@
       this.engine = engine;
       // solver new Solver
       //this.pivot1 = new BABYLON.Mesh("pivot1", this.scene);
-      Cube.tiles = new Array(54);
+      Cube.cubeTable = new Array(54);
       this.buildTileColorTable();
       this.buildTables();
 
@@ -92,103 +93,120 @@
       this.resetTileColors();
     }
 
-    //public renderNew(angle: number, axis: BABYLON.Vector3, speed: number) {
-    //pivot table
-    //}
 
-    /**
-     * Repeatedly called by BABYLON to redraw cube if necessary
-     */
-    public renderScene(): void {
+    /** Repeatedly called by BABYLON to redraw cube if necessary */
+    public redrawCube(): void {
 
       if (this.targetAngle === 0) {
-        if ( this.movesSentQueue.length === 0) {
+        if (this.movesSentQueue.length === 0) {
           if (this.solver) {
-          let solved = this.solver.checkSolved();
-          if (solved && this.doneMoves.length > 2) {
-            this.solver.solverMsg(`Cube is Solved!`);
-            this.sendMoves("X Z X'Y H ", true, 100);
-          }
+            let solved = this.solver.checkSolved();
+            if (solved && this.doneMoves.length > 2) {
+              this.solver.solverMsg(`Cube is Solved!`);
+              this.gameTimer = null;
+              //this.sendMoves("X Z X'Y H ", true, 100);
+              //this.sendMoves("Y Y ", true, 100);
+              //this.sendMoves("Y Y ", true, 100);
+            }
           }
         }
         else if (this.movesSentQueue.length > 0) {
-          let move = this.movesSentQueue[0];
-          if (move === "''" || move === "") {
-            this.movesSentQueue.shift();
-            this.scene.render();
-            return;
-          }
-          else if (move.substr(0, 1) === MoveCode.SpeedChange) {
-            this.sendSpeed = parseInt(move.substr(1, 3), 10);
-            this.movesSentQueue.shift();
-            return;
-          }
-          else if (move.substr(0, 1) === MoveCode.ResetGame) {
-            this.resetGame();
-            this.movesSentQueue.shift();
-            return;
-          }
-          else if (move.substr(0, 1) === MoveCode.SolverMsg) {
-            let step = move.substr(1, 1);
-            this.solver.solverMsg(`Step ${step} DONE`);
-          }
-          this.rotateTable(move, this.sendSpeed);
-
-          // logic from rotateTable
-          if (this.gameTimer === null) {
-            if (move.charAt(0) !== "X" && move.charAt(0) !== "Y" && move.charAt(0) !== "Z") {
-              this.gameStartTime = Math.floor(new Date().valueOf() / 1000);
-              this.gameTimer = setInterval(() => {
-                let currentTime = Math.floor(new Date().valueOf() / 1000)
-                  - this.gameStartTime;
-                if (currentTime > this.gameTime) {
-                  this.gameTime = currentTime;
-                  let s2 = document.getElementById("ScoreBox");
-                  let mins = Math.floor(currentTime /  60);
-                  let seconds =  100 + currentTime - mins * 60;
-                  s2.innerText = `${this.doneMoves.length.toString()} ${mins}:${seconds.toString().substr(1)}`;
-                    }
-              }, 100);
-            }
-          }
-
+          this.executeNextMove();
         }
       }
+
       if (this.targetAngle !== 0) {
-        let t1 = new Date().valueOf() - this.startTime;
-        let t2 = this.moveSpeed;
-        let newAngle = 90 * t1 / t2;
-        let increment: number;
-        if (this.targetAngle > 0) {
-          increment = newAngle - this.currentAngle;
-          if (increment > 10) console.log(`Pos ${t2} ${t1} ${newAngle} ${increment}`);
-          if (this.currentAngle + increment >= this.targetAngle) {
-            increment = this.targetAngle - this.currentAngle;
-            this.targetAngle = 0;
-          }
-        }
-        else {
-          increment = - newAngle - this.currentAngle;
-          // console.log(`Neg ${t2} ${t1} ${newAngle} ${this.currentAngle} ${increment}`); //
-          //increment *= -1;
-          if (this.currentAngle + increment <= this.targetAngle) {
-            increment = this.targetAngle - this.currentAngle;
-            this.targetAngle = 0;
-          }
-        }
-        this.currentAngle += increment;
-        let rads = increment * Math.PI / 180;
-        for (let i = 0; i < this.pivotList.length; ++i) {
-          this.pivotList[i].rotate(this.axis, rads, BABYLON.Space.WORLD);
-        }
-        if (this.targetAngle === 0) {
-          let v1 = this.movesSentQueue.shift();
-        }
-        this.scene.render();
+        this.doPartialRotate();
       }
     }
 
-    // get Tile by index (0-53) or by face (0-5) and tile (0-8)
+    /** Partially rotate cube based on speed */
+    private doPartialRotate() {
+      let t1 = new Date().valueOf() - this.startTime;
+      let t2 = this.moveSpeed;
+      let newAngle = 90 * t1 / t2;
+      let increment: number;
+      if (this.targetAngle > 0) {
+        increment = newAngle - this.currentAngle;
+        //console.log(`new ${newAngle} ${increment} ${this.currentAngle}`);
+        // if (increment > 10)
+        //   console.log(`Pos ${t2} ${t1} ${newAngle} ${increment}`);
+        if (this.currentAngle + increment >= this.targetAngle) {
+          increment = this.targetAngle - this.currentAngle;
+          this.targetAngle = 0;
+        }
+      }
+      else {
+        increment = -newAngle - this.currentAngle;
+        //console.log(`new ${newAngle} ${increment} ${this.currentAngle}`);
+        // console.log(`Neg ${t2} ${t1} ${newAngle} ${this.currentAngle} ${increment}`); //
+        //increment *= -1;
+        if (this.currentAngle + increment <= this.targetAngle) {
+          increment = this.targetAngle - this.currentAngle;
+          this.targetAngle = 0;
+        }
+      }
+      this.currentAngle += increment;
+      let rads = increment * Math.PI / 180;
+      for (let i = 0; i < this.pivotList.length; ++i) {
+        this.pivotList[i].rotate(this.axis, rads, BABYLON.Space.WORLD);
+      }
+      if (this.targetAngle === 0) {
+        this.movesSentQueue.shift();
+      }
+      this.scene.render();
+    }
+
+    /**
+     * ececute the next cube move or handle special MoveCode
+     */
+    private executeNextMove() {
+      let move = this.movesSentQueue[0];
+      if (move === "''" || move === "") {
+        this.movesSentQueue.shift();
+        this.scene.render();
+      }
+      else if (move.substr(0, 1) === MoveCode.SpeedChange) {
+        this.sendSpeed = parseInt(move.substr(1, 3), 10);
+        this.movesSentQueue.shift();
+      }
+      else if (move.substr(0, 1) === MoveCode.ResetGame) {
+        this.resetGame();
+        this.movesSentQueue.shift();
+      }
+      else if (move.substr(0, 1) === MoveCode.SolverMsg) {
+        let step = move.substr(1, 1);
+        if (move.length > 2) {
+          step += "." + move.substr(2, 1);
+        }
+        this.solver.solverMsg(`Step ${step} DONE`);
+      }
+      else {
+        this.doCubeRotate(move, this.sendSpeed);
+        if (this.gameTimer === null &&
+          (move.charAt(0) !== "X" && move.charAt(0) !== "Y" && move.charAt(0) !== "Z")) {
+          this.startGameTimer();
+          this.solver.solverMsg(``);
+        }
+      }
+    }
+
+    private startGameTimer() {
+      this.gameStartTime = Math.floor(new Date().valueOf() / 1000);
+      this.gameTimer = setInterval(() => {
+        let currentTime = Math.floor(new Date().valueOf() / 1000)
+          - this.gameStartTime;
+        if (currentTime > this.gameTime) {
+          this.gameTime = currentTime;
+          let s2 = document.getElementById("ScoreBox");
+          let mins = Math.floor(currentTime / 60);
+          let seconds = 100 + currentTime - mins * 60;
+          s2.innerText = `${this.doneMoves.length.toString()} ${mins}:${seconds.toString().substr(1)}`;
+        }
+      }, 100);
+    }
+
+    /** get Tile by index (0-53) or by face (0-5) and tile (0-8) */
     public static getTile(face: number | CubeFace, ix?: number): Tile {
       let ix1: number;
       if (ix || ix === 0) {
@@ -197,9 +215,10 @@
       else {
         ix1 = face;
       }
-      return Cube.tiles[ix1];
+      return Cube.cubeTable[ix1];
     }
 
+    /** return Tile index of tile under mouse pointer */
     public mouseGetTile(event: PointerEvent): number {
       let pickResult = this.scene.pick(event.clientX, event.clientY);
 
@@ -208,8 +227,8 @@
         if (mesh1.name === "tile") {
 
           let tile1Ix = -1;
-          for (let i = 0; i < Cube.tiles.length; ++i) {
-            if (Cube.tiles[i].mesh === mesh1) {
+          for (let i = 0; i < Cube.cubeTable.length; ++i) {
+            if (Cube.cubeTable[i].mesh === mesh1) {
               if (i < 0 || (i >= 18 && i < 36) || i >= 45) {
                 return -1;
               }
@@ -314,6 +333,7 @@
         new Piece(TileColor.Green, TileColor.Red, TileColor.Yellow, 26, 33, 51)];
     }
 
+    /** Draw each face at start up */
     private drawFace(cubeFace: CubeFace): void {
       let tileIx: number = cubeFace as number * 9;
       for (let y = 1; y >= -1; --y) {
@@ -323,13 +343,14 @@
           }
           else {
             let tile1: Tile = new Tile(x, y, tileIx, this.scene);
-            Cube.tiles[tileIx] = tile1;
+            Cube.cubeTable[tileIx] = tile1;
           }
           ++tileIx;
         }
       }
     }
 
+    /** rotate the Cube as each face is built at start up */
     private rotateImage(move: string) {
       let count: number = 0;
       let angle: number = 90;
@@ -348,39 +369,26 @@
           throw new Error("Move must be X or Y");
         //TODO why not handle Z
       }
-      for (let item of Cube.tiles) {
+      for (let item of Cube.cubeTable) {
         if (item != null && item.pivot != null) {
           item.pivot.rotate(axis, angle * Math.PI / 180, BABYLON.Space.WORLD);
           ++count;
         }
       }
-      //console.log("Rotate Count ={0}", count);
     }
 
+    /** Random scramble of cube */
     public scramble(): void {
-      //this.resetTileColors();
-      //let seed1 = Math.floor(Math.random() * 6);
-      //console.debug("Random Seed ", seed1);
-      //var random1 = new Random(seed1);
       let moves = "";
       for (let i = 0; i < 20; ++i) {
         let move1 = Math.floor(Math.random() * 6);
-
-        //let move1 = random1.nextInt32([0, 6]);
         moves += this.moveCodes.charAt(move1) + " ";
         // this.rotateTable(this.moveCodes.charAt(move1) + " ", true, 0);
       }
       // moves = "UUBFUBFBDFLUFBURBRLFLDDDULRBFULBRBUUUFUD";
-      //this.sendMoves(moves, true, 100);
       this.sendMoves(moves, true, 0);
       this.sendMoves("X Z X'Y H ", true, 100);
 
-      // for (let i = 0; i < moves.length; ++i) {
-      //   let move1 = moves.charAt(i) + " ";
-      //   this.sendMoves(move1);
-      //   this.rotateTable(move1, 0);
-      //   // this.scene.render();
-      // }
       this.doneMoves.length = 0;
       //this.movesCount = 0;
       this.redoMoves.length = 0;
@@ -404,7 +412,7 @@
           case 5: color = TileColor.Yellow; break;
         }
         for (let j = 0; j < 9; ++j) {
-          let tile1: Tile = Cube.tiles[i * 9 + j];
+          let tile1: Tile = Cube.cubeTable[i * 9 + j];
           if (tile1 != null) {
             tile1.color = color;
             tile1.mesh.material = Cube.tileColors[color];
@@ -463,7 +471,6 @@
     }
 
 
-
     /**
      * enque moves and optionally execute them
      * @param moves Even string of 0 or more moves eg F U' L R'
@@ -474,7 +481,7 @@
      */
     public sendMoves(moves: string, execute = false, speed = 200) {
       if (moves.length % 2 === 1) {
-        console.assert(moves.length % 2 !== 1, "Bad input to sendMoves");
+        console.assert(moves.length % 2 !== 1, `Bad input to sendMoves "${moves}"`);
       }
       let queue = this.movesPendingQueue;
       for (let i = 0; i < moves.length; i += 2) {
@@ -517,18 +524,18 @@
       }
     }
 
-
-    private rotateTable(move: string, speed: number): void {
+    /**
+     * Do the move on the cubeTable and the display cube
+     * @param move the 2 character move to be done
+     * @param speed 0-immediately else slowly by redrawCube
+     */
+    private doCubeRotate(move: string, speed: number): void {
       //let moveCount = 1;
       if (move.length !== 2) {
-        console.assert(move.length === 2, `cube.rotateTable move.length != 2`);
+        throw new Error(`cube.rotateTable move.length != 2`);
       }
 
-      if (this.targetAngle !== 0) {
-        let v1 = 0;
-      }
-
-      this.pivotList = this.rotateTable1(move, Cube.tiles);
+      this.pivotList = this.rotateCubeTable(move, Cube.cubeTable);
 
       let lastMove = "  ";
       if (this.doneMoves.length > 0) {
@@ -541,12 +548,6 @@
       else {
         this.doneMoves.push(move);
       }
-
-      // if (this.targetAngle !== 0) {
-      //   this.startTime = 0;
-      //   this.renderScene();
-      //   console.assert(this.targetAngle === 0, "handlePointerDown error 1");
-      // }
 
       let angle: number = 90;
       if (move.substr(1, 1) === "'") {
@@ -585,12 +586,12 @@
     }
 
     /**
-     * 
+     * Use move to reorder the cubeTable, return pivotlist to rotate display cube 
      * @param move the single move to be made "F " "U'" etc 
-     * @param tiles the tiles table to me moved normally Cube.tiles but solver uses a copy
+     * @param cubeTable the tiles table to me moved normally Cube.cubeTable but solver uses a copy
      * @return a table of meshes for all the tiles that need to be moved
      */
-    public rotateTable1(move: string, tiles: Tile[]): BABYLON.Mesh[] {
+    public rotateCubeTable(move: string, cubeTable: Tile[]): BABYLON.Mesh[] {
       let pivotList: BABYLON.Mesh[] = [];
       let moveTable: number[][];
       if (move.charAt(1) === "'") {
@@ -602,8 +603,8 @@
       let moveIx = this.moveCodes.indexOf(move.substr(0, 1));
       let moveTiles: Tile[] = [];
       let movelist: number[] = [];
-      for (let i = 0; i < tiles.length; ++i) {
-        let tile1 = tiles[i];
+      for (let i = 0; i < cubeTable.length; ++i) {
+        let tile1 = cubeTable[i];
         if (moveTable[moveIx][i] !== 0) {
           if (moveTable[moveIx][i] !== 200 && moveTable[moveIx][i] !== -1) {
             moveTiles.push(tile1);
@@ -615,7 +616,7 @@
       while (movelist.length > 0) {
         let ix1 = movelist.pop();
         if (ix1 < 100 && ix1 !== -1) {
-          tiles[ix1] = moveTiles.pop();
+          cubeTable[ix1] = moveTiles.pop();
         }
       }
       return pivotList;

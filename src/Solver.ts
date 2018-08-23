@@ -15,11 +15,11 @@
     public startStep: number = 0;
 
     public cube: Cube;
-    public static tiles: Tile[];
+    public static cubeTable: Tile[];
 
     constructor(cube: Cube) {
       this.cube = cube;
-      Solver.tiles = new Array(54);
+      Solver.cubeTable = new Array(54);
       this.copyTilesFromCube();
     }
 
@@ -116,19 +116,19 @@
     }
 
     private copyTilesFromCube() {
-      for (let ix = 0; ix < Cube.tiles.length; ++ix) {
-        let tile = Cube.tiles[ix];
+      for (let ix = 0; ix < Cube.cubeTable.length; ++ix) {
+        let tile = Cube.cubeTable[ix];
         let tile1: Tile = new Tile(-100, -100, tile.tileIx, null);
         tile1.color = tile.color;
         tile1.color2 = tile.color2;
         tile1.color3 = tile.color3;
-        Solver.tiles[ix] = tile1;
+        Solver.cubeTable[ix] = tile1;
       }
     }
 
     private solverSendMoves(moves: string, execute = false, speed = 200): void {
       if (moves.length % 2 === 1) {
-        throw new Error("Bad input to sendMoves");
+        throw new Error(`Bad input to sendMoves ${moves}`);
       }
       if (execute) {
         this.cube.sendMoves(moves, execute, speed);
@@ -137,7 +137,7 @@
       let queue = this.cube.movesPendingQueue;
       for (let i = 0; i < moves.length; i += 2) {
         let move = moves.substr(i, 2);
-        this.cube.rotateTable1(move, Solver.tiles);
+        this.cube.rotateCubeTable(move, Solver.cubeTable);
         queue.push(move);
       }
     }
@@ -185,7 +185,7 @@
 
     private findColors(color: TileColor, color2: TileColor, color3: TileColor | null = null): number {
       if (color3 !== null) {
-        for (let i: number = 0; i < Solver.tiles.length; i++) {
+        for (let i: number = 0; i < Solver.cubeTable.length; i++) {
           let tile1: Tile = this.getTile(i);
           if (tile1.color === color && tile1.color3 === color3) {
             return i;
@@ -193,7 +193,7 @@
         }
       }
       else {
-        for (let i: number = 0; i < Solver.tiles.length; i++) {
+        for (let i: number = 0; i < Solver.cubeTable.length; i++) {
 
           let tile1: Tile = this.getTile(i);
           if (tile1.color === color && tile1.color2 === color2 && tile1.color3 === TileColor.none) {
@@ -213,12 +213,10 @@
       else {
         ix1 = face;
       }
-      return Solver.tiles[ix1];
+      return Solver.cubeTable[ix1];
     }
 
     private whiteCross = (): string => {
-      this2 = this;
-      console.log(this2);
       let moves: string = this.whiteOnTop();
       if (moves !== "") return moves;
 

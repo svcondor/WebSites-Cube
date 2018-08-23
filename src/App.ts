@@ -6,7 +6,6 @@
 namespace App2 {
   //TODO: make CubeFace.U Enum 2
   //TODO: Swap some antiClockmoves with clockMoves
-  export let this2: any;
   //https://github.com/icflorescu/iisexpress-proxy
   // npm install -g iisexpress-proxy
   //iisexpress-proxy 55537 to 8080
@@ -31,10 +30,10 @@ namespace App2 {
     targets?: HitTarget[];
   }
 
-  interface Polar {
-    distance: number;
-    angle: number;
-  }
+  // interface Polar {
+  //   distance: number;
+  //   angle: number;
+  // }
 
   enum Panel {
     closeAll = 0,
@@ -47,44 +46,33 @@ namespace App2 {
 
   class MainApp {
 
-    public aaSignature = "MainApp1";
+    private aaSignature = "MainApp1";
     private solverPointerTimer: number | null = null;
-    // private stepDirection: number = -1;
-    //private iconUndo: HTMLElement;
     private iconRedo: HTMLElement;
     private scene: BABYLON.Scene;
     private cube: Cube;
     private solver: Solver;
 
     private mouseStatus: number = 0;
-    private mouseStatusSave: number = 0;
     private mousePos1: Point = { X: 0, Y: 0 };   // Mouse position on canvas
-    //private mouseDistance = 0;
     private minimumDistance: number = 0;
-    //private mouseMove: string = "";
-    //private hitMaximum: number;
-    //private mousePos2: Point = { X: 0, Y: 0 };
-    //private mouseMesh1: BABYLON.AbstractMesh;
     private mouseTile1Ix: number = 0;
-    //private mouseTargetIx: number;
     private panelHelp: HTMLElement;
     private panelMenu: HTMLElement;
     private panelAbout: HTMLElement;
     private panelCrib: HTMLElement;
     private labels: HTMLCollectionOf<HTMLElement>;
     private overlay: Panel = Panel.closeAll;
-    //private interval1: number;
     private engine: BABYLON.Engine;
     private camera: BABYLON.FreeCamera;
     private hitTable: HitEntry[];
     private fastSpeed: boolean = false;   // Rotation speed in ms
 
     constructor() {
-      this2 = this;
-
       // http://stackoverflow.com/questions/16152609/
       //  importing-external-html-inner-content-with-javascript-ajax-without-jquery
-      //const url = "help1.html";
+
+      let rand = Math.floor(Math.random() * 10000);
 
       const xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = (): any => {
@@ -92,7 +80,7 @@ namespace App2 {
           document.getElementById("panelHelp").innerHTML = xmlhttp.responseText;
         }
       };
-      xmlhttp.open("GET", "help1.html", true);
+      xmlhttp.open("GET", `help1.html?v${rand}`, true);
       xmlhttp.send();
 
       const xmlhttp1 = new XMLHttpRequest();
@@ -101,7 +89,7 @@ namespace App2 {
           document.getElementById("panelCrib").innerHTML = xmlhttp1.responseText;
         }
       };
-      xmlhttp1.open("GET", "crib.html", true);
+      xmlhttp1.open("GET", `crib.html?v${rand}`, true);
       xmlhttp1.send();
 
       //BABYLON.Engine.CodeRepository = "/Babylon/src/";
@@ -187,7 +175,7 @@ namespace App2 {
       });
 
       engine.runRenderLoop(() => {
-        this.cube.renderScene();
+        this.cube.redrawCube();
       });
     }
 
@@ -242,7 +230,7 @@ namespace App2 {
         [4, 1, 7, 3, 5, "X X'Y Y'"],
         [5, 2, 8, 4, -4, "R R'Y Y'"],    // 
         [6, 3, -3, -7, 7, "L'L D'D "],
-        [7, 4, -4, 6, 8, "X X'D'D"],    //  
+        [7, 4, -4, 6, 8, "X X'D'D "],    //  
         [8, 5, -5, 7, -7, "R R'D'D "],
 
         [9, 44, 12, -10, 10, "F'F U U'"],
@@ -262,7 +250,7 @@ namespace App2 {
         [40, 37, 43, 42, 41, "X X'Z'Z "],
         [41, 38, 44, 43, 10, "R R'Z'Z "],   //   
         [42, 39, 0, -43, 43, "L'L F'F "],
-        [43, 40, 1, 42, 44, "X X'F'F"],    //   
+        [43, 40, 1, 42, 44, "X X'F'F "],    //   
         [44, 41, 2, 43, 9, "R R'F'F "],
       ];
       let rawWithMiddle: any = [
@@ -365,16 +353,16 @@ namespace App2 {
       this.minimumDistance = totalDistance / 27 / 4 / 6;   // was / 27 / 4 / 4
     }
 
-    private getPolar(dX: number, dY: number): Polar {
-      let polar: Polar = { distance: 0, angle: 0 };
-      polar.distance = Math.sqrt(dX ** 2 + dY ** 2);
-      let aCos = Math.acos(dX / polar.distance);
-      if (polar.distance !== 0) {
-        polar.angle = aCos * 180 / Math.PI;
-        if (dY < 0) polar.angle = 360 - polar.angle;
-      }
-      return polar;
-    }
+    // private getPolar(dX: number, dY: number): Polar {
+    //   let polar: Polar = { distance: 0, angle: 0 };
+    //   polar.distance = Math.sqrt(dX ** 2 + dY ** 2);
+    //   let aCos = Math.acos(dX / polar.distance);
+    //   if (polar.distance !== 0) {
+    //     polar.angle = aCos * 180 / Math.PI;
+    //     if (dY < 0) polar.angle = 360 - polar.angle;
+    //   }
+    //   return polar;
+    // }
 
     private findMouseTarget(tileIx: number, angle): HitTarget {
       let hit1 = this.hitTable[tileIx];
@@ -386,7 +374,7 @@ namespace App2 {
       for (let target of hit1.targets) {
         let deltaAngle = Math.abs(target.angle - angle) % 360;
 
-        
+
         if (deltaAngle > 180) {
           deltaAngle = 360 - deltaAngle;
         }
@@ -409,45 +397,35 @@ namespace App2 {
     }
 
     private handlePointerDown = (event: PointerEvent) => {
+
+      // Ignore pointerDown if cube is moving
+      if (this.cube.movesSentQueue.length !== 0) {
+        return;
+      }
+
+      // on pointerDown save X,Y and identify tile under poiner
       this.mousePos1.X = event.clientX;
       this.mousePos1.Y = event.clientY;
-
-      let this1 = this;
       this.showOverlay(Panel.close);
-      if (this.cube.targetAngle !== 0) {
-        if (this.fastSpeed !== true)
-          return;
-        this.cube.startTime = 0;
-        //this.cube.renderScene();
-        console.assert(this.cube.targetAngle === 0, "handlePointerDown error 1");
+      this.mouseStatus = 1;
+      let tileIx = this.cube.mouseGetTile(event);
+      if (tileIx !== -1) {
+        console.log(`PointerDown ${tileIx}`);
+        this.mouseTile1Ix = tileIx;
+        this.mouseStatus = 2;
       }
-      if (this.cube.targetAngle === 0) {
-        this.mouseStatus = 1;
-        //delay3(this);
-        let tileIx = this.cube.mouseGetTile(event);
-        if (tileIx !== -1) {
-          console.log(`PointerDown ${tileIx}`);
-          this.mouseTile1Ix = tileIx;
-          this.mouseStatus = 2;
-
-          return false;
-        }
-        else {
-          console.log(`PointerDown error 2 ${tileIx}`);
-        }
-      }
+      return false; //TODO Why false
     }
 
+    // Calculate which move to make depending on angle of move
     private handlePointerMove = (event: PointerEvent) => {
       if (this.mouseStatus === 2) {
-        console.assert(this.cube.targetAngle === 0, "mousestatus 2 target != 0");
         let dX = event.x - this.mousePos1.X;
         let dY = event.y - this.mousePos1.Y;
         let distance = Math.sqrt(dX ** 2 + dY ** 2);
         //console.log(`move mouseStatus 2 ${distance} ${this.minimumDistance}`);
 
         if (distance > this.minimumDistance) {
-
           let aCos = Math.acos(dX / distance);
           let angle = aCos * 180 / Math.PI;
           if (dY < 0) angle = 360 - angle;
@@ -457,15 +435,11 @@ namespace App2 {
           if (hitTarget.precise === true) {
             //console.log(`PointerMove - single2`);
             //if (distance > foundTarget.distance / 4) {
-            if (this.cube.targetAngle !== 0) {
-            }
             console.log(`move ${hitTarget.move}`);
-            //this.cube.rotateTable(hitTarget.move, this.cube.mainSpeed);
             if (hitTarget.move !== "  ") {
-              this.cube.sendMoves(hitTarget.move, true, this.cube.mainSpeed);
+              //this.cube.sendMoves(hitTarget.move, true, this.cube.mainSpeed);
+              this.cube.sendMoves(hitTarget.move, true, 400);
             }
-            //this.mousePos2.X = event.x;
-            //this.mousePos2.Y = event.y;
             this.mouseStatus = 3;
           }
         }
@@ -473,12 +447,13 @@ namespace App2 {
     }
 
     private handlePointerUp = (event: PointerEvent) => {
-      console.log(`PointerUp`);
-      if (this.cube.targetAngle !== 0 && this.fastSpeed) {
-        const fastStartTime = new Date().valueOf() - .90 * this.cube.moveSpeed;
-        if (fastStartTime < this.cube.startTime) this.cube.startTime = fastStartTime;
+      if (this.mouseStatus === 3) {
+        if (this.cube.movesSentQueue.length !== 0) {
+          this.cube.moveSpeed /= 2;
+        }
       }
-      this.mouseStatus = 0;
+      //TODO Consider speedup on pointerUp
+      //this.mouseStatus = 0;
     }
 
     private handleSettingsPointerDown = ((event: Event) => {
@@ -541,9 +516,6 @@ namespace App2 {
             clearTimeout(this.solverPointerTimer);
             this.solverPointerTimer = null;
             this.solver.solverMsg("");
-            // if (this.cube.sendQueue.length === 0) {
-            //   this.doTutorMove1();
-            // }
           }
           break;
       }
@@ -565,7 +537,7 @@ namespace App2 {
           this.solverPointerTimer = setTimeout(() => {
             this.solverPointerTimer = null;
             this.solver.step();
-            }, 500);
+          }, 500);
           break;
 
         case "fa-question":
@@ -600,81 +572,13 @@ namespace App2 {
       return false;
     });
 
-    private doTutorMove1 = (...rest: any[]): void => {
-      // if (this.cube.targetAngle !== 0) {
-      //   this.finishMove(this.doTutorMove, ...rest);
-      //   return;
-      // }
-
-      while (this.solver.solverMoves.length > 0
-        && (this.solver.solverMoves.charAt(0) === " "
-          || this.solver.solverMoves.charAt(0) === "'")) {
-        this.solver.solverMoves = this.solver.solverMoves.substr(1);
-      }
-      if (this.solver.solverMoves.length === 0) {
-        this.solver.solverMoves = this.solver.solve(this.solver.startStep);
-        if (this.solver.solverMoves.length > 4 && this.solver.solverMoves.substr(0, 3) === "msg") {
-          let msg = document.getElementById("solvermessage");
-          msg.innerText = this.solver.solverMoves.substr(3);
-          this.solver.solverMoves = "";
-          return;
-        }
-      }
-      if (this.solver.solverMoves.length > 0) {
-        let move: string;
-        if (this.solver.solverMoves.length > 1
-          && this.solver.solverMoves.charAt(1) === "'") {
-          move = this.solver.solverMoves.charAt(0) + "'";
-        }
-        else {
-          move = this.solver.solverMoves.charAt(0) + " ";
-        }
-        this.cube.sendMoves(move, true, this.cube.mainSpeed);
-        // this.cube.rotateTable(move, this.cube.mainSpeed);
-        if (this.solver.solverMoves.length > 0) {
-          this.solver.solverMoves = this.solver.solverMoves.substr(1);
-        }
-      }
-    }
-
-    private finishMove(function1: any, ...rest: any[]): void {
-      if (MainApp.finishMoveReEnter) {
-        console.log("finishMove reEnter");
-      }
-      MainApp.finishMoveReEnter = true;
-      let fastStartTime = new Date().valueOf() - 0.90 * this.cube.moveSpeed;
-      if (fastStartTime < this.cube.startTime) this.cube.startTime = fastStartTime;
-      console.log("finish move 1");
-
-      setTimeout(() => {
-        if (this.cube.targetAngle !== 0) {
-          this.cube.startTime = 0;
-          this.scene.render();
-        }
-        console.log("finish move 2");
-        console.assert(this.cube.targetAngle === 0, "finishMove fast click error");
-        MainApp.finishMoveReEnter = true;
-        function1(...rest);
-      }, this.cube.moveSpeed * 0.2);
-      //TODO fine tune above speed
-    }
-    private static finishMoveReEnter: boolean = false;
-
     private undoMove = (): void => {
-      //this.solver.reset();
-      // if (this.cube.targetAngle !== 0) {
-      //   this.finishMove(this.undoMove);
-      //   this.mouseStatus = 0;
-      //   console.log(`undo move call 1`);
-      //   return;
-      // }
       this.solver.solverMoves = "";
       if (this.cube.doneMoves.length > 0) {
         // Get previous move and undo it
         let move = this.cube.doneMoves[this.cube.doneMoves.length - 1];
-        move = move.substr(0, 1) 
+        move = move.substr(0, 1)
           + (move.substr(1, 1) === "'" ? " " : "'");
-
         //TODO should we add move to redo table
         this.cube.sendMoves(move, true, this.cube.mainSpeed);
       }
