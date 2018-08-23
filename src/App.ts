@@ -1,4 +1,5 @@
-﻿//import * as $ from "./Cube";
+﻿//import { CubeBuild } from './CubeBuild';
+//import * as $ from "./Cube";
 ////import * as Solver1 from "./Solver";
 //import { Solver } from "./Solver";
 //import * as BABYLON from "babylonjs";
@@ -51,6 +52,8 @@ namespace App2 {
     private iconRedo: HTMLElement;
     private scene: BABYLON.Scene;
     private cube: Cube;
+
+    private cubeBuilder: CubeBuilder;
     private solver: Solver;
 
     private mouseStatus: number = 0;
@@ -125,7 +128,10 @@ namespace App2 {
       camera.setTarget(new BABYLON.Vector3(-.07, -1.2, 0)); // was 0,0,0
       camera.fov = 0.35;  //0.33 for iphone 5   //0.35 Nokia 930
       //let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, -1), this.scene);
-      this.cube = new Cube(this.scene, engine);
+      this.cube = new Cube(this.scene);
+      this.cubeBuilder = new CubeBuilder(this.cube, this.scene);
+      this.cube.resetTileColors();
+
       //this.cube.sendMoves("''", true, 0);
       this.solver = new Solver(this.cube);
       this.cube.solver = this.solver;

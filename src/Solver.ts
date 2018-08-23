@@ -35,10 +35,6 @@
       document.getElementById("solvermessage").innerText = msg;
     }
 
-    public test1(): void {
-
-    }
-
     public step(): void {
       
       if (this.solveStep < 7)++this.solveStep;
