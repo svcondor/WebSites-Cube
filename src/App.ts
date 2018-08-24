@@ -467,20 +467,21 @@ namespace App2 {
       let target: HTMLElement = event.currentTarget as HTMLElement;
 
       let buttonText: string = target.innerText;
-      if (buttonText.substr(0, 5) === "Tutor") {
-        this.solver.reset();
-        if (buttonText === "Tutor OFF") {
-          this.solver.startStep = 0;
-          buttonText = "Tutor ON";
-          this.showIcon(this.iconRedo, true);
-        }
-        else {
-          this.solver.startStep = -1;
-          buttonText = "Tutor OFF";
-          this.showIcon(this.iconRedo, false);
-        }
-      }
-      else switch (buttonText) {
+      // if (buttonText.substr(0, 5) === "Tutor") {
+      //   this.solver.reset();
+      //   if (buttonText === "Tutor OFF") {
+      //     //this.solver.startStep = 0;
+      //     buttonText = "Tutor ON";
+      //     this.showIcon(this.iconRedo, true);
+      //   }
+      //   else {
+      //     //this.solver.startStep = -1;
+      //     buttonText = "Tutor OFF";
+      //     this.showIcon(this.iconRedo, false);
+      //   }
+      // }
+      // else 
+      switch (buttonText) {
 
         case "Slow":
           //TODO: Add checkbox
@@ -579,7 +580,7 @@ namespace App2 {
     });
 
     private undoMove = (): void => {
-      this.solver.solverMoves = "";
+      //this.solver.solverMoves = "";
       if (this.cube.doneMoves.length > 0) {
         // Get previous move and undo it
         let move = this.cube.doneMoves[this.cube.doneMoves.length - 1];

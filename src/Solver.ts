@@ -1,21 +1,23 @@
-﻿namespace App2 {
+﻿//import { CubeFace } from './Cube';
+namespace App2 {
 
-  export interface Solution {
-    moves1: string;
-    message: string;
-    step: number;
-    completed: boolean;
+  // export interface Solution {
+  //   moves1: string;
+  //   message: string;
+  //   step: number;
+  //   completed: boolean;
+  // }
+
+  interface SolverResult {
+    moves: string;
+    nextStep: number;
+    nextSubStep: number;
   }
 
   export class Solver {
-    public solveCount: number = 0;
-    public stepCount: number = 0;
     private solveStep: number = 0;
-    public solverMoves = "";
-    public startStep: number = 0;
-
-    public cube: Cube;
-    public static cubeTable: Tile[];
+    private cube: Cube;
+    private static cubeTable: Tile[];
 
     constructor(cube: Cube) {
       this.cube = cube;
@@ -23,85 +25,79 @@
       this.copyTilesFromCube();
     }
 
+    public checkIfSolved(): boolean {
+      this.copyTilesFromCube();
+      for (let i = 0; i < 6; ++i) {
+        let faceColor = this.getTile(i, 4).color;
+        for (let j = 0; j < 9; ++j) {
+          if (this.getTile(i, j).color !== faceColor) {
+            return false;
+          }
+        }
+      }
+      return true; 
+    }
+
     public reset(): void {
-      // finish any move
-      this.solverMoves = "";
       this.solveStep = 0;
-      //this.solverMsg("");
-      if (this.startStep !== -1) this.startStep = 0;
     }
 
     public solverMsg(msg: string): void {
       document.getElementById("solvermessage").innerText = msg;
     }
 
+
     public step(): void {
-      
+      //let solveStep = this.solveStep;
       if (this.solveStep < 7)++this.solveStep;
-
-      this.solverMoves = "";
-      //this.solveStep = 0;
-      //if (this.startStep !== -1) this.startStep = 0;
       document.getElementById("solvermessage").innerText = `Step ${this.solveStep}`;
-
       console.log(`solver.step ${this.solveStep}`);
-
-      this.solve(this.solveStep);
-      let v1 = 1;
-    }
-
-    public solve(startStep: number): string {
 
       this.copyTilesFromCube();
 
       this.solverMsg("");
       let moves = "";
-      //if (startStep === 0) this.solveStep = 0;
+      let result: SolverResult;
+
       if (!this.checkWhiteLayer()) {
-        moves = this.runStep(this.whiteCross, 1, startStep);
-        if (moves !== "" || startStep === 1) {
-          this.solverSendMoves(moves, true, this.cube.mainSpeed);
-          return "";
-          return moves;
+        moves = this.runStep(this.whiteCross, 1, this.solveStep);
+        if (moves !== "" || this.solveStep === 1) {
+          this.solverSendMoves(moves, true);
+          return;
         }
-        moves = this.runStep(this.whiteCorners, 2, startStep);
-        if (moves !== "" || startStep === 2) {
-          this.solverSendMoves(moves, true, this.cube.mainSpeed);
-          return "";
-          return moves;
+        moves = this.runStep(this.whiteCorners, 2, this.solveStep);
+        if (moves !== "" || this.solveStep === 2) {
+          this.solverSendMoves(moves, true);
+          return;
         }
-        if (startStep === 0) {
-          this.solverSendMoves("X X ", true, this.cube.mainSpeed);
-          return "";
-          return "X X ";
+        if (this.solveStep === 0) {
+          this.solverSendMoves("X X ", true);
+          return;
         }
         else { 
           this.solverSendMoves("X X ", false);
-          //this.doMoves("X X ");
         }
       }
-      moves = this.runStep(this.middleSection, 3, startStep);
-      if (moves !== "" || startStep === 3) return moves;
-      moves = this.runStep(this.yellowCross, 4, startStep);
-      if (moves !== "" || startStep === 4) return moves;
-      moves = this.runStep(this.orientateYellowCross, 5, startStep);
-      if (moves !== "" || startStep === 5) return moves;
-      moves = this.runStep(this.yellowCorners, 6, startStep);
-      if (moves !== "" || startStep === 6) return moves;
-      moves = this.runStep(this.orientateYellowCorners, 7, startStep);
-      if (moves !== "" || startStep === 7) return moves;
-
-      return "";
+      moves = this.runStep(this.middleSection, 3, this.solveStep);
+      if (moves !== "" || this.solveStep === 3) return;
+      moves = this.runStep(this.yellowCross, 4, this.solveStep);
+      if (moves !== "" || this.solveStep === 4) return;
+      moves = this.runStep(this.orientateYellowCross, 5, this.solveStep);
+      if (moves !== "" || this.solveStep === 5) return;
+      moves = this.runStep(this.yellowCorners, 6, this.solveStep);
+      if (moves !== "" || this.solveStep === 6) return;
+      moves = this.runStep(this.orientateYellowCorners, 7, this.solveStep);
+      if (moves !== "" || this.solveStep === 7) return;
+      return;
     }
 
     private runStep = (stepFunction: Function, step: number, targetStep: number): string => {
-      let this2 = this;
       while (true) {
         let moves = stepFunction();
         if (moves === "") {
           if (step === 7) this.solverMsg(`Cube is Solved!`);
-          else this.solverMsg(`Step ${step} DONE!`);
-          this.solverSendMoves(moves, true, this.cube.mainSpeed);
+          else this.solverMsg(`Step ${step}`);
+          this.solverSendMoves(moves, true);
           return "";
         }
         else {
@@ -122,7 +118,7 @@
       }
     }
 
-    private solverSendMoves(moves: string, execute = false, speed = 200): void {
+    private solverSendMoves(moves: string, execute = false, speed = this.cube.mainSpeed): void {
       if (moves.length % 2 === 1) {
         throw new Error(`Bad input to sendMoves ${moves}`);
       }
@@ -140,6 +136,47 @@
 
     private checkWhiteLayer = (): boolean => {
       //TODO allow white to be on any face and move it to bottom
+
+      let face: CubeFace = 0;
+      let moves = "";
+      for (; face < 6; ++face) {
+        if (this.getTile(face, 4).color === TileColor.White) {
+          break;
+        }
+      }
+      let nextTopFace = TileColor.Yellow;
+      for (let i = 0; i < 9; ++i) {
+        if (this.getTile(face, i).color !== TileColor.White) {
+          nextTopFace = TileColor.White;
+          break;
+        }
+      }
+      if (nextTopFace === TileColor.Yellow) {
+        switch (face) {
+          case CubeFace.F: moves = ""; break;
+          case CubeFace.R: moves = ""; break;
+          case CubeFace.B: moves = ""; break;
+          case CubeFace.L: moves = ""; break;
+          case CubeFace.U: moves = ""; break;
+          case CubeFace.D: moves = ""; break;
+        }
+      }
+      else {
+        switch (face) {
+          case CubeFace.F: moves = ""; break;
+          case CubeFace.R: moves = ""; break;
+          case CubeFace.B: moves = ""; break;
+          case CubeFace.L: moves = ""; break;
+          case CubeFace.U: moves = ""; break;
+          case CubeFace.D: moves = ""; break;
+        }
+      }
+
+
+
+
+
+
       for (let i = 0; i < 9; ++i) {
         if (this.getTile(CubeFace.D, i).color !== TileColor.White) {
           return false;
@@ -328,7 +365,7 @@
             case 0: moves = "L'D'L F D'F'"; break;
             case 2: moves = "R'L D R L'"; break;
             case 6: moves = "F D D F'"; break;
-            case 8: moves = "R'D R"; break;
+            case 8: moves = "R'D R "; break;
           }
           break;
         case CubeFace.U:
@@ -545,19 +582,6 @@
       return moves;
     }
 
-    public checkSolved(): boolean {
-      this.copyTilesFromCube();
-      for (let i = 0; i < 6; ++i) {
-        let faceColor = this.getTile(i, 4).color;
-        for (let j = 0; j < 9; ++j) {
-          if (this.getTile(i, j).color !== faceColor) {
-            return false;
-          }
-        }
-      }
-      return true; 
-    }
-
     private orientateYellowCorners = (): string => {
       //TODO if more than incorrect rotate top
       let moves: string = "";
@@ -574,6 +598,7 @@
       if (moves === "U U U U ") {
         return "";
       }
+      return moves;
 
       //for (let i = 8; i >= 0; i -= 2) {
       //  if (i == 4) continue;
@@ -604,7 +629,6 @@
       //    return moves;
       //  }
       //}
-      return moves;
     }
   }
 }

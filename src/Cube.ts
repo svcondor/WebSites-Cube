@@ -75,7 +75,7 @@
       if (this.targetAngle === 0) {
         if (this.movesSentQueue.length === 0) {
           if (this.solver) {
-            let solved = this.solver.checkSolved();
+            let solved = this.solver.checkIfSolved();
             if (solved && this.doneMoves.length > 2) {
               this.solver.solverMsg(`Cube is Solved!`);
               this.gameTimer = null;
