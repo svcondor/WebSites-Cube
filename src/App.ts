@@ -555,7 +555,7 @@ namespace App2 {
                 //++this.solver.targetStep;
                 this.solver.solverMsg(`Target ${++this.solver.targetStep}`); 
               }
-            }, 2000);
+            }, 1000);
             this.solver.step();
             break;
           }

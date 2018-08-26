@@ -100,21 +100,14 @@
       }
       let t1 = new Date().valueOf() - this.startTime;
       let t2 = this.moveSpeed;
-      let newAngle = 90 * t1 / t2;
+      //let newAngle = 90 * t1 / t2;
+      let newAngle = this.targetAngle * t1 / t2;
       let increment: number;
-      if (this.targetAngle > 0) {
-        increment = newAngle - this.currentAngle;
-        if (this.currentAngle + increment >= this.targetAngle) {
-          increment = this.targetAngle - this.currentAngle;
-          this.targetAngle = 0;
-        }
-      }
-      else {
-        increment = -newAngle - this.currentAngle;
-        if (this.currentAngle + increment <= this.targetAngle) {
-          increment = this.targetAngle - this.currentAngle;
-          this.targetAngle = 0;
-        }
+
+      increment = newAngle - this.currentAngle;
+      if (Math.abs(this.currentAngle + increment) >= Math.abs(this.targetAngle)) {
+        increment = this.targetAngle - this.currentAngle;
+        this.targetAngle = 0;
       }
       this.currentAngle += increment;
       let rads = increment * Math.PI / 180;
