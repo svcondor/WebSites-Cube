@@ -95,15 +95,15 @@
 
     /** Partially rotate cube based on speed */
     private doPartialRotate() {
+      if (this.moveSpeed === 0) {
+
+      }
       let t1 = new Date().valueOf() - this.startTime;
       let t2 = this.moveSpeed;
       let newAngle = 90 * t1 / t2;
       let increment: number;
       if (this.targetAngle > 0) {
         increment = newAngle - this.currentAngle;
-        //console.log(`new ${newAngle} ${increment} ${this.currentAngle}`);
-        // if (increment > 10)
-        //   console.log(`Pos ${t2} ${t1} ${newAngle} ${increment}`);
         if (this.currentAngle + increment >= this.targetAngle) {
           increment = this.targetAngle - this.currentAngle;
           this.targetAngle = 0;
@@ -156,7 +156,7 @@
         if (this.gameTimer === null &&
           (move.charAt(0) !== "X" && move.charAt(0) !== "Y" && move.charAt(0) !== "Z")) {
           this.startGameTimer();
-          this.solver.solverMsg(``);
+          //this.solver.solverMsg(``);
         }
       }
     }
@@ -167,11 +167,18 @@
         let currentTime = Math.floor(new Date().valueOf() / 1000)
           - this.gameStartTime;
         if (currentTime > this.gameTime) {
-          this.gameTime = currentTime;
-          let s2 = document.getElementById("ScoreBox");
-          let mins = Math.floor(currentTime / 60);
-          let seconds = 100 + currentTime - mins * 60;
-          s2.innerText = `${this.doneMoves.length.toString()} ${mins}:${seconds.toString().substr(1)}`;
+          if (this.gameTime >= 3600) {
+            clearInterval(this.gameTimer);
+            this.gameTimer = null;
+          }
+          else {
+            this.gameTime = currentTime;
+            let s2 = document.getElementById("ScoreBox");
+            let mins = Math.floor(currentTime / 60);
+            let seconds = 100 + currentTime - mins * 60;
+            s2.innerText = 
+              `${this.doneMoves.length.toString()} ${mins}:${seconds.toString().substr(1)}`;
+          }
         }
       }, 100);
     }

@@ -520,7 +520,7 @@ namespace App2 {
 
         case "fa-arrow-circle-o-right":
           if (this.solverPointerTimer !== null) {
-            clearTimeout(this.solverPointerTimer);
+            clearInterval(this.solverPointerTimer);
             this.solverPointerTimer = null;
             this.solver.solverMsg("");
           }
@@ -541,11 +541,24 @@ namespace App2 {
           break;
 
         case "fa-arrow-circle-o-right":
-          this.solverPointerTimer = setTimeout(() => {
-            this.solverPointerTimer = null;
+          if (this.solver.checkIfSolved()) {
+            this.cube.scramble();
+          }
+          else {
+            this.solver.targetStep = 0;
+            this.solverPointerTimer = setInterval(() => {
+              if (this.solver.targetStep >= 7) {
+                clearInterval(this.solverPointerTimer);
+                this.solverPointerTimer = null;
+              }
+              else {
+                //++this.solver.targetStep;
+                this.solver.solverMsg(`Target ${++this.solver.targetStep}`); 
+              }
+            }, 2000);
             this.solver.step();
-          }, 500);
-          break;
+            break;
+          }
 
         case "fa-question":
           if (this.overlay === Panel.help) this.showOverlay(Panel.closeAll);

@@ -9,16 +9,18 @@ namespace App2 {
   // }
 
   interface SolverResult {
-    moves: string;
-    nextStep: number;
-    nextSubStep: number;
+    moves?: string;
+    step?: number;
+    subStep?: number;
+    // targetStep?: number;
+    // targetSubStep?: number;
   }
 
   export class Solver {
-    private solveStep: number = 0;
+    //private solveStep: number = 0;
     private cube: Cube;
     private static cubeTable: Tile[];
-
+    public targetStep = 0;
     constructor(cube: Cube) {
       this.cube = cube;
       Solver.cubeTable = new Array(54);
@@ -35,87 +37,52 @@ namespace App2 {
           }
         }
       }
-      return true; 
+      return true;
     }
 
     public reset(): void {
-      this.solveStep = 0;
+      //this.solveStep = 0;
     }
 
     public solverMsg(msg: string): void {
       document.getElementById("solvermessage").innerText = msg;
     }
 
-
     public step(): void {
-      //let solveStep = this.solveStep;
-      if (this.solveStep < 7)++this.solveStep;
-      document.getElementById("solvermessage").innerText = `Step ${this.solveStep}`;
-      console.log(`solver.step ${this.solveStep}`);
+      // let solveStep = this.solveStep;
+      // if (this.solveStep < 7)++this.solveStep;
+      // document.getElementById("solvermessage").innerText = `Step ${this.solveStep}`;
+      // console.log(`solver.step ${this.solveStep}`);
 
       this.copyTilesFromCube();
 
-      this.solverMsg("");
+      //this.solverMsg("");
       let moves = "";
-      let result: SolverResult;
+      let result: SolverResult = { step: 1, subStep: 1, moves: "" };
 
-      if (!this.checkWhiteLayer()) {
-        moves = this.runStep(this.whiteCross, 1, this.solveStep);
-        if (moves !== "" || this.solveStep === 1) {
-          this.solverSendMoves(moves, true);
-          return;
-        }
-        moves = this.runStep(this.whiteCorners, 2, this.solveStep);
-        if (moves !== "" || this.solveStep === 2) {
-          this.solverSendMoves(moves, true);
-          return;
-        }
-        if (this.solveStep === 0) {
-          this.solverSendMoves("X X ", true);
-          return;
-        }
-        else { 
-          this.solverSendMoves("X X ", false);
-        }
-      }
-      moves = this.runStep(this.middleSection, 3, this.solveStep);
-      if (moves !== "" || this.solveStep === 3) return;
-      moves = this.runStep(this.yellowCross, 4, this.solveStep);
-      if (moves !== "" || this.solveStep === 4) return;
-      moves = this.runStep(this.orientateYellowCross, 5, this.solveStep);
-      if (moves !== "" || this.solveStep === 5) return;
-      moves = this.runStep(this.yellowCorners, 6, this.solveStep);
-      if (moves !== "" || this.solveStep === 6) return;
-      moves = this.runStep(this.orientateYellowCorners, 7, this.solveStep);
-      if (moves !== "" || this.solveStep === 7) return;
-      return;
-    }
-
-    private runStep = (stepFunction: Function, step: number, targetStep: number): string => {
       while (true) {
-        let moves = stepFunction();
-        if (moves === "") {
-          if (step === 7) this.solverMsg(`Cube is Solved!`);
-          else this.solverMsg(`Step ${step}`);
-          this.solverSendMoves(moves, true);
-          return "";
+        this.whiteCross(result);
+        if (result.moves !== "") break;
+        if (result.step < 3) {
+          this.whiteCorners(result);
+          if (result.moves !== "") break;
         }
-        else {
-          if (targetStep === 0) return moves;
-          this.solverSendMoves(moves, false);
-        }
+        this.middleSection(result);
+        if (result.moves !== "") break;
+        this.yellowCross(result);
+        if (result.moves !== "") break;
+        this.orientateYellowCross(result);
+        if (result.moves !== "") break;
+        this.yellowCorners(result);
+        if (result.moves !== "") break;
+        this.orientateYellowCorners(result);
+        break;
       }
-    }
-
-    private copyTilesFromCube() {
-      for (let ix = 0; ix < Cube.cubeTable.length; ++ix) {
-        let tile = Cube.cubeTable[ix];
-        let tile1: Tile = new Tile(-100, -100, tile.tileIx, null);
-        tile1.color = tile.color;
-        tile1.color2 = tile.color2;
-        tile1.color3 = tile.color3;
-        Solver.cubeTable[ix] = tile1;
+      if (result.moves !== "") {
+        this.solverMsg(`Step ${result.step}.${result.subStep}`);
+        this.solverSendMoves(result.moves, true);
       }
+      return;
     }
 
     private solverSendMoves(moves: string, execute = false, speed = this.cube.mainSpeed): void {
@@ -123,7 +90,7 @@ namespace App2 {
         throw new Error(`Bad input to sendMoves ${moves}`);
       }
       if (execute) {
-        this.cube.sendMoves(moves, execute, speed);
+        this.cube.sendMoves(moves, execute, 400);
         return;
       }
       let queue = this.cube.movesPendingQueue;
@@ -134,9 +101,8 @@ namespace App2 {
       }
     }
 
-    private checkWhiteLayer = (): boolean => {
+    private checkWhiteLayer = (result: SolverResult): void => {
       //TODO allow white to be on any face and move it to bottom
-
       let face: CubeFace = 0;
       let moves = "";
       for (; face < 6; ++face) {
@@ -145,117 +111,47 @@ namespace App2 {
         }
       }
       let nextTopFace = TileColor.Yellow;
+      result.step = 3;
+      result.subStep = 1;
       for (let i = 0; i < 9; ++i) {
         if (this.getTile(face, i).color !== TileColor.White) {
           nextTopFace = TileColor.White;
+          result.step = 1;
+          result.subStep = 1;
           break;
         }
       }
       if (nextTopFace === TileColor.Yellow) {
-        switch (face) {
-          case CubeFace.F: moves = ""; break;
-          case CubeFace.R: moves = ""; break;
-          case CubeFace.B: moves = ""; break;
-          case CubeFace.L: moves = ""; break;
-          case CubeFace.U: moves = ""; break;
-          case CubeFace.D: moves = ""; break;
-        }
-      }
-      else {
-        switch (face) {
-          case CubeFace.F: moves = ""; break;
-          case CubeFace.R: moves = ""; break;
-          case CubeFace.B: moves = ""; break;
-          case CubeFace.L: moves = ""; break;
-          case CubeFace.U: moves = ""; break;
-          case CubeFace.D: moves = ""; break;
-        }
-      }
-
-
-
-
-
-
-      for (let i = 0; i < 9; ++i) {
-        if (this.getTile(CubeFace.D, i).color !== TileColor.White) {
-          return false;
-        }
-      }
-      for (let i = 0; i < 4; ++i) {
-        for (let j = 6; j < 9; ++j) {
-          if (this.getTile(i, j).color !== this.getTile(i, 4).color) {
-            return false;
+        for (face = 0; face < 6; ++face) {
+          if (this.getTile(face, 4).color === TileColor.Yellow) {
+            break;
           }
         }
       }
-      return true;
+      switch (face) {
+        case CubeFace.F: moves = "X "; break;
+        case CubeFace.R: moves = "Z'"; break;
+        case CubeFace.B: moves = "X'"; break;
+        case CubeFace.L: moves = "Z "; break;
+        case CubeFace.U: moves = ""; break;
+        case CubeFace.D: moves = "X X "; break;
+      }
+      result.moves = moves;
+      return;
     }
 
-    private whiteOnTop = (): string => {
-      let moves: string = "";
-      if (this.getTile(CubeFace.U, 4).color === TileColor.White) {
-        moves = "";
+    private whiteCross = (result: SolverResult): void => {
+      this.checkWhiteLayer(result);
+      if (result.moves !== "" || result.step === 3) {
+        return;
       }
-      else if (this.getTile(CubeFace.D, 4).color === TileColor.White) {
-        moves = "X X ";
-      }
-      else if (this.getTile(CubeFace.L, 4).color === TileColor.White) {
-        moves = "Z ";
-      }
-      else if (this.getTile(CubeFace.R, 4).color === TileColor.White) {
-        moves = "Z'";
-      }
-      else if (this.getTile(CubeFace.B, 4).color === TileColor.White) {
-        moves = "X'";
-      }
-      else {
-        throw new Error("White on top - Can't find white face");
-      }
-      console.log(`White On Top m=${moves}`);
-      return moves;
-    }
+      // let moves: string = this.whiteOnTop();
+      // if (moves !== "") return moves;
+      let moves = result.moves;
 
-    private findColors(color: TileColor, color2: TileColor, color3: TileColor | null = null): number {
-      if (color3 !== null) {
-        for (let i: number = 0; i < Solver.cubeTable.length; i++) {
-          let tile1: Tile = this.getTile(i);
-          if (tile1.color === color && tile1.color3 === color3) {
-            return i;
-          }
-        }
-      }
-      else {
-        for (let i: number = 0; i < Solver.cubeTable.length; i++) {
-
-          let tile1: Tile = this.getTile(i);
-          if (tile1.color === color && tile1.color2 === color2 && tile1.color3 === TileColor.none) {
-            return i;
-          }
-        }
-      }
-      return -1;
-    }
-
-    // get Tile by index (0-53) or by face (0-5) and tile (0-8)
-    private getTile(face: number | CubeFace, ix?: number): Tile {
-      let ix1: number;
-      if (ix || ix === 0) {
-        ix1 = face * 9 + ix;
-      }
-      else {
-        ix1 = face;
-      }
-      return Solver.cubeTable[ix1];
-    }
-
-    private whiteCross = (): string => {
-      let moves: string = this.whiteOnTop();
-      if (moves !== "") return moves;
-
-      let front: TileColor = this.getTile(CubeFace.F, 4).color;
-      let ixWhite = this.findColors(TileColor.White, front);
-      console.assert(ixWhite !== -1, `whiteCross1 sidePiece White/${front} not found`);
+      let frontColor: TileColor = this.getTile(CubeFace.F, 4).color;
+      let ixWhite = this.findColors(TileColor.White, frontColor);
+      console.assert(ixWhite !== -1, `whiteCross1 sidePiece White/${frontColor} not found`);
 
       let face: CubeFace = Math.floor(ixWhite / 9);
       let relTile = ixWhite % 9;
@@ -263,7 +159,7 @@ namespace App2 {
         case CubeFace.F:
           switch (relTile) {
             case 1: moves = "F'U L'U'"; break;
-            case 3: moves = "U L'U'L "; break;
+            case 3: moves = "U L'U'"; break; // was "U L'U'L "
             case 5: moves = "U'R U R'"; break;
             case 7: moves = "F U L'U'"; break;
           }
@@ -290,7 +186,6 @@ namespace App2 {
             case 3: moves = "L L F L'L'"; break;
             case 5: moves = "F "; break;
             case 7: moves = "L'F L "; break;
-
           }
           break;
         case CubeFace.U:
@@ -310,22 +205,31 @@ namespace App2 {
           }
           break;
       }
-      if ((this.getTile(CubeFace.U, 1).color === TileColor.White)
-        && (this.getTile(CubeFace.U, 3).color === TileColor.White)
-        && (this.getTile(CubeFace.U, 5).color === TileColor.White)
-        && (this.getTile(CubeFace.L, 1).color === this.getTile(CubeFace.L, 4).color)
-        && (this.getTile(CubeFace.B, 1).color === this.getTile(CubeFace.B, 4).color)
-        && (this.getTile(CubeFace.R, 1).color === this.getTile(CubeFace.R, 4).color)
-      ) {
+      let subStep = 1;
+      if (this.getTile(CubeFace.U, 5).color === TileColor.White
+        && this.getTile(CubeFace.R, 1).color === this.getTile(CubeFace.R, 4).color) {
+        subStep = 2;
+        if (this.getTile(CubeFace.U, 1).color === TileColor.White
+          && this.getTile(CubeFace.B, 1).color === this.getTile(CubeFace.B, 4).color) {
+          subStep = 3;
+          if (this.getTile(CubeFace.U, 3).color === TileColor.White
+            && this.getTile(CubeFace.L, 1).color === this.getTile(CubeFace.L, 4).color) {
+            subStep = 4;
+          }
+        }
       }
-      else {
+      if (subStep !== 4) {
         moves += "Y'";
       }
       console.log(`White Cross m=${moves}`);
-      return moves;
+
+      result.moves = moves;
+      result.step = 1;
+      result.subStep = subStep;
+      return;
     }
 
-    private whiteCorners = (): string => {
+    private whiteCorners = (result: SolverResult): void => {
       // Find tile that belongs in Front top right
       let front: TileColor = this.getTile(CubeFace.F, 4).color;
       let ixWhite = this.findColors(TileColor.White, null, front);
@@ -385,26 +289,34 @@ namespace App2 {
           }
           break;
       }
-      if ((this.getTile(CubeFace.U, 0).color === TileColor.White)
-        && (this.getTile(CubeFace.U, 2).color === TileColor.White)
-        && (this.getTile(CubeFace.U, 6).color === TileColor.White)
-        && (this.getTile(CubeFace.L, 2).color === this.getTile(CubeFace.L, 4).color)
-        && (this.getTile(CubeFace.B, 2).color === this.getTile(CubeFace.B, 4).color)
-        && (this.getTile(CubeFace.R, 2).color === this.getTile(CubeFace.R, 4).color)
-      ) {
-        if (moves === "") {
-          console.log(`white Corner Done`);
+
+      let subStep = 1;
+      if (this.getTile(CubeFace.U, 2).color === TileColor.White
+        && this.getTile(CubeFace.R, 2).color === this.getTile(CubeFace.R, 4).color) {
+        subStep = 2;
+        if (this.getTile(CubeFace.U, 0).color === TileColor.White
+          && this.getTile(CubeFace.B, 2).color === this.getTile(CubeFace.B, 4).color) {
+          subStep = 3;
+          if (this.getTile(CubeFace.U, 6).color === TileColor.White
+            && this.getTile(CubeFace.L, 2).color === this.getTile(CubeFace.L, 4).color) {
+            subStep = 4;
+          }
         }
       }
-      else {
+      if (subStep !== 4) {
         moves += "Y'";
       }
-      console.log(`m=${moves}`);
-      return moves;
+      console.log(`White Corners m=${moves}`);
+
+      result.moves = moves;
+      result.step = 2;
+      result.subStep = subStep;
     }
 
-    private middleSection = (): string => {
+    private middleSection = (result: SolverResult): void => {
       let moves = "";
+      result.subStep = 0;
+      result.step = 3;
       for (let i = 7; i > 0; i -= 2) {
         let tile1 = this.getTile(CubeFace.U, i);
         if (tile1.color !== TileColor.Yellow && tile1.color2 !== TileColor.Yellow) {
@@ -441,7 +353,8 @@ namespace App2 {
             }
           }
           //console.log(`m=${moves}`);
-          return moves;
+          result.moves = moves;
+          return;
         }
       }
 
@@ -461,40 +374,48 @@ namespace App2 {
         if (this.getTile(i, 4).color !== this.getTile(i, 3).color) {
           moves += "U'L'U L U F U'F'";
           console.log(`middle section m=${moves} `);
-          return moves;
+          result.moves = moves;
+          return;
 
         }
         else if (this.getTile(i, 4).color !== this.getTile(i, 5).color) {
           moves += "U R U'R'U'F'U F ";
           console.log(`m=${moves} `);
-          return moves;
+          result.moves = moves;
+          return;
         }
 
       }
       //console.log(`midSection steps=${stepCount}`);
       //stepCount = 0;
-      return "";
+      result.moves = "";
+      return;
     }
 
-    private yellowCross = (): string => {
+    private yellowCross = (result: SolverResult): void => {
       let moves = "";
+      result.subStep = 1;
+      result.step = 4;
       for (let i = 7; i > 0; i -= 2) {
         if (this.getTile(CubeFace.U, i).color !== TileColor.Yellow) {
           if (i === 5) moves = "U ";
           else if (i === 3) moves = "U'";
           else if (i === 1) moves = "U U ";
           moves += "R'U'F'U F R U'";
-          return moves;
+          result.moves = moves;
+          return;
         }
       }
       //Debug.WriteLine($"Yellow cross steps={stepCount}");
       //stepCount = 0;
-      return "";
+      result.moves = "";
+      return;
     }
 
-    private orientateYellowCross = (): string => {
+    private orientateYellowCross = (result: SolverResult): void => {
       let moves = "";
-
+      result.step = 5;
+      result.subStep = 1;
       //// Possible new logic
       //let faces: number[] = [CubeFace.F, CubeFace.L, CubeFace.B, CubeFace.R, CubeFace.F];
       //let moveFace = -1;
@@ -523,7 +444,8 @@ namespace App2 {
           moves += "R U R'U R U U R'";
           //Debug.Write($"m={moves} ");
           //cube.rotateBoth(moves);
-          return moves;
+          result.moves = moves;
+          return;
         }
       }
       let front: TileColor = this.getTile(CubeFace.F, 4).color;
@@ -533,17 +455,21 @@ namespace App2 {
       if (rotate === 0) {
         //Debug.WriteLine($"orientateYellowCross steps={stepCount}");
         //stepCount = 0;
-        return "";
+        result.moves = "";
+        return;
       }
       if (rotate === 1) moves = "U ";
       else if (rotate === 2) moves = "U U ";
       else if (rotate === 3) moves = "U'";
       //cube.rotateBoth(moves);
 
-      return moves;
+      result.moves = moves;
+      return;
     }
 
-    private yellowCorners = (): string => {
+    private yellowCorners = (result: SolverResult): void => {
+      result.step = 6;
+      result.subStep = 1;
       let validCount = 0;
       let validFace = -1;
       for (let i = 0; i < 4; i++) {
@@ -568,7 +494,8 @@ namespace App2 {
       if (validCount === 4) {
         //Debug.WriteLine($"yellowCorners steps={stepCount}");
         //stepCount = 0;
-        return "";
+        result.moves = "";
+        return;
       }
       let moves: string = "";
       if (validCount !== 0) {
@@ -579,10 +506,14 @@ namespace App2 {
       moves += "U R U'L'U R'U'L ";
       //Debug.Write($"m={moves} ");
       //cube.rotateBoth(moves);
-      return moves;
+      result.moves = moves;
+      return;
     }
 
-    private orientateYellowCorners = (): string => {
+    private orientateYellowCorners = (result: SolverResult): void => {
+      result.step = 7;
+      result.subStep = 1;
+
       //TODO if more than incorrect rotate top
       let moves: string = "";
       let corner: number[] = [8, 2, 0, 6];
@@ -592,13 +523,12 @@ namespace App2 {
             moves += "R'D'R D R'D'R D ";
           }
           moves += "R'D'R D R'D'R D ";
+          result.moves = moves;
         }
         moves += "U ";
       }
-      if (moves === "U U U U ") {
-        return "";
-      }
-      return moves;
+      result.moves = moves;
+      return;
 
       //for (let i = 8; i >= 0; i -= 2) {
       //  if (i == 4) continue;
@@ -629,6 +559,50 @@ namespace App2 {
       //    return moves;
       //  }
       //}
+    }
+
+    // get Tile by index (0-53) or by face (0-5) and tile (0-8)
+    private getTile(face: number | CubeFace, ix?: number): Tile {
+      let ix1: number;
+      if (ix || ix === 0) {
+        ix1 = face * 9 + ix;
+      }
+      else {
+        ix1 = face;
+      }
+      return Solver.cubeTable[ix1];
+    }
+
+    private findColors(color: TileColor, color2: TileColor, color3: TileColor | null = null): number {
+      if (color3 !== null) {
+        for (let i: number = 0; i < Solver.cubeTable.length; i++) {
+          let tile1: Tile = this.getTile(i);
+          if (tile1.color === color && tile1.color3 === color3) {
+            return i;
+          }
+        }
+      }
+      else {
+        for (let i: number = 0; i < Solver.cubeTable.length; i++) {
+
+          let tile1: Tile = this.getTile(i);
+          if (tile1.color === color && tile1.color2 === color2 && tile1.color3 === TileColor.none) {
+            return i;
+          }
+        }
+      }
+      return -1;
+    }
+
+    private copyTilesFromCube() {
+      for (let ix = 0; ix < Cube.cubeTable.length; ++ix) {
+        let tile = Cube.cubeTable[ix];
+        let tile1: Tile = new Tile(-100, -100, tile.tileIx, null);
+        tile1.color = tile.color;
+        tile1.color2 = tile.color2;
+        tile1.color3 = tile.color3;
+        Solver.cubeTable[ix] = tile1;
+      }
     }
   }
 }
