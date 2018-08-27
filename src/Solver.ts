@@ -21,6 +21,7 @@ namespace App2 {
     private cube: Cube;
     private static cubeTable: Tile[];
     public targetStep = 0;
+    private totalMoves = "";
     constructor(cube: Cube) {
       this.cube = cube;
       Solver.cubeTable = new Array(54);
@@ -48,7 +49,7 @@ namespace App2 {
       document.getElementById("solvermessage").innerText = msg;
     }
 
-    public step(): void {
+    public step(target: number = 0): void {
       // let solveStep = this.solveStep;
       // if (this.solveStep < 7)++this.solveStep;
       // document.getElementById("solvermessage").innerText = `Step ${this.solveStep}`;
@@ -57,25 +58,20 @@ namespace App2 {
       this.copyTilesFromCube();
 
       //this.solverMsg("");
-      let moves = "";
       let result: SolverResult = { step: 1, subStep: 1, moves: "" };
+      this.totalMoves = "";
 
       while (true) {
-        this.whiteCross(result);
-        if (result.moves !== "") break;
+        //this.whiteCross(result);
+        if (this.runStep(this.whiteCross, result)) break;
         if (result.step < 3) {
-          this.whiteCorners(result);
-          if (result.moves !== "") break;
+          if (this.runStep(this.whiteCorners, result)) break;
         }
-        this.middleSection(result);
-        if (result.moves !== "") break;
-        this.yellowCross(result);
-        if (result.moves !== "") break;
-        this.orientateYellowCross(result);
-        if (result.moves !== "") break;
-        this.yellowCorners(result);
-        if (result.moves !== "") break;
-        this.orientateYellowCorners(result);
+        if (this.runStep(this.middleSection, result)) break;
+        if (this.runStep(this.yellowCross, result)) break;
+        if (this.runStep(this.orientateYellowCross, result)) break;
+        if (this.runStep(this.yellowCorners, result)) break;
+        if (this.runStep(this.orientateYellowCorners, result)) break;
         break;
       }
       if (result.moves !== "") {
@@ -83,6 +79,31 @@ namespace App2 {
         this.solverSendMoves(result.moves, true);
       }
       return;
+    }
+
+    private runStep = (stepFunction: Function, result: SolverResult): boolean => {
+      while (true) {
+        stepFunction(result);
+        if (this.targetStep === 0 || true) {
+          if (result.moves === "") return false;
+          else return true;
+          break;
+        }
+        else {
+          this.totalMoves += result.moves;
+          if (result.step > this.targetStep) {
+            if (result.moves === "") return false;
+            else {
+              this.totalMoves += result.moves;
+              result.moves = this.totalMoves;
+              return true;
+            }
+          }
+          else if (result.step === this.targetStep
+            && result.moves === "") {
+          }
+        }
+      }
     }
 
     private solverSendMoves(moves: string, execute = false, speed = this.cube.mainSpeed): void {

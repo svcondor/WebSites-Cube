@@ -522,7 +522,7 @@ namespace App2 {
           if (this.solverPointerTimer !== null) {
             clearInterval(this.solverPointerTimer);
             this.solverPointerTimer = null;
-            this.solver.solverMsg("");
+            this.solver.step(this.solver.targetStep);
           }
           break;
       }
@@ -552,11 +552,11 @@ namespace App2 {
                 this.solverPointerTimer = null;
               }
               else {
-                //++this.solver.targetStep;
+                ++this.solver.targetStep;
                 this.solver.solverMsg(`Target ${++this.solver.targetStep}`); 
               }
             }, 1000);
-            this.solver.step();
+            //this.solver.step();
             break;
           }
 

@@ -1,4 +1,5 @@
-﻿namespace App2 {
+﻿//import { MoveCode } from './Cube';
+namespace App2 {
 
   export enum MoveCode {
     SpeedChange = "G",
@@ -30,10 +31,10 @@
 
   export class Cube {
     private renderCount: number = 0;
-    public gameStartTime: number = 0;
+    private gameStartTime: number = 0;
     //public gameStarted = false;
-    public gameTimer: number | null = null;
-    public gameTime: number = 0;
+    private gameTimer: number | null = null;
+    private gameTime: number = 0;
     //public movesCount: number = 0;
     public movesPendingQueue: string[] = [];
     public movesSentQueue: string[] = [];
@@ -78,7 +79,7 @@
             let solved = this.solver.checkIfSolved();
             if (solved && this.doneMoves.length > 2) {
               this.solver.solverMsg(`Cube is Solved!`);
-              this.gameTimer = null;
+              this.stopGameTimer();
               //this.sendMoves("X Z X'Y H ", true, 100);
             }
           }
@@ -153,16 +154,21 @@
         }
       }
     }
+    public stopGameTimer() {
+      clearInterval(this.gameTimer);
+      this.gameTimer = null;
+    }
 
     private startGameTimer() {
       this.gameStartTime = Math.floor(new Date().valueOf() / 1000);
+      this.gameTime = 0;
+      let oldTimer = this.gameTimer;
       this.gameTimer = setInterval(() => {
         let currentTime = Math.floor(new Date().valueOf() / 1000)
           - this.gameStartTime;
         if (currentTime > this.gameTime) {
           if (this.gameTime >= 3600) {
-            clearInterval(this.gameTimer);
-            this.gameTimer = null;
+            this.stopGameTimer();
           }
           else {
             this.gameTime = currentTime;
@@ -174,7 +180,7 @@
           }
         }
       }, 100);
-    }
+      }
 
     /** get Tile by index (0-53) or by face (0-5) and tile (0-8) */
     public static getTile(face: number | CubeFace, ix?: number): Tile {
@@ -220,13 +226,13 @@
       }
       // moves = "UUBFUBFBDFLUFBURBRLFLDDDULRBFULBRBUUUFUD";
       this.sendMoves(moves, true, 0);
-      this.sendMoves("X Z X'Y H ", true, 100);
+      this.sendMoves(`X Z X'Y ${MoveCode.ResetGame} `, true, 100);
 
       this.doneMoves.length = 0;
       //this.movesCount = 0;
       this.redoMoves.length = 0;
-      clearInterval(this.gameTimer);
-      this.gameTimer = null;
+      //clearInterval(this.gameTimer);
+      //this.gameTimer = null;
       let s2 = document.getElementById("ScoreBox");
       //s2.innerText = this.movesCount.toString();
       s2.innerText = this.doneMoves.length.toString();
@@ -266,8 +272,7 @@
       this.doneMoves.length = 0;
       this.redoMoves.length = 0;
       //this.movesCount = 0;
-      clearInterval(this.gameTimer);
-      this.gameTimer = null;
+      this.stopGameTimer();
       let s2 = document.getElementById("ScoreBox");
       //s2.innerText = this.movesCount.toString();
       s2.innerText = this.doneMoves.length.toString();
