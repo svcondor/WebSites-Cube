@@ -1,0 +1,23 @@
+Cube - Crib
+Step 1 - White Cross on top
+Step 2 - white Corner pieces
+Step2a Move Yellow on top
+Step 3 - Middle layer
+U' L' U L U F U' F' to rotate left
+U R U' R' U' F' U F to rotate right
+
+Step 4 - Yellow cross
+3 yellow in row F R U R' U' F'
+Else F U R U' R' F'
+Repeat until you get a yellow cross
+
+Step 5 - Yellow cross side colors
+Swap front yellow tile and left yellow tile.
+R U R' U R U U R' U
+
+Step 6 - Yellow corners
+U R U' L' U R' U' L
+
+Step 7 - Orientate yellow corners
+R' D' R D
+  
