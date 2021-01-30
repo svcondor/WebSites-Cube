@@ -12,14 +12,11 @@
     // "strict": true,
     // "outFile": "build/jscript.js",
     "outDir": "build/",
-    "module": "es2015",
+    "module": "es6",
     "target": "es2015"
   },
   "include": [
-    "src/**/*",
-    "typings/**/*"
-  ],
-  "exclude": [
-    "node_modules"
+    "src/**/*.ts",
+    "node_modules/babylonjs/babylon.module.d.ts"
   ]
 }

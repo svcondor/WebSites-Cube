@@ -77,23 +77,19 @@ namespace App2 {
 
       let rand = Math.floor(Math.random() * 10000);
 
-      const xmlhttp = new XMLHttpRequest();
-      xmlhttp.onreadystatechange = (): any => {
-        if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
-          document.getElementById("panelHelp").innerHTML = xmlhttp.responseText;
-        }
-      };
-      xmlhttp.open("GET", `help1.html?v${rand}`, true);
-      xmlhttp.send();
-
-      const xmlhttp1 = new XMLHttpRequest();
-      xmlhttp1.onreadystatechange = (): any => {
-        if (xmlhttp1.readyState === 4 && xmlhttp1.status === 200) {
-          document.getElementById("panelCrib").innerHTML = xmlhttp1.responseText;
-        }
-      };
-      xmlhttp1.open("GET", `crib.html?v${rand}`, true);
-      xmlhttp1.send();
+      // `./crib.html?v${rand}`
+      fetch(`./help1.html`)
+        .then (response => response.text())
+        .then (html => document.getElementById("panelHelp").innerHTML = html)
+        .catch( error => {
+          return console.log(error);
+        });
+        fetch(`./crib.html`)
+        .then (response => response.text())
+        .then (html => document.getElementById("panelCrib").innerHTML = html)
+        .catch( error => {
+          return console.log(error);
+        });
 
       //BABYLON.Engine.CodeRepository = "/Babylon/src/";
       //BABYLON.Engine.ShadersRepository = "/Babylon/src/Shaders/";
@@ -315,9 +311,9 @@ namespace App2 {
     private buildHitTester(): void {
       //TODO change test angle and distance calculation
       // only 2 entries in target table and hittest will check fo x + 180 and add/subtract '
-      let matrixIdentity = BABYLON.Matrix.Identity();
-      let transformMatrix = this.scene.getTransformMatrix();
-      let viewPort = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
+      const matrixIdentity = BABYLON.Matrix.Identity();
+      const transformMatrix = this.scene.getTransformMatrix();
+      const viewPort = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
 
       for (let face: CubeFace = 0; face < 6; ++face) {
         if (face === CubeFace.F || face === CubeFace.U || face === CubeFace.R) {
@@ -566,7 +562,7 @@ namespace App2 {
           break;
 
         case "fa-ellipsis-h":
-          if (this.overlay !== Panel.closeAll) this.showOverlay(Panel.closeAll);
+          if (this.overlay !== Panel.closeAll && this.overlay !== Panel.close) this.showOverlay(Panel.closeAll);
           else this.showOverlay(Panel.menu);
           break;
 

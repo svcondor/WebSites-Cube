@@ -1,9 +1,12 @@
 {
-  "name": "Cube",
+  "name": "cube",
   "version": "1.0.0",
-  "description": "",
+  "description": "Magic Cube Game",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint src/*.ts",
+    "build": "tsc",
+    "watch": "tsc --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -11,13 +14,18 @@
     "url": "git+https://github.com/svcondor/Cube.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "David Lewis",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/svcondor/Cube/issues"
   },
   "homepage": "https://github.com/svcondor/Cube#readme",
   "devDependencies": {
-    "babylonjs": "^4.2.0"
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/parser": "^4.14.1",
+    "babylonjs": "^4.2.0",
+    "eslint": "^7.18.0",
+    "eslint-plugin-react": "^7.22.0",
+    "typescript": "^4.1.3"
   }
 }
