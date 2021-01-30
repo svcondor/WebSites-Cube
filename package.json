@@ -1,14 +1,23 @@
 {
-  "name": "svcondorcube",
+  "name": "Cube",
   "version": "1.0.0",
-  "description": "Magic Cube Simulator",
+  "description": "",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/svcondor/Cube.git"
+  },
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "bugs": {
+    "url": "https://github.com/svcondor/Cube/issues"
+  },
+  "homepage": "https://github.com/svcondor/Cube#readme",
   "devDependencies": {
-    "babylonjs": "^3.2.0"
+    "babylonjs": "^4.2.0"
   }
 }
