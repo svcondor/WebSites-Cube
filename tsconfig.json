@@ -13,10 +13,16 @@
     // "outFile": "build/jscript.js",
     "outDir": "build/",
     "module": "es6",
-    "target": "es2015"
+    "target": "es2015",
+    "moduleResolution": "node",
+    "listEmittedFiles": true
   },
   "include": [
+   // "src/Main.ts",
+   // "src/iAccount.ts",
+    //"src/bankingAccount.ts",
     "src/**/*.ts",
     "node_modules/babylonjs/babylon.module.d.ts"
   ]
+  
 }
