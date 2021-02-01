@@ -637,11 +637,11 @@ export class MainApp {
       }
     }
 
-    this.panelAbout.innerHTML = `\u00A9 2017 David Lewis dlewis@svcondor.com<br>`
+    this.panelAbout.innerHTML = `\u00A9 2017-2021 David Lewis dlewis@svcondor.com<br>`
       + `Cube Xmin ${x1.toFixed(0)} max ${x2.toFixed(0)} Ymin ${y1.toFixed(0)} max ${y2.toFixed(0)}<br>`
       + `gamediv W-${gameDiv1.clientWidth} H-${gameDiv1.clientHeight} Window W-${window.innerWidth} H-${window.innerHeight}<br>`
       + `buttons W-${buttons.clientWidth} L-${buttons.clientLeft} B-${buttons.clientTop}`
-      + `Pointerdown X-${this.mousePos1.X} Y-${this.mousePos1.Y}`;
+      + `Pointerdown X-${this.mousePos1.X.toFixed(1)} Y-${this.mousePos1.Y.toFixed(1)}`;
 
     this.panelCrib.innerHTML = "";
   }
@@ -653,7 +653,7 @@ export class MainApp {
     if (gameDiv1 && navbar1 && panelHelp) {
       gameDiv1.style.width = `${window.innerWidth}px`;
       gameDiv1.style.height = `${document.documentElement.clientHeight - navbar1.clientHeight}px`;
-      panelHelp.style.height = `${(document.documentElement.clientHeight - navbar1.clientHeight) * 0.8}px`;
+      panelHelp.style.height = `${(document.documentElement.clientHeight - navbar1.clientHeight) * 0.5}px`;
       //this.positionButtons();
     }
   }
