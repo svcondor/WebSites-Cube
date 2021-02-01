@@ -2,18 +2,18 @@ import { Cube, TileColor } from './Cube.js';
 export class Tile {
     constructor(x, y, tileIx, scene) {
         this.toString = () => {
-            let s1 = `${this.tileIx} ${this.color} ${this.color2} ${this.color3}`;
+            const s1 = `${this.tileIx} ${this.color} ${this.color2} ${this.color3}`;
             return s1;
         };
         this.tileIx = tileIx;
         if (x === -100) {
             return;
         }
-        let rect2 = BABYLON.MeshBuilder.CreatePlane("plane1", { size: 1 }, scene);
+        const rect2 = BABYLON.MeshBuilder.CreatePlane("plane1", { size: 1 }, scene);
         rect2.rotation.y = Math.PI;
         rect2.position.z = +0.001;
         rect2.material = Cube.tileColors[TileColor.Black];
-        let rect3 = BABYLON.MeshBuilder.CreatePlane("plane1", { size: 1 }, scene);
+        const rect3 = BABYLON.MeshBuilder.CreatePlane("plane1", { size: 1 }, scene);
         rect3.position.z = +0.001;
         rect3.material = Cube.tileColors[TileColor.Black];
         this.mesh = BABYLON.MeshBuilder.CreatePlane("tile", { size: 0.85 }, scene);

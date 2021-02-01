@@ -1,10 +1,9 @@
-/* eslint-disable */ 
 import { Cube, CubeFace, TileColor } from './Cube.js';
 import { Tile } from './Tile.js';
 import { Piece } from './Piece.js';
   
 export class CubeBuilder {
-  private testCount: number = 1;
+  private testCount = 1;
   private cube: Cube;
   private scene: BABYLON.Scene;
 
@@ -79,7 +78,6 @@ export class CubeBuilder {
     this.cube.antiMoves = new Array(12);
 
     for (let i = 0; i < 12; ++i) {
-      let print1 = "";
       this.cube.antiMoves[i] = new Array(54);
       for (let j = 0; j < 54; ++j) {
         if (this.cube.clockMoves[i][j] === 200) {
@@ -89,11 +87,11 @@ export class CubeBuilder {
           this.cube.antiMoves[i][j] = 0;
         }
         else if (this.cube.clockMoves[i][j] !== 0) {
-          let j1 = j + this.cube.clockMoves[i][j];
-          let j2 = j1 + this.cube.clockMoves[i][j1];  // 180
-          let j3 = j2 + this.cube.clockMoves[i][j2];  // 270
-          let j4 = j3 + this.cube.clockMoves[i][j3];  // 360
-          let a3 = this.cube.clockMoves[i][j3];
+          const j1 = j + this.cube.clockMoves[i][j];
+          const j2 = j1 + this.cube.clockMoves[i][j1];  // 180
+          const j3 = j2 + this.cube.clockMoves[i][j2];  // 270
+          const j4 = j3 + this.cube.clockMoves[i][j3];  // 360
+          //const a3 = this.cube.clockMoves[i][j3];
           if (j4 !== j) {
             throw new Error("error in table clockMoves");
           }
@@ -133,10 +131,10 @@ export class CubeBuilder {
     for (let y = 1; y >= -1; --y) {
       for (let x = -1; x <= 1; ++x) {
         if (y === 1 && x === 5) {
-          let a1 = 1;
+          //const a1 = 1;
         }
         else {
-          let tile1: Tile = new Tile(x, y, tileIx, this.scene);
+          const tile1: Tile = new Tile(x, y, tileIx, this.scene);
           Cube.cubeTable[tileIx] = tile1;
         }
         ++tileIx;
@@ -146,8 +144,8 @@ export class CubeBuilder {
 
   /** rotate the Cube as each face is built at start up */
   private rotateImage(move: string) {
-    let count: number = 0;
-    let angle: number = 90;
+    //let count = 0;
+    let angle = 90;
     if (move.length > 1 && move.substr(1, 1) === "'") {
       angle = -90;
     }
@@ -163,10 +161,10 @@ export class CubeBuilder {
         throw new Error("Move must be X or Y");
       //TODO why not handle Z
     }
-    for (let item of Cube.cubeTable) {
+    for (const item of Cube.cubeTable) {
       if (item != null && item.pivot != null) {
         item.pivot.rotate(axis, angle * Math.PI / 180, BABYLON.Space.WORLD);
-        ++count;
+        //++count;
       }
     }
   }

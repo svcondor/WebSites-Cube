@@ -1,5 +1,4 @@
-﻿/* eslint-disable */ 
-import { Cube, CubeFace } from './Cube.js';
+﻿import { Cube, CubeFace } from './Cube.js';
 import { Tile } from './Tile.js';
 import { CubeBuilder } from './CubeBuilder.js';
  import { Solver } from "./Solver.js";
@@ -44,10 +43,10 @@ export class MainApp {
   private cubeBuilder: CubeBuilder;
   private solver: Solver;
 
-  private mouseStatus: number = 0;
+  private mouseStatus = 0;
   private mousePos1: Point = { X: 0, Y: 0 };   // Mouse position on canvas
-  private minimumDistance: number = 0;
-  private mouseTile1Ix: number = 0;
+  private minimumDistance = 0;
+  private mouseTile1Ix = 0;
   private panelHelp: HTMLElement;
   private panelMenu: HTMLElement;
   private panelAbout: HTMLElement;
@@ -57,14 +56,13 @@ export class MainApp {
   private engine: BABYLON.Engine;
   private camera: BABYLON.FreeCamera;
   private hitTable: HitEntry[];
-  private fastSpeed: boolean = false;   // Rotation speed in ms
+  private fastSpeed = false;   // Rotation speed in ms
 
   constructor() {
     // http://stackoverflow.com/questions/16152609/
     //  importing-external-html-inner-content-with-javascript-ajax-without-jquery
 
-    let rand = Math.floor(Math.random() * 10000);
-
+    //let rand = Math.floor(Math.random() * 10000);
     // `./crib.html?v${rand}`
     fetch(`./help1.html`)
       .then (response => response.text())
@@ -130,9 +128,10 @@ export class MainApp {
 
     for (let i = 0; i < icons.length; ++i) {
       const icon = icons[i];
-      if (icon.classList.contains("fa-arrow-circle-o-left")) {
-      }
-      else if (icon.classList.contains("fa-arrow-circle-o-right")) {
+      // if (icon.classList.contains("fa-arrow-circle-o-left")) {
+      // }
+      // else 
+      if (icon.classList.contains("fa-arrow-circle-o-right")) {
         this.iconRedo = icon as HTMLElement;
       }
       icon.addEventListener("pointerdown", this.handleIconPointerDown);
@@ -160,7 +159,7 @@ export class MainApp {
     canvas1.addEventListener("pointermove", this.handlePointerMove);
     canvas1.addEventListener("pointerup", this.handlePointerUp);
 
-    canvas1.addEventListener("pointerleave", (event: PointerEvent) => {
+    canvas1.addEventListener("pointerleave", (_event: PointerEvent) => {
       this.mouseStatus = 0;
     });
 
@@ -181,38 +180,39 @@ export class MainApp {
   }
 
   private loadRawHitData(): void {
-    let rawData1: any = [
-      [0, 42, 3, -1, 1, "L'L U U'"],
-      [1, 43, 4, 0, 2, "    U U'"],    // 
-      [2, 44, 5, 1, -1, "R R'U U'"],
-      [3, 0, 6, -4, 4, "L'L     "],    // 
-      [4, 1, 7, 3, 5, "X X'Y Y'"],
-      [5, 2, 8, 4, -4, "R R'    "],    // 
-      [6, 3, -3, -7, 7, "L'L D'D "],
-      [7, 4, -4, 6, 8, "    D'D"],    //  
-      [8, 5, -5, 7, -7, "R R'D'D "],
+    // const rawData1: any = [
+    //   [0, 42, 3, -1, 1, "L'L U U'"],
+    //   [1, 43, 4, 0, 2, "    U U'"],    // 
+    //   [2, 44, 5, 1, -1, "R R'U U'"],
+    //   [3, 0, 6, -4, 4, "L'L     "],    // 
+    //   [4, 1, 7, 3, 5, "X X'Y Y'"],
+    //   [5, 2, 8, 4, -4, "R R'    "],    // 
+    //   [6, 3, -3, -7, 7, "L'L D'D "],
+    //   [7, 4, -4, 6, 8, "    D'D"],    //  
+    //   [8, 5, -5, 7, -7, "R R'D'D "],
 
-      [9, 44, 12, -10, 10, "F'F U U'"],
-      [10, 41, 13, 9, 11, "    U U'"],    // 
-      [11, 38, 14, 10, -10, "B B'U U'"],
-      [12, 9, 15, -13, 13, "F'F     "],   // 
-      [13, 10, 16, 12, 14, "Z'Z Y Y'"],
-      [14, 11, 17, 13, -13, "B B'    "],  // 
-      [15, 12, -12, -16, 16, "F'F D'D "],
-      [16, 13, -13, 15, 17, "    D'D "],   // 
-      [17, 14, -14, 16, -16, "B B'D'D "],
+    //   [9, 44, 12, -10, 10, "F'F U U'"],
+    //   [10, 41, 13, 9, 11, "    U U'"],    // 
+    //   [11, 38, 14, 10, -10, "B B'U U'"],
+    //   [12, 9, 15, -13, 13, "F'F     "],   // 
+    //   [13, 10, 16, 12, 14, "Z'Z Y Y'"],
+    //   [14, 11, 17, 13, -13, "B B'    "],  // 
+    //   [15, 12, -12, -16, 16, "F'F D'D "],
+    //   [16, 13, -13, 15, 17, "    D'D "],   // 
+    //   [17, 14, -14, 16, -16, "B B'D'D "],
 
-      [36, -39, 39, -37, 37, "L'L B B'"],
-      [37, -40, 40, 36, 38, "    B B'"],   //
-      [38, -41, 41, 37, 11, "R R'B B'"],
-      [39, 36, 42, -40, 40, "L'L     "],   // 
-      [40, 37, 43, 42, 41, "X X'Z'Z "],
-      [41, 38, 44, 43, 10, "R R'    "],   //   
-      [42, 39, 0, -43, 43, "L'L F'F "],
-      [43, 40, 1, 42, 44, "    F'F"],    //   
-      [44, 41, 2, 43, 9, "R R'F'F "],
-    ];
-    let rawData: any = [
+    //   [36, -39, 39, -37, 37, "L'L B B'"],
+    //   [37, -40, 40, 36, 38, "    B B'"],   //
+    //   [38, -41, 41, 37, 11, "R R'B B'"],
+    //   [39, 36, 42, -40, 40, "L'L     "],   // 
+    //   [40, 37, 43, 42, 41, "X X'Z'Z "],
+    //   [41, 38, 44, 43, 10, "R R'    "],   //   
+    //   [42, 39, 0, -43, 43, "L'L F'F "],
+    //   [43, 40, 1, 42, 44, "    F'F"],    //   
+    //   [44, 41, 2, 43, 9, "R R'F'F "],
+    // ];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawData: any = [
       [0, 42, 3, -1, 1, "L'L U U'"],
       [1, 43, 4, 0, 2, "X X'U U'"],    // 
       [2, 44, 5, 1, -1, "R R'U U'"],
@@ -243,43 +243,42 @@ export class MainApp {
       [43, 40, 1, 42, 44, "X X'F'F "],    //   
       [44, 41, 2, 43, 9, "R R'F'F "],
     ];
-    let rawWithMiddle: any = [
-      [0, 42, 3, -1, 1, "L'L U U'"],
-      [1, 43, 4, 0, 2, "M M'U U'"],    // X X'U U'
-      [2, 44, 5, 1, -1, "R R'U U'"],
-      [3, 0, 6, -4, 4, "L'L E E'"],    // L'L Y Y'
-      [4, 1, 7, 3, 5, "X X'Y Y'"],
-      [5, 2, 8, 4, -4, "R R'E E'"],    // R R'Y Y'
-      [6, 3, -3, -7, 7, "L'L D'D "],
-      [7, 4, -4, 6, 8, "M M'D'D "],    // X X'D'D 
-      [8, 5, -5, 7, -7, "R R'D'D "],
+    // const rawWithMiddle: any = [
+    //   [0, 42, 3, -1, 1, "L'L U U'"],
+    //   [1, 43, 4, 0, 2, "M M'U U'"],    // X X'U U'
+    //   [2, 44, 5, 1, -1, "R R'U U'"],
+    //   [3, 0, 6, -4, 4, "L'L E E'"],    // L'L Y Y'
+    //   [4, 1, 7, 3, 5, "X X'Y Y'"],
+    //   [5, 2, 8, 4, -4, "R R'E E'"],    // R R'Y Y'
+    //   [6, 3, -3, -7, 7, "L'L D'D "],
+    //   [7, 4, -4, 6, 8, "M M'D'D "],    // X X'D'D 
+    //   [8, 5, -5, 7, -7, "R R'D'D "],
 
-      [9, 44, 12, -10, 10, "F'F U U'"],
-      [10, 41, 13, 9, 11, "S'S U U'"],    // Z'Z U U'
-      [11, 38, 14, 10, -10, "B B'U U'"],
-      [12, 9, 15, -13, 13, "F'F E E'"],   // F'F Y Y'
-      [13, 10, 16, 12, 14, "Z'Z Y Y'"],
-      [14, 11, 17, 13, -13, "B B'E E'"],  // B B'Y Y'
-      [15, 12, -12, -16, 16, "F'F D'D "],
-      [16, 13, -13, 15, 17, "S'S D'D "],   // Z'Z D'D 
-      [17, 14, -14, 16, -16, "B B'D'D "],
+    //   [9, 44, 12, -10, 10, "F'F U U'"],
+    //   [10, 41, 13, 9, 11, "S'S U U'"],    // Z'Z U U'
+    //   [11, 38, 14, 10, -10, "B B'U U'"],
+    //   [12, 9, 15, -13, 13, "F'F E E'"],   // F'F Y Y'
+    //   [13, 10, 16, 12, 14, "Z'Z Y Y'"],
+    //   [14, 11, 17, 13, -13, "B B'E E'"],  // B B'Y Y'
+    //   [15, 12, -12, -16, 16, "F'F D'D "],
+    //   [16, 13, -13, 15, 17, "S'S D'D "],   // Z'Z D'D 
+    //   [17, 14, -14, 16, -16, "B B'D'D "],
 
-      [36, -39, 39, -37, 37, "L'L B B'"],
-      [37, -40, 40, 36, 38, "M M'B B'"],   // X X'B B
-      [38, -41, 41, 37, 11, "R R'B B'"],
-      [39, 36, 42, -40, 40, "L'L S'S "],   // L'L Z'Z
-      [40, 37, 43, 42, 41, "X X'Z'Z "],
-      [41, 38, 44, 43, 10, "R R'S'S "],   //  R R'Z'Z 
-      [42, 39, 0, -43, 43, "L'L F'F "],
-      [43, 40, 1, 42, 44, "M M'F'F "],    //  X X'F'F 
-      [44, 41, 2, 43, 9, "R R'F'F "],
-    ];
+    //   [36, -39, 39, -37, 37, "L'L B B'"],
+    //   [37, -40, 40, 36, 38, "M M'B B'"],   // X X'B B
+    //   [38, -41, 41, 37, 11, "R R'B B'"],
+    //   [39, 36, 42, -40, 40, "L'L S'S "],   // L'L Z'Z
+    //   [40, 37, 43, 42, 41, "X X'Z'Z "],
+    //   [41, 38, 44, 43, 10, "R R'S'S "],   //  R R'Z'Z 
+    //   [42, 39, 0, -43, 43, "L'L F'F "],
+    //   [43, 40, 1, 42, 44, "M M'F'F "],    //  X X'F'F 
+    //   [44, 41, 2, 43, 9, "R R'F'F "],
+    // ];
 
     this.hitTable = new Array(27);
-    for (let v100 of rawData) {
-      let moves: string = v100[5];
-      let hit1: HitEntry = {
-
+    for (const v100 of rawData) {
+      const moves: string = v100[5];
+      const hit1: HitEntry = {
         tileIx: v100[0], targets: [
           { targetIx: v100[1], move: moves.substr(0, 2) },
           { targetIx: v100[2], move: moves.substr(2, 2) },
@@ -288,12 +287,12 @@ export class MainApp {
       };
       this.hitTable[hit1.tileIx] = hit1;
     }
-    let v1 = this.hitTable.length;
-    let v3 = 0;
-    for (let v2 of this.hitTable) {
-      if (v2)++v3;
-    }
-    let v4 = v3;
+    // let v1 = this.hitTable.length;
+    // let v3 = 0;
+    // for (let v2 of this.hitTable) {
+    //   if (v2)++v3;
+    // }
+    // let v4 = v3;
   }
 
   private buildHitTester(): void {
@@ -308,13 +307,13 @@ export class MainApp {
         //console.log("");
         //console.log(`${CubeFace[face]}`);
         for (let i = 0; i < 9; ++i) {
-          let tile1: Tile = Cube.getTile(face, i);
-          let mesh1: BABYLON.Mesh = tile1.mesh;
-          let vector3: BABYLON.Vector3 = tile1.mesh.absolutePosition;
-          let p: BABYLON.Vector3 = BABYLON.Vector3.Project(
+          const tile1: Tile = Cube.getTile(face, i);
+          //const mesh1: BABYLON.Mesh = tile1.mesh;
+          const vector3: BABYLON.Vector3 = tile1.mesh.absolutePosition;
+          const p: BABYLON.Vector3 = BABYLON.Vector3.Project(
             vector3, matrixIdentity, transformMatrix, viewPort);
-          let tileIx = face * 9 + i;
-          let hit1 = this.hitTable[tileIx];
+          const tileIx = face * 9 + i;
+          const hit1 = this.hitTable[tileIx];
           console.assert(tileIx === hit1.tileIx, `buildHitTester tileIx ${tileIx} ${hit1.tileIx}`);
           hit1.X = Math.round(p.x);
           hit1.Y = Math.round(p.y);
@@ -322,14 +321,14 @@ export class MainApp {
       }
     }
     let totalDistance = 0;
-    for (let hit1 of this.hitTable) {
+    for (const hit1 of this.hitTable) {
       if (!hit1) continue;
-      for (let target of hit1.targets) {
-        let targetHit: HitEntry = this.hitTable[Math.abs(target.targetIx)];
-        let dX = targetHit.X - hit1.X;
-        let dY = targetHit.Y - hit1.Y;
-        let distance = Math.sqrt(dX ** 2 + dY ** 2);
-        let aCos = Math.acos(dX / distance);
+      for (const target of hit1.targets) {
+        const targetHit: HitEntry = this.hitTable[Math.abs(target.targetIx)];
+        const dX = targetHit.X - hit1.X;
+        const dY = targetHit.Y - hit1.Y;
+        const distance = Math.sqrt(dX ** 2 + dY ** 2);
+        const aCos = Math.acos(dX / distance);
         target.angle = Math.round(aCos * 180 / Math.PI);
         if (dY < 0) target.angle = 360 - target.angle;
         if (target.targetIx < 0) {
@@ -344,13 +343,13 @@ export class MainApp {
   }
 
   private findMouseTarget(tileIx: number, angle): HitTarget {
-    let hit1 = this.hitTable[tileIx];
+    const hit1 = this.hitTable[tileIx];
     let foundDelta = 360;
     let foundDelta2 = 360;
     //let move = "";
     //let targetIx: number;
     let target1: HitTarget;
-    for (let target of hit1.targets) {
+    for (const target of hit1.targets) {
       let deltaAngle = Math.abs(target.angle - angle) % 360;
 
 
@@ -387,7 +386,7 @@ export class MainApp {
     this.mousePos1.Y = event.clientY;
     this.showOverlay(Panel.close);
     this.mouseStatus = 1;
-    let tileIx = this.cube.mouseGetTile(event);
+    const tileIx = this.cube.mouseGetTile(event);
     if (tileIx !== -1) {
       console.log(`PointerDown ${tileIx}`);
       this.mouseTile1Ix = tileIx;
@@ -399,17 +398,17 @@ export class MainApp {
   // Calculate which move to make depending on angle of move
   private handlePointerMove = (event: PointerEvent) => {
     if (this.mouseStatus === 2) {
-      let dX = event.x - this.mousePos1.X;
-      let dY = event.y - this.mousePos1.Y;
-      let distance = Math.sqrt(dX ** 2 + dY ** 2);
+      const dX = event.x - this.mousePos1.X;
+      const dY = event.y - this.mousePos1.Y;
+      const distance = Math.sqrt(dX ** 2 + dY ** 2);
       //console.log(`move mouseStatus 2 ${distance} ${this.minimumDistance}`);
 
       if (distance > this.minimumDistance) {
-        let aCos = Math.acos(dX / distance);
+        const aCos = Math.acos(dX / distance);
         let angle = aCos * 180 / Math.PI;
         if (dY < 0) angle = 360 - angle;
 
-        let hitTarget = this.findMouseTarget(this.mouseTile1Ix, angle);
+        const hitTarget = this.findMouseTarget(this.mouseTile1Ix, angle);
 
         if (hitTarget.precise === true) {
           //console.log(`PointerMove - single2`);
@@ -425,7 +424,8 @@ export class MainApp {
     }
   }
 
-  private handlePointerUp = (event: PointerEvent) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private handlePointerUp = (_event: PointerEvent) => {
     if (this.mouseStatus === 3) {
       if (this.cube.movesSentQueue.length !== 0) {
         this.cube.moveSpeed /= 2;
@@ -437,9 +437,9 @@ export class MainApp {
 
   private handleSettingsPointerDown = ((event: Event) => {
     event.preventDefault();
-    let target: HTMLElement = event.currentTarget as HTMLElement;
+    const target: HTMLElement = event.currentTarget as HTMLElement;
 
-    let buttonText: string = target.innerText;
+    const buttonText: string = target.innerText;
     switch (buttonText) {
 
       case "Slow":
@@ -470,9 +470,7 @@ export class MainApp {
 
   private handleIconPointerUp = ((event: Event) => {
     console.log(`handleIconPointerUp`);
-    let this1 = this;
-    let target: HTMLElement = event.currentTarget as HTMLElement;
-    const v1 = target.classList;
+    const target: HTMLElement = event.currentTarget as HTMLElement;
     switch (target.classList[1]) {
       case "fa-arrow-circle-o-left":
         break;
@@ -488,11 +486,9 @@ export class MainApp {
   });
 
   private handleIconPointerDown = ((event: Event) => {
-    let this1 = this;
     console.log(`handleIconPointerDown`);
 
-    let target: HTMLElement = event.currentTarget as HTMLElement;
-    let v1 = target.classList;
+    const target: HTMLElement = event.currentTarget as HTMLElement;
 
     switch (target.classList[1]) {
       case "fa-arrow-circle-o-left":
@@ -515,9 +511,8 @@ export class MainApp {
               this.solver.solverMsg(`Target ${++this.solver.targetStep}`); 
             }
           }, 1000);
-          //this.solver.step();
-          break;
         }
+        break;
 
       case "fa-question":
         if (this.overlay === Panel.help) this.showOverlay(Panel.closeAll);
@@ -607,14 +602,14 @@ export class MainApp {
   }
 
   private showAboutPanel(): void {
-    let navbar1 = document.getElementById("navbar1");
-    let gameDiv1 = document.getElementById("gamediv");
-    let buttons = document.getElementById("buttons");
-    let solvermessage = document.getElementById("solvermessage");
+    //const navbar1 = document.getElementById("navbar1");
+    const gameDiv1 = document.getElementById("gamediv");
+    const buttons = document.getElementById("buttons");
+    //const solvermessage = document.getElementById("solvermessage");
 
-    let matrixIdentity: BABYLON.Matrix = BABYLON.Matrix.Identity();
-    let transformMatrix: BABYLON.Matrix = this.scene.getTransformMatrix();
-    let viewPort: BABYLON.Viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
+    const matrixIdentity: BABYLON.Matrix = BABYLON.Matrix.Identity();
+    const transformMatrix: BABYLON.Matrix = this.scene.getTransformMatrix();
+    const viewPort: BABYLON.Viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
 
     let x1 = 100000;
     let x2 = -10000;
@@ -629,11 +624,11 @@ export class MainApp {
         case 2: face = 4; relTile = 0; break;
         case 3: face = 4; relTile = 2; break;
       }
-      let tile = Cube.getTile(face, relTile);
-      let mesh2 = tile.mesh.getChildren()[0] as BABYLON.Mesh;
-      let box = mesh2._boundingInfo.boundingBox.vectorsWorld;
-      for (let v3 of box) {
-        let p: BABYLON.Vector3 = BABYLON.Vector3.Project(
+      const tile = Cube.getTile(face, relTile);
+      const mesh2 = tile.mesh.getChildren()[0] as BABYLON.Mesh;
+      const box = mesh2._boundingInfo.boundingBox.vectorsWorld;
+      for (const v3 of box) {
+        const p: BABYLON.Vector3 = BABYLON.Vector3.Project(
           v3, matrixIdentity, transformMatrix, viewPort);
         if (p.x > x2) x2 = p.x;
         if (p.x < x1) x1 = p.x;
@@ -652,9 +647,9 @@ export class MainApp {
   }
 
   private resizeCanvas(): void {
-    let gameDiv1 = document.getElementById("gamediv");
-    let navbar1 = document.getElementById("navbar1");
-    let panelHelp = document.getElementById("panelHelp");
+    const gameDiv1 = document.getElementById("gamediv");
+    const navbar1 = document.getElementById("navbar1");
+    const panelHelp = document.getElementById("panelHelp");
     if (gameDiv1 && navbar1 && panelHelp) {
       gameDiv1.style.width = `${window.innerWidth}px`;
       gameDiv1.style.height = `${document.documentElement.clientHeight - navbar1.clientHeight}px`;
@@ -664,15 +659,15 @@ export class MainApp {
   }
 
   private positionButtons(): void {
-    let navbar1 = document.getElementById("navbar1");
-    let gameDiv1 = document.getElementById("gamediv");
-    let buttons = document.getElementById("buttons");
-    let solvermessage = document.getElementById("solvermessage");
+    const navbar1 = document.getElementById("navbar1");
+    const gameDiv1 = document.getElementById("gamediv");
+    const buttons = document.getElementById("buttons");
+    //const solvermessage = document.getElementById("solvermessage");
     console.log(`gamediv W-${gameDiv1.clientWidth} H-${gameDiv1.clientHeight} Window W-${window.innerWidth} H-${window.innerHeight}`);
 
-    let matrixIdentity: BABYLON.Matrix = BABYLON.Matrix.Identity();
-    let transformMatrix: BABYLON.Matrix = this.scene.getTransformMatrix();
-    let viewPort: BABYLON.Viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
+    const matrixIdentity: BABYLON.Matrix = BABYLON.Matrix.Identity();
+    const transformMatrix: BABYLON.Matrix = this.scene.getTransformMatrix();
+    const viewPort: BABYLON.Viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
     //var v5 = this.engine.getHardwareScalingLevel();
     //console.log(`Camera S-${v5} W-${this.engine.getRenderWidth()} H-${this.engine.getRenderHeight()}`);
     let x1 = 100000;
@@ -689,12 +684,12 @@ export class MainApp {
         case 3: face = 4; relTile = 2; break;
         default: face = 0; relTile = 0; break;
       }
-      let tile = Cube.getTile(face, relTile);
-      let mesh2 = tile.mesh.getChildren()[0] as BABYLON.Mesh;
+      const tile = Cube.getTile(face, relTile);
+      const mesh2 = tile.mesh.getChildren()[0] as BABYLON.Mesh;
       if (mesh2 && mesh2._boundingInfo) {
-        let box = mesh2._boundingInfo.boundingBox.vectorsWorld;
-        for (let v3 of box) {
-          let p: BABYLON.Vector3 = BABYLON.Vector3.Project(
+        const box = mesh2._boundingInfo.boundingBox.vectorsWorld;
+        for (const v3 of box) {
+          const p: BABYLON.Vector3 = BABYLON.Vector3.Project(
             v3, matrixIdentity, transformMatrix, viewPort);
           //console.log(p.x, p.y);
           if (p.x > x2) x2 = p.x;
@@ -715,5 +710,5 @@ export class MainApp {
 
 //Instantiate the main App class once everything is loaded
 window.addEventListener("DOMContentLoaded", () => {
-  const mainApp = new MainApp();
+  new MainApp();
 });

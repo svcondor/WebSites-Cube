@@ -1,5 +1,4 @@
-﻿/* eslint-disable */ 
-import { Tile } from './Tile.js';
+﻿import { Tile } from './Tile.js';
 import { Piece } from './Piece.js';
 import { Solver } from "./Solver.js";
 

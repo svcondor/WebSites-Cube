@@ -1,4 +1,3 @@
-/* eslint-disable */ 
 import { TileColor } from './Cube.js';
 
 export class Piece {
