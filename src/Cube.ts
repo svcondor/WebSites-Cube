@@ -30,15 +30,15 @@ export enum CubeFace {
 }
 
 export class Cube {
-  private renderCount: number = 0;
-  private gameStartTime: number = 0;
+  private renderCount = 0;
+  private gameStartTime = 0;
   //public gameStarted = false;
   private gameTimer: number | null = null;
-  private gameTime: number = 0;
+  private gameTime = 0;
   //public movesCount: number = 0;
   public movesPendingQueue: string[] = [];
   public movesSentQueue: string[] = [];
-  private sendSpeed: number = 200;
+  private sendSpeed = 200;
   public doneMoves: string[] = [];
   public redoMoves: string[] = [];
 
@@ -48,18 +48,18 @@ export class Cube {
   private mouseMoves: string[][];
   public sidePieces: Piece[];
   public cornerPieces: Piece[];
-  public moveCodes: string = "ULFRBDYXZMES";
+  public moveCodes = "ULFRBDYXZMES";
   // special moveCodes
   // G change speed
   // H solver message
   // IJKL NOPQRST
 
   private pivotList: BABYLON.Mesh[];  //    Array<BABYLON.Mesh>;
-  public currentAngle: number = 0;
-  private targetAngle: number = 0;
+  public currentAngle = 0;
+  private targetAngle = 0;
   public startTime: number;
-  public moveSpeed: number = 200;  // was 400
-  public mainSpeed: number = 200;
+  public moveSpeed = 200;  // was 400
+  public mainSpeed = 200;
   public scene: BABYLON.Scene;
   private axis: BABYLON.Vector3;
   public static tileColors: { [color1: number]: BABYLON.StandardMaterial; } = {};
@@ -76,7 +76,7 @@ export class Cube {
     if (this.targetAngle === 0) {
       if (this.movesSentQueue.length === 0) {
         if (this.solver) {
-          let solved = this.solver.checkIfSolved();
+          const solved = this.solver.checkIfSolved();
           if (solved && this.doneMoves.length > 2) {
             this.solver.solverMsg(`Cube is Solved!`);
             this.stopGameTimer();
@@ -96,13 +96,13 @@ export class Cube {
 
   /** Partially rotate cube based on speed */
   private doPartialRotate() {
-    if (this.moveSpeed === 0) {
+    // if (this.moveSpeed === 0) {
 
-    }
-    let t1 = new Date().valueOf() - this.startTime;
-    let t2 = this.moveSpeed;
+    // }
+    const t1 = new Date().valueOf() - this.startTime;
+    const t2 = this.moveSpeed;
     //let newAngle = 90 * t1 / t2;
-    let newAngle = this.targetAngle * t1 / t2;
+    const newAngle = this.targetAngle * t1 / t2;
     let increment: number;
 
     increment = newAngle - this.currentAngle;
@@ -111,7 +111,7 @@ export class Cube {
       this.targetAngle = 0;
     }
     this.currentAngle += increment;
-    let rads = increment * Math.PI / 180;
+    const rads = increment * Math.PI / 180;
     for (let i = 0; i < this.pivotList.length; ++i) {
       this.pivotList[i].rotate(this.axis, rads, BABYLON.Space.WORLD);
     }
@@ -125,7 +125,7 @@ export class Cube {
    * ececute the next cube move or handle special MoveCode
    */
   private executeNextMove() {
-    let move = this.movesSentQueue[0];
+    const move = this.movesSentQueue[0];
     if (move === "''" || move === "") {
       this.movesSentQueue.shift();
       this.scene.render();
@@ -154,7 +154,7 @@ export class Cube {
       }
     }
   }
-  public stopGameTimer() {
+  public stopGameTimer() :void {
     clearInterval(this.gameTimer);
     this.gameTimer = null;
   }
@@ -162,9 +162,9 @@ export class Cube {
   private startGameTimer() {
     this.gameStartTime = Math.floor(new Date().valueOf() / 1000);
     this.gameTime = 0;
-    let oldTimer = this.gameTimer;
+    //const oldTimer = this.gameTimer;
     this.gameTimer = setInterval(() => {
-      let currentTime = Math.floor(new Date().valueOf() / 1000)
+      const currentTime = Math.floor(new Date().valueOf() / 1000)
         - this.gameStartTime;
       if (currentTime > this.gameTime) {
         if (this.gameTime >= 3600) {
@@ -172,9 +172,9 @@ export class Cube {
         }
         else {
           this.gameTime = currentTime;
-          let s2 = document.getElementById("ScoreBox");
-          let mins = Math.floor(currentTime / 60);
-          let seconds = 100 + currentTime - mins * 60;
+          const s2 = document.getElementById("ScoreBox");
+          const mins = Math.floor(currentTime / 60);
+          const seconds = 100 + currentTime - mins * 60;
           s2.innerText = 
             `${this.doneMoves.length.toString()} ${mins}:${seconds.toString().substr(1)}`;
         }
@@ -196,13 +196,13 @@ export class Cube {
 
   /** return Tile index of tile under mouse pointer */
   public mouseGetTile(event: PointerEvent): number {
-    let pickResult = this.scene.pick(event.clientX, event.clientY);
+    const pickResult = this.scene.pick(event.clientX, event.clientY);
 
     if (pickResult.pickedMesh != null) {
-      let mesh1 = pickResult.pickedMesh;
+      const mesh1 = pickResult.pickedMesh;
       if (mesh1.name === "tile") {
 
-        let tile1Ix = -1;
+        //const tile1Ix = -1;
         for (let i = 0; i < Cube.cubeTable.length; ++i) {
           if (Cube.cubeTable[i].mesh === mesh1) {
             if (i < 0 || (i >= 18 && i < 36) || i >= 45) {
@@ -220,7 +220,7 @@ export class Cube {
   public scramble(): void {
     let moves = "";
     for (let i = 0; i < 20; ++i) {
-      let move1 = Math.floor(Math.random() * 6);
+      const move1 = Math.floor(Math.random() * 6);
       moves += this.moveCodes.charAt(move1) + " ";
       // this.rotateTable(this.moveCodes.charAt(move1) + " ", true, 0);
     }
@@ -233,10 +233,22 @@ export class Cube {
     this.redoMoves.length = 0;
     //clearInterval(this.gameTimer);
     //this.gameTimer = null;
-    let s2 = document.getElementById("ScoreBox");
+    const s2 = document.getElementById("ScoreBox");
     //s2.innerText = this.movesCount.toString();
     s2.innerText = this.doneMoves.length.toString();
     // console.log(moves);
+  }
+
+  public undoMove = (): void => {
+    //this.solver.solverMoves = "";
+    if (this.doneMoves.length > 0) {
+      // Get previous move and undo it
+      let move = this.doneMoves[this.doneMoves.length - 1];
+      move = move.substr(0, 1)
+        + (move.substr(1, 1) === "'" ? " " : "'");
+      //TODO should we add move to redo table
+      this.sendMoves(move, true, this.mainSpeed);
+    }
   }
 
   public resetTileColors(): void {
@@ -251,7 +263,7 @@ export class Cube {
         case 5: color = TileColor.Yellow; break;
       }
       for (let j = 0; j < 9; ++j) {
-        let tile1: Tile = Cube.cubeTable[i * 9 + j];
+        const tile1: Tile = Cube.cubeTable[i * 9 + j];
         if (tile1 != null) {
           tile1.color = color;
           tile1.mesh.material = Cube.tileColors[color];
@@ -268,12 +280,12 @@ export class Cube {
     this.resetGame();
   }
 
-  public resetGame() {
+  public resetGame() :void {
     this.doneMoves.length = 0;
     this.redoMoves.length = 0;
     //this.movesCount = 0;
     this.stopGameTimer();
-    let s2 = document.getElementById("ScoreBox");
+    const s2 = document.getElementById("ScoreBox");
     //s2.innerText = this.movesCount.toString();
     s2.innerText = this.doneMoves.length.toString();
     if (this.solver) {
@@ -283,7 +295,7 @@ export class Cube {
 
   private setAdjacentColors(): void {
     for (let i = 0; i < this.sidePieces.length; ++i) {
-      let sp1: Piece = this.sidePieces[i];
+      const sp1: Piece = this.sidePieces[i];
       let tile: Tile = Cube.getTile(sp1.ix1);
       console.assert(tile.color === sp1.color1, "SidePiece wrong color");
       tile.color2 = sp1.color2;
@@ -292,7 +304,7 @@ export class Cube {
       tile.color2 = sp1.color1;
     }
     for (let i = 0; i < this.cornerPieces.length; ++i) {
-      let sp1: Piece = this.cornerPieces[i];
+      const sp1: Piece = this.cornerPieces[i];
       let tile: Tile = Cube.getTile(sp1.ix1);
       console.assert(tile.color === sp1.color1, "CornerPiece wrong color");
       tile.color2 = sp1.color2;
@@ -317,20 +329,20 @@ export class Cube {
    * false(default)  wait for more moves
    * @param speed rotation speed 
    */
-  public sendMoves(moves: string, execute = false, speed = 200) {
+  public sendMoves(moves: string, execute = false, speed = 200): void {
     if (moves.length % 2 === 1) {
       console.assert(moves.length % 2 !== 1, `Bad input to sendMoves "${moves}"`);
     }
-    let queue = this.movesPendingQueue;
+    const queue = this.movesPendingQueue;
     for (let i = 0; i < moves.length; i += 2) {
       queue.push(moves.substr(i, 2));
     }
     if (execute) {
-      let speed1 = String(speed + 1000);
+      const speed1 = String(speed + 1000);
       this.movesSentQueue.push("G" + speed1.substr(1, 3));
       //TODO DONE UUUU->remove UUU->U-  Remember moves for ReDo
       for (let i = 0; i < queue.length; ++i) {
-        let move = queue[i];
+        const move = queue[i];
         if (queue.length > i + 2
           && queue[i + 1] === move
           && queue[i + 2] === move) {
@@ -387,7 +399,7 @@ export class Cube {
       this.doneMoves.push(move);
     }
 
-    let angle: number = 90;
+    let angle = 90;
     if (move.substr(1, 1) === "'") {
       angle = -90;
     }
@@ -406,7 +418,7 @@ export class Cube {
       case "S": this.axis = BABYLON.Axis.Z; angle *= -1; break;
     }
     if (speed === 0) {
-      let rads = angle * Math.PI / 180;
+      const rads = angle * Math.PI / 180;
       for (let i1 = 0; i1 < this.pivotList.length; ++i1) {
         this.pivotList[i1].rotate(this.axis, rads, BABYLON.Space.WORLD);
       }
@@ -430,7 +442,7 @@ export class Cube {
    * @return a table of meshes for all the tiles that need to be moved
    */
   public rotateCubeTable(move: string, cubeTable: Tile[]): BABYLON.Mesh[] {
-    let pivotList: BABYLON.Mesh[] = [];
+    const pivotList: BABYLON.Mesh[] = [];
     let moveTable: number[][];
     if (move.charAt(1) === "'") {
       moveTable = this.antiMoves;
@@ -438,11 +450,11 @@ export class Cube {
     else {
       moveTable = this.clockMoves;
     }
-    let moveIx = this.moveCodes.indexOf(move.substr(0, 1));
-    let moveTiles: Tile[] = [];
-    let movelist: number[] = [];
+    const moveIx = this.moveCodes.indexOf(move.substr(0, 1));
+    const moveTiles: Tile[] = [];
+    const movelist: number[] = [];
     for (let i = 0; i < cubeTable.length; ++i) {
-      let tile1 = cubeTable[i];
+      const tile1 = cubeTable[i];
       if (moveTable[moveIx][i] !== 0) {
         if (moveTable[moveIx][i] !== 200 && moveTable[moveIx][i] !== -1) {
           moveTiles.push(tile1);
@@ -452,7 +464,7 @@ export class Cube {
       }
     }
     while (movelist.length > 0) {
-      let ix1 = movelist.pop();
+      const ix1 = movelist.pop();
       if (ix1 < 100 && ix1 !== -1) {
         cubeTable[ix1] = moveTiles.pop();
       }

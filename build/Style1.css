@@ -41,7 +41,7 @@ body {
   color: white;
   display: none;
   overflow-y: scroll;
-  transition: max-height 0.1s ease-out;   /* was 2.0 */
+  transition: max-height 1.0s ease-out;   /* was 2.0 */
   max-height: 10pc;
 }
 
@@ -51,7 +51,7 @@ body {
   background-color: rgb(9, 0, 128);
   display: none;
   overflow-y: hidden;
-  transition: max-height 0.1s ease-out;
+  transition: max-height 1.0s ease-out;
 }
 
 li {

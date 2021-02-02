@@ -37,6 +37,7 @@ export class Solver {
   }
 
   public solverMsg(msg: string): void {
+    //document.getElementById("solvermessage").style.color = "white";
     document.getElementById("solvermessage").innerText = msg;
   }
 

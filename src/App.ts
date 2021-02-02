@@ -91,7 +91,7 @@ export class MainApp {
       this.resizeCanvas();
       engine.resize();
       this.cube.sendMoves("", true, 0);
-      this.positionButtons();
+      //this.positionButtons();
       this.buildHitTester();
     });
 
@@ -150,7 +150,7 @@ export class MainApp {
     //this.cube.sendMoves("''", true, 0);
     //this.cube.sendMoves("F F ", true, 30);
     this.scene.render();
-    this.positionButtons();
+    //this.positionButtons();
     this.loadRawHitData();
     this.buildHitTester();
 
@@ -159,6 +159,7 @@ export class MainApp {
     canvas1.addEventListener("pointermove", this.handlePointerMove);
     canvas1.addEventListener("pointerup", this.handlePointerUp);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     canvas1.addEventListener("pointerleave", (_event: PointerEvent) => {
       this.mouseStatus = 0;
     });
@@ -212,7 +213,7 @@ export class MainApp {
     //   [44, 41, 2, 43, 9, "R R'F'F "],
     // ];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rawData: any = [
+    const rawData: Array<Array<any>>  = [
       [0, 42, 3, -1, 1, "L'L U U'"],
       [1, 43, 4, 0, 2, "X X'U U'"],    // 
       [2, 44, 5, 1, -1, "R R'U U'"],
@@ -455,6 +456,19 @@ export class MainApp {
         this.showOverlay(Panel.closeAll);
         break;
 
+      case "Scramble":
+        this.showOverlay(Panel.closeAll);
+        this.cube.scramble();
+        this.solver.solverMsg("");
+        break;
+
+      case "Reset":
+        this.showOverlay(Panel.closeAll);
+        this.cube.resetTileColors();
+        this.solver.solverMsg("");
+        this.cube.sendMoves("X Z X'Y H ", true, 100);
+        break;
+
       case "Help":
         this.showOverlay(Panel.help);
         break;
@@ -492,7 +506,7 @@ export class MainApp {
 
     switch (target.classList[1]) {
       case "fa-arrow-circle-o-left":
-        this.undoMove();
+        this.cube.undoMove();
         break;
 
       case "fa-arrow-circle-o-right":
@@ -546,17 +560,17 @@ export class MainApp {
     return false;
   });
 
-  private undoMove = (): void => {
-    //this.solver.solverMoves = "";
-    if (this.cube.doneMoves.length > 0) {
-      // Get previous move and undo it
-      let move = this.cube.doneMoves[this.cube.doneMoves.length - 1];
-      move = move.substr(0, 1)
-        + (move.substr(1, 1) === "'" ? " " : "'");
-      //TODO should we add move to redo table
-      this.cube.sendMoves(move, true, this.cube.mainSpeed);
-    }
-  }
+  // private undoMove = (): void => {
+  //   //this.solver.solverMoves = "";
+  //   if (this.cube.doneMoves.length > 0) {
+  //     // Get previous move and undo it
+  //     let move = this.cube.doneMoves[this.cube.doneMoves.length - 1];
+  //     move = move.substr(0, 1)
+  //       + (move.substr(1, 1) === "'" ? " " : "'");
+  //     //TODO should we add move to redo table
+  //     this.cube.sendMoves(move, true, this.cube.mainSpeed);
+  //   }
+  // }
 
   private hideShowLabels(show: boolean): void {
     for (let i = 0; i < this.labels.length; ++i) {
@@ -604,7 +618,7 @@ export class MainApp {
   private showAboutPanel(): void {
     //const navbar1 = document.getElementById("navbar1");
     const gameDiv1 = document.getElementById("gamediv");
-    const buttons = document.getElementById("buttons");
+    //const buttons = document.getElementById("buttons");
     //const solvermessage = document.getElementById("solvermessage");
 
     const matrixIdentity: BABYLON.Matrix = BABYLON.Matrix.Identity();
@@ -640,7 +654,7 @@ export class MainApp {
     this.panelAbout.innerHTML = `\u00A9 2017-2021 David Lewis dlewis@svcondor.com<br>`
       + `Cube Xmin ${x1.toFixed(0)} max ${x2.toFixed(0)} Ymin ${y1.toFixed(0)} max ${y2.toFixed(0)}<br>`
       + `gamediv W-${gameDiv1.clientWidth} H-${gameDiv1.clientHeight} Window W-${window.innerWidth} H-${window.innerHeight}<br>`
-      + `buttons W-${buttons.clientWidth} L-${buttons.clientLeft} B-${buttons.clientTop}`
+      // + `buttons W-${buttons.clientWidth} L-${buttons.clientLeft} B-${buttons.clientTop}`
       + `Pointerdown X-${this.mousePos1.X.toFixed(1)} Y-${this.mousePos1.Y.toFixed(1)}`;
 
     this.panelCrib.innerHTML = "";
