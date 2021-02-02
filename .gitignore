@@ -1,5 +1,3 @@
-build/*.js
-build/*.js.map
 .vs/
 ~$CubeDetails.xlsx
 node_modules/
