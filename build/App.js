@@ -82,12 +82,12 @@ export class MainApp {
                 case "Scramble":
                     this.showOverlay(Panel.closeAll);
                     this.cube.scramble();
-                    this.solver.solverMsg("");
+                    this.ShowMessage("");
                     break;
                 case "Reset":
                     this.showOverlay(Panel.closeAll);
                     this.cube.resetTileColors();
-                    this.solver.solverMsg("");
+                    this.ShowMessage("");
                     this.cube.sendMoves("X Z X'Y H ", true, 100);
                     break;
                 case "Help":
@@ -136,7 +136,7 @@ export class MainApp {
                             }
                             else {
                                 ++this.solver.targetStep;
-                                this.solver.solverMsg(`Target ${++this.solver.targetStep}`);
+                                this.ShowMessage(`Target ${++this.solver.targetStep}`);
                             }
                         }, 1000);
                     }
@@ -156,13 +156,13 @@ export class MainApp {
                 case "fa-home":
                     this.showOverlay(Panel.closeAll);
                     this.cube.resetTileColors();
-                    this.solver.solverMsg("");
+                    this.ShowMessage("");
                     this.cube.sendMoves("X Z X'Y H ", true, 100);
                     break;
                 case "fa-random":
                     this.showOverlay(Panel.closeAll);
                     this.cube.scramble();
-                    this.solver.solverMsg("");
+                    this.ShowMessage("");
                     break;
                 case "fa-arrow-left":
                     break;
@@ -205,10 +205,10 @@ export class MainApp {
         this.camera = camera;
         camera.setTarget(new BABYLON.Vector3(-.07, -1.2, 0));
         camera.fov = 0.35;
-        this.cube = new Cube(this.scene);
+        this.cube = new Cube(this, this.scene);
         this.cubeBuilder = new CubeBuilder(this.cube, this.scene);
         this.cube.resetTileColors();
-        this.solver = new Solver(this.cube);
+        this.solver = new Solver(this, this.cube);
         this.cube.solver = this.solver;
         const icons = document.getElementsByClassName("fa");
         this.panelHelp = document.getElementById("panelHelp");
@@ -472,64 +472,8 @@ export class MainApp {
             panelHelp.style.height = `${(document.documentElement.clientHeight - navbar1.clientHeight) * 0.5}px`;
         }
     }
-    positionButtons() {
-        const navbar1 = document.getElementById("navbar1");
-        const gameDiv1 = document.getElementById("gamediv");
-        const buttons = document.getElementById("buttons");
-        console.log(`gamediv W-${gameDiv1.clientWidth} H-${gameDiv1.clientHeight} Window W-${window.innerWidth} H-${window.innerHeight}`);
-        const matrixIdentity = BABYLON.Matrix.Identity();
-        const transformMatrix = this.scene.getTransformMatrix();
-        const viewPort = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
-        let x1 = 100000;
-        let x2 = -10000;
-        let y1 = 100000;
-        let y2 = -100000;
-        for (let j = 0; j < 4; ++j) {
-            let face;
-            let relTile;
-            switch (j) {
-                case 0:
-                    face = 0;
-                    relTile = 0;
-                    break;
-                case 1:
-                    face = 0;
-                    relTile = 8;
-                    break;
-                case 2:
-                    face = 4;
-                    relTile = 0;
-                    break;
-                case 3:
-                    face = 4;
-                    relTile = 2;
-                    break;
-                default:
-                    face = 0;
-                    relTile = 0;
-                    break;
-            }
-            const tile = Cube.getTile(face, relTile);
-            const mesh2 = tile.mesh.getChildren()[0];
-            if (mesh2 && mesh2._boundingInfo) {
-                const box = mesh2._boundingInfo.boundingBox.vectorsWorld;
-                for (const v3 of box) {
-                    const p = BABYLON.Vector3.Project(v3, matrixIdentity, transformMatrix, viewPort);
-                    if (p.x > x2)
-                        x2 = p.x;
-                    if (p.x < x1)
-                        x1 = p.x;
-                    if (p.y > y2)
-                        y2 = p.y;
-                    if (p.y < y1)
-                        y1 = p.y;
-                }
-            }
-        }
-        console.log(`Cube Xmin ${x1.toFixed(0)} max ${x2.toFixed(0)} Ymin ${y1.toFixed(0)} max ${y2.toFixed(0)}`);
-        buttons.style.bottom = `${navbar1.clientHeight + 5}px`;
-        buttons.style.width = `${(x2 - x1).toFixed(0)}px`;
-        buttons.style.left = `${x1.toFixed(0)}px`;
+    ShowMessage(msg = "") {
+        document.getElementById("solvermessage").innerText = msg;
     }
 }
 window.addEventListener("DOMContentLoaded", () => {

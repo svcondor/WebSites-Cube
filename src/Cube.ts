@@ -1,4 +1,5 @@
-﻿import { Tile } from './Tile.js';
+﻿import { MainApp } from './App.js';
+import { Tile } from './Tile.js';
 import { Piece } from './Piece.js';
 import { Solver } from "./Solver.js";
 
@@ -64,8 +65,9 @@ export class Cube {
   private axis: BABYLON.Vector3;
   public static tileColors: { [color1: number]: BABYLON.StandardMaterial; } = {};
   public solver: Solver;
-
-  constructor(scene: BABYLON.Scene) {
+  public mainApp: MainApp;
+  constructor(mainApp: MainApp, scene: BABYLON.Scene) {
+    this.mainApp = mainApp;
     this.scene = scene;
   }
 
@@ -78,7 +80,7 @@ export class Cube {
         if (this.solver) {
           const solved = this.solver.checkIfSolved();
           if (solved && this.doneMoves.length > 2) {
-            this.solver.solverMsg(`Cube is Solved!`);
+            this.mainApp.ShowMessage(`Cube is Solved!`);
             this.stopGameTimer();
             //this.sendMoves("X Z X'Y H ", true, 100);
           }
@@ -143,7 +145,8 @@ export class Cube {
       if (move.length > 2) {
         step += "." + move.substr(2, 1);
       }
-      this.solver.solverMsg(`Step ${step} DONE`);
+      //this.solver.solverMsg(`Step ${step} DONE`);
+      this.mainApp.ShowMessage(`Step ${step} DONE`);
     }
     else {
       this.doCubeRotate(move, this.sendSpeed);

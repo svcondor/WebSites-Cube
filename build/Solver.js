@@ -1,7 +1,7 @@
 import { Cube, CubeFace, TileColor } from './Cube.js';
 import { Tile } from './Tile.js';
 export class Solver {
-    constructor(cube) {
+    constructor(mainApp, cube) {
         this.targetStep = 0;
         this.totalMoves = "";
         this.runStep = (stepFunction, result) => {
@@ -514,6 +514,7 @@ export class Solver {
             }
             result.moves = moves;
         };
+        this.mainApp = mainApp;
         this.cube = cube;
         Solver.cubeTable = new Array(54);
         this.copyTilesFromCube();
@@ -531,9 +532,6 @@ export class Solver {
         return true;
     }
     reset() {
-    }
-    solverMsg(msg) {
-        document.getElementById("solvermessage").innerText = msg;
     }
     step(target = 0) {
         this.copyTilesFromCube();
@@ -559,7 +557,7 @@ export class Solver {
             break;
         }
         if (result.moves !== "") {
-            this.solverMsg(`Step ${result.step}.${result.subStep}`);
+            this.mainApp.ShowMessage(`Step ${result.step}.${result.subStep}`);
             this.solverSendMoves(result.moves, true);
         }
         return;

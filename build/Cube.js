@@ -26,7 +26,7 @@ export var CubeFace;
     CubeFace[CubeFace["D"] = 5] = "D";
 })(CubeFace || (CubeFace = {}));
 export class Cube {
-    constructor(scene) {
+    constructor(mainApp, scene) {
         this.renderCount = 0;
         this.gameStartTime = 0;
         this.gameTimer = null;
@@ -49,6 +49,7 @@ export class Cube {
                 this.sendMoves(move, true, this.mainSpeed);
             }
         };
+        this.mainApp = mainApp;
         this.scene = scene;
     }
     redrawCube() {
@@ -57,7 +58,7 @@ export class Cube {
                 if (this.solver) {
                     const solved = this.solver.checkIfSolved();
                     if (solved && this.doneMoves.length > 2) {
-                        this.solver.solverMsg(`Cube is Solved!`);
+                        this.mainApp.ShowMessage(`Cube is Solved!`);
                         this.stopGameTimer();
                     }
                 }
@@ -109,7 +110,7 @@ export class Cube {
             if (move.length > 2) {
                 step += "." + move.substr(2, 1);
             }
-            this.solver.solverMsg(`Step ${step} DONE`);
+            this.mainApp.ShowMessage(`Step ${step} DONE`);
         }
         else {
             this.doCubeRotate(move, this.sendSpeed);

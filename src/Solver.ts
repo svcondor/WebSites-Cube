@@ -1,4 +1,5 @@
-﻿import { Cube, CubeFace, TileColor } from './Cube.js';
+﻿import { MainApp } from './App';
+import { Cube, CubeFace, TileColor } from './Cube.js';
 import { Tile } from './Tile.js';
 
 interface SolverResult {
@@ -10,10 +11,12 @@ interface SolverResult {
 export class Solver {
   //private solveStep: number = 0;
   private cube: Cube;
+  private mainApp: MainApp;
   private static cubeTable: Tile[];
   public targetStep = 0;
   private totalMoves = "";
-  constructor(cube: Cube) {
+  constructor(mainApp: MainApp, cube: Cube) {
+    this.mainApp = mainApp;
     this.cube = cube;
     Solver.cubeTable = new Array(54);
     this.copyTilesFromCube();
@@ -36,10 +39,9 @@ export class Solver {
     //this.solveStep = 0;
   }
 
-  public solverMsg(msg: string): void {
-    //document.getElementById("solvermessage").style.color = "white";
-    document.getElementById("solvermessage").innerText = msg;
-  }
+  // public solverMsg(msg: string): void {
+  //   document.getElementById("solvermessage").innerText = msg;
+  // }
 
   public step(target = 0): void {
     // let solveStep = this.solveStep;
@@ -67,7 +69,8 @@ export class Solver {
       break;
     }
     if (result.moves !== "") {
-      this.solverMsg(`Step ${result.step}.${result.subStep}`);
+      //this.solverMsg(`Step ${result.step}.${result.subStep}`);
+      this.mainApp.ShowMessage(`Step ${result.step}.${result.subStep}`);
       this.solverSendMoves(result.moves, true);
     }
     return;
