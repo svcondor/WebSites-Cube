@@ -3,7 +3,7 @@ import { Tile } from './Tile.js';
 import { Piece } from './Piece.js';
 import { Solver } from "./Solver.js";
 
-export enum MoveCode {
+enum MoveCode {
   SpeedChange = "G",
   ResetGame = "H",
   SolverMsg = "I"
@@ -82,7 +82,10 @@ export class Cube {
           if (solved && this.doneMoves.length > 2) {
             this.mainApp.ShowMessage(`Cube is Solved!`);
             this.stopGameTimer();
-            //this.sendMoves("X Z X'Y H ", true, 100);
+            this.sendMoves("X Z X'Y H ", true, 300);
+          }
+          else {
+            this.mainApp.ShowMessage("");
           }
         }
       }
@@ -124,7 +127,7 @@ export class Cube {
   }
 
   /**
-   * ececute the next cube move or handle special MoveCode
+   * execute the next cube move or handle special MoveCode
    */
   private executeNextMove() {
     const move = this.movesSentQueue[0];

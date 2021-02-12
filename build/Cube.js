@@ -1,4 +1,4 @@
-export var MoveCode;
+var MoveCode;
 (function (MoveCode) {
     MoveCode["SpeedChange"] = "G";
     MoveCode["ResetGame"] = "H";
@@ -60,6 +60,10 @@ export class Cube {
                     if (solved && this.doneMoves.length > 2) {
                         this.mainApp.ShowMessage(`Cube is Solved!`);
                         this.stopGameTimer();
+                        this.sendMoves("X Z X'Y H ", true, 300);
+                    }
+                    else {
+                        this.mainApp.ShowMessage("");
                     }
                 }
             }

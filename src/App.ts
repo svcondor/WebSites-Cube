@@ -62,8 +62,8 @@ export class MainApp {
     // http://stackoverflow.com/questions/16152609/
     //  importing-external-html-inner-content-with-javascript-ajax-without-jquery
 
-    //let rand = Math.floor(Math.random() * 10000);
-    // `./crib.html?v${rand}`
+    // const rand = Math.floor(Math.random() * 10000);
+    // `./help1.html?v${rand}`
     fetch(`./help1.html`)
       .then (response => response.text())
       .then (html => document.getElementById("panelHelp").innerHTML = html)
@@ -79,17 +79,19 @@ export class MainApp {
 
     //BABYLON.Engine.CodeRepository = "/Babylon/src/";
     //BABYLON.Engine.ShadersRepository = "/Babylon/src/Shaders/";
-    this.resizeCanvas();
-
+    
     const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
     const engine = new BABYLON.Engine(canvas, true);
     this.engine = engine;
+    this.resizeCanvas();
+    this.engine.resize();
+
     // TODO Default HardwareScaling PC = 1  930 = 0.5      2=jagged fast
-    this.engine.setHardwareScalingLevel(1.0);
+    this.engine.setHardwareScalingLevel(0.5);
     window.addEventListener("resize", () => {
       //TODO add timer to reduce flashing
       this.resizeCanvas();
-      engine.resize();
+      this.engine.resize();
       this.cube.sendMoves("", true, 0);
       //this.positionButtons();
       this.buildHitTester();
@@ -443,20 +445,7 @@ export class MainApp {
     const buttonText: string = target.innerText;
     switch (buttonText) {
 
-      case "Slow":
-        //TODO: Add checkbox
-        target.innerText = "Fast";
-        this.fastSpeed = true;
-        this.showOverlay(Panel.closeAll);
-        break;
-
-      case "Fast":
-        target.innerText = "Slow";
-        this.fastSpeed = false;
-        this.showOverlay(Panel.closeAll);
-        break;
-
-      case "Scramble":
+   case "Scramble":
         this.showOverlay(Panel.closeAll);
         this.cube.scramble();
         this.ShowMessage("");
@@ -528,44 +517,13 @@ export class MainApp {
         }
         break;
 
-      case "fa-question":
-        if (this.overlay === Panel.help) this.showOverlay(Panel.closeAll);
-        else this.showOverlay(Panel.help);
-        break;
-
       case "fa-ellipsis-h":
         if (this.overlay !== Panel.closeAll && this.overlay !== Panel.close) this.showOverlay(Panel.closeAll);
         else this.showOverlay(Panel.menu);
         break;
-
-      case "fa-home":
-        this.showOverlay(Panel.closeAll);
-        this.cube.resetTileColors();
-        this.ShowMessage("");
-        this.cube.sendMoves("X Z X'Y H ", true, 100);
-        break;
-
-      case "fa-random":
-        this.showOverlay(Panel.closeAll);
-        this.cube.scramble();
-        this.ShowMessage("");
-        break;
-
-      case "fa-arrow-left":
-        break;
-
-      case "fa-cog":
-        break;
     }
     return false;
   });
-
-  private hideShowLabels(show: boolean): void {
-    for (let i = 0; i < this.labels.length; ++i) {
-      if (show) this.labels[i].style.display = "block";
-      else this.labels[i].style.display = "none";
-    }
-  }
 
   private showOverlay(newPanel: Panel): void {
     if (this.overlay === Panel.help) {
@@ -577,7 +535,6 @@ export class MainApp {
       }
     }
     else if (this.overlay === Panel.menu) {
-      this.hideShowLabels(false);
       this.panelMenu.style.display = "none";
     }
     else if (this.overlay === Panel.about) {
@@ -594,7 +551,6 @@ export class MainApp {
       this.panelCrib.style.display = "block";
     }
     else if (newPanel === Panel.menu) {
-      this.hideShowLabels(true);
       this.panelMenu.style.display = "block";
     }
     else if (newPanel === Panel.about) {
@@ -656,63 +612,12 @@ export class MainApp {
       gameDiv1.style.width = `${window.innerWidth}px`;
       gameDiv1.style.height = `${document.documentElement.clientHeight - navbar1.clientHeight}px`;
       panelHelp.style.height = `${(document.documentElement.clientHeight - navbar1.clientHeight) * 0.5}px`;
-      //this.positionButtons();
     }
   }
-
-  // private positionButtons(): void {
-  //   const navbar1 = document.getElementById("navbar1");
-  //   const gameDiv1 = document.getElementById("gamediv");
-  //   const buttons = document.getElementById("buttons");
-  //   //const solvermessage = document.getElementById("solvermessage");
-  //   console.log(`gamediv W-${gameDiv1.clientWidth} H-${gameDiv1.clientHeight} Window W-${window.innerWidth} H-${window.innerHeight}`);
-
-  //   const matrixIdentity: BABYLON.Matrix = BABYLON.Matrix.Identity();
-  //   const transformMatrix: BABYLON.Matrix = this.scene.getTransformMatrix();
-  //   const viewPort: BABYLON.Viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
-  //   //var v5 = this.engine.getHardwareScalingLevel();
-  //   //console.log(`Camera S-${v5} W-${this.engine.getRenderWidth()} H-${this.engine.getRenderHeight()}`);
-  //   let x1 = 100000;
-  //   let x2 = -10000;
-  //   let y1 = 100000;
-  //   let y2 = -100000;
-  //   for (let j = 0; j < 4; ++j) {
-  //     let face: CubeFace;
-  //     let relTile: number;
-  //     switch (j) {
-  //       case 0: face = 0; relTile = 0; break;
-  //       case 1: face = 0; relTile = 8; break;
-  //       case 2: face = 4; relTile = 0; break;
-  //       case 3: face = 4; relTile = 2; break;
-  //       default: face = 0; relTile = 0; break;
-  //     }
-  //     const tile = Cube.getTile(face, relTile);
-  //     const mesh2 = tile.mesh.getChildren()[0] as BABYLON.Mesh;
-  //     if (mesh2 && mesh2._boundingInfo) {
-  //       const box = mesh2._boundingInfo.boundingBox.vectorsWorld;
-  //       for (const v3 of box) {
-  //         const p: BABYLON.Vector3 = BABYLON.Vector3.Project(
-  //           v3, matrixIdentity, transformMatrix, viewPort);
-  //         //console.log(p.x, p.y);
-  //         if (p.x > x2) x2 = p.x;
-  //         if (p.x < x1) x1 = p.x;
-  //         if (p.y > y2) y2 = p.y;
-  //         if (p.y < y1) y1 = p.y;
-  //       }
-  //     }
-  //   }
-  //   console.log(`Cube Xmin ${x1.toFixed(0)} max ${x2.toFixed(0)} Ymin ${y1.toFixed(0)} max ${y2.toFixed(0)}`);
-
-  //   //buttons.style.bottom = `${navbar1.clientHeight + 50}px`;
-  //   buttons.style.bottom = `${navbar1.clientHeight + 5}px`;
-  //   buttons.style.width = `${(x2 - x1).toFixed(0)}px`;
-  //   buttons.style.left = `${x1.toFixed(0)}px`;
-  // }
 
   public ShowMessage(msg = ""): void {
     document.getElementById("solvermessage").innerText = msg;
   }
-
 }
 
 //Instantiate the main App class once everything is loaded

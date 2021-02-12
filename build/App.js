@@ -69,16 +69,6 @@ export class MainApp {
             const target = event.currentTarget;
             const buttonText = target.innerText;
             switch (buttonText) {
-                case "Slow":
-                    target.innerText = "Fast";
-                    this.fastSpeed = true;
-                    this.showOverlay(Panel.closeAll);
-                    break;
-                case "Fast":
-                    target.innerText = "Slow";
-                    this.fastSpeed = false;
-                    this.showOverlay(Panel.closeAll);
-                    break;
                 case "Scramble":
                     this.showOverlay(Panel.closeAll);
                     this.cube.scramble();
@@ -141,32 +131,11 @@ export class MainApp {
                         }, 1000);
                     }
                     break;
-                case "fa-question":
-                    if (this.overlay === Panel.help)
-                        this.showOverlay(Panel.closeAll);
-                    else
-                        this.showOverlay(Panel.help);
-                    break;
                 case "fa-ellipsis-h":
                     if (this.overlay !== Panel.closeAll && this.overlay !== Panel.close)
                         this.showOverlay(Panel.closeAll);
                     else
                         this.showOverlay(Panel.menu);
-                    break;
-                case "fa-home":
-                    this.showOverlay(Panel.closeAll);
-                    this.cube.resetTileColors();
-                    this.ShowMessage("");
-                    this.cube.sendMoves("X Z X'Y H ", true, 100);
-                    break;
-                case "fa-random":
-                    this.showOverlay(Panel.closeAll);
-                    this.cube.scramble();
-                    this.ShowMessage("");
-                    break;
-                case "fa-arrow-left":
-                    break;
-                case "fa-cog":
                     break;
             }
             return false;
@@ -183,14 +152,15 @@ export class MainApp {
             .catch(error => {
             return console.log(error);
         });
-        this.resizeCanvas();
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
         this.engine = engine;
-        this.engine.setHardwareScalingLevel(1.0);
+        this.resizeCanvas();
+        this.engine.resize();
+        this.engine.setHardwareScalingLevel(0.5);
         window.addEventListener("resize", () => {
             this.resizeCanvas();
-            engine.resize();
+            this.engine.resize();
             this.cube.sendMoves("", true, 0);
             this.buildHitTester();
         });
@@ -367,14 +337,6 @@ export class MainApp {
         }
         return target1;
     }
-    hideShowLabels(show) {
-        for (let i = 0; i < this.labels.length; ++i) {
-            if (show)
-                this.labels[i].style.display = "block";
-            else
-                this.labels[i].style.display = "none";
-        }
-    }
     showOverlay(newPanel) {
         if (this.overlay === Panel.help) {
             this.panelHelp.style.display = "none";
@@ -385,7 +347,6 @@ export class MainApp {
             }
         }
         else if (this.overlay === Panel.menu) {
-            this.hideShowLabels(false);
             this.panelMenu.style.display = "none";
         }
         else if (this.overlay === Panel.about) {
@@ -403,7 +364,6 @@ export class MainApp {
             this.panelCrib.style.display = "block";
         }
         else if (newPanel === Panel.menu) {
-            this.hideShowLabels(true);
             this.panelMenu.style.display = "block";
         }
         else if (newPanel === Panel.about) {

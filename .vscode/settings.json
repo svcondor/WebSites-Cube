@@ -1,3 +1,8 @@
 {
-  "liveServer.settings.port": 5502
+  "liveServer.settings.port": 5502,
+  "files.exclude": {
+    "**/*.js": true,
+    "**/*.js.map": true
+  },
+  "editor.linkedEditing": true
 }
