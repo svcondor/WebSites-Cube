@@ -1,3 +1,5 @@
 .vs/
 ~$CubeDetails.xlsx
 node_modules/
+build/*.js
+build/*.map
